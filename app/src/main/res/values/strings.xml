@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">dbtest</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_add">添加</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_loader">LoaderActivity</string>
+    <string name="title_activity_async_task_loader">AsyncTaskLoaderActivity</string>
+    <string name="title_activity_request">RequestActivity</string>
+    <string name="title_activity_async">AsyncActivity</string>
+    <string name="title_activity_web_view">WebViewActivity</string>
+    <string name="title_activity_soap">SoapActivity</string>
+    <string name="title_activity_web">WebActivity</string>
+    <string name="title_activity_anni">AnniActivity</string>
+    <string name="title_activity_menu">MenuActivity</string>
+    <string name="title_activity_surface_view">SurfaceViewActivity</string>
+    <string name="title_activity_bitmap">BitmapActivity</string>
+</resources>

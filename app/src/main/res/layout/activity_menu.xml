@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.vince.dbtest.Activities.MenuActivity">
+
+    <ImageView
+        android:id="@+id/iv6"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:src="@mipmap/pic6" />
+
+    <ImageView
+        android:id="@+id/iv5"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:src="@mipmap/pic5" />
+
+    <ImageView
+        android:id="@+id/iv4"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:src="@mipmap/pic4" />
+
+    <ImageView
+        android:id="@+id/iv3"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:src="@mipmap/pic3" />
+
+    <ImageView
+        android:id="@+id/iv2"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:src="@mipmap/pic2" />
+
+    <ImageView
+        android:id="@+id/iv1"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:src="@mipmap/pic1" />
+</FrameLayout>
