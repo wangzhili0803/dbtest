@@ -26,6 +26,7 @@ public class MainActivity extends Activity implements AddFragment.AddListener,
     private GamePlayerFragment gamePlayerFragment;
     private UpdateFragment updateFragment;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
