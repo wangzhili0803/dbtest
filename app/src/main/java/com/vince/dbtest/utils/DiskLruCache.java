@@ -60,19 +60,19 @@ import java.util.concurrent.TimeUnit;
  * sequences, accessible as streams or files. Each value must be between {@code
  * 0} and {@code Integer.MAX_VALUE} bytes in length.
  *
- * <p>The cache stores its data in a directory on the filesystem. This
+ * <provider_paths>The cache stores its data in a directory on the filesystem. This
  * directory must be exclusive to the cache; the cache may delete or overwrite
  * files from its directory. It is an error for multiple processes to use the
  * same cache directory at the same time.
  *
- * <p>This cache limits the number of bytes that it will store on the
+ * <provider_paths>This cache limits the number of bytes that it will store on the
  * filesystem. When the number of stored bytes exceeds the limit, the cache will
  * remove entries in the background until the limit is satisfied. The limit is
  * not strict: the cache may temporarily exceed it while waiting for files to be
  * deleted. The limit does not include filesystem overhead or the cache
  * journal so space-sensitive applications should set a conservative limit.
  *
- * <p>Clients call {@link #edit} to create or update the values of an entry. An
+ * <provider_paths>Clients call {@link #edit} to create or update the values of an entry. An
  * entry may have only one editor at one time; if a value is not available to be
  * edited then {@link #edit} will return null.
  * <ul>
@@ -87,11 +87,11 @@ import java.util.concurrent.TimeUnit;
  * or {@link Editor#abort}. Committing is atomic: a read observes the full set
  * of values as they were before or after the commit, but never a mix of values.
  *
- * <p>Clients call {@link #get} to read a snapshot of an entry. The read will
+ * <provider_paths>Clients call {@link #get} to read a snapshot of an entry. The read will
  * observe the value at the time that {@link #get} was called. Updates and
  * removals after the call do not impact ongoing reads.
  *
- * <p>This class is tolerant of some I/O errors. If files are missing from the
+ * <provider_paths>This class is tolerant of some I/O errors. If files are missing from the
  * filesystem, the corresponding entries will be dropped from the cache. If
  * an error occurs while writing a cache value, the edit will fail silently.
  * Callers should handle other problems by catching {@code IOException} and

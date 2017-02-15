@@ -43,7 +43,7 @@ public class HttpClientUtil {
         // Matcher m_html = p_html.matcher(htmlStr);
         // htmlStr = m_html.replaceAll("\r\n"); // 过滤html标签
 
-        // <p>段落替换为换行
+        // <provider_paths>段落替换为换行
         htmlStr = htmlStr.replaceAll("<p .*?>", "\r\n");
         // <br><br/>替换为换行
         htmlStr = htmlStr.replaceAll("<br\\s*/?>", "\r\n");
