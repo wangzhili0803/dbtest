@@ -7,10 +7,10 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
+        android:name=".FYApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:name=".FYApplication"
         android:theme="@style/AppTheme">
         <activity
             android:name="com.tencent.bugly.beta.ui.BetaActivity"
@@ -23,7 +23,7 @@
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/provider_paths"/>
+                android:resource="@xml/provider_paths" />
         </provider>
 
         <activity
@@ -57,10 +57,10 @@
             android:label="@string/title_activity_anni" />
         <activity
             android:name=".Activities.MenuActivity"
-            android:label="@string/title_activity_menu"></activity>
+            android:label="@string/title_activity_menu" />
         <activity
             android:name=".Activities.SurfaceViewActivity"
-            android:label="@string/title_activity_surface_view"></activity>
+            android:label="@string/title_activity_surface_view" />
         <activity
             android:name=".Activities.BitmapActivity"
             android:label="@string/title_activity_bitmap">
@@ -70,6 +70,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".Activities.MainStartActivity" />
+        <activity android:name=".Activities.UpgradeActivity"></activity>
     </application>
 
 </manifest>
