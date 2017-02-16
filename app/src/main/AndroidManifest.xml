@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.vince.dbtest">
+    package="com.jerry.dbtest">
 
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_LOGS" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-        android:name=".FYApplication"
+        android:name="com.jerry.dbtest.FYApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -18,7 +21,7 @@
 
         <provider
             android:name="android.support.v4.content.FileProvider"
-            android:authorities="com.vince.dbtest.fileProvider"
+            android:authorities="com.jerry.dbtest.fileProvider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
@@ -27,42 +30,42 @@
         </provider>
 
         <activity
-            android:name=".Activities.AsyncTaskLoaderActivity"
+            android:name="com.jerry.dbtest.Activities.AsyncTaskLoaderActivity"
             android:label="@string/app_name" />
 
         <provider
-            android:name=".provider.HelloProvider"
-            android:authorities="com.vince.dbtest.provider.HelloProvider" />
+            android:name="com.jerry.dbtest.provider.HelloProvider"
+            android:authorities="com.jerry.dbtest.provider.HelloProvider" />
 
         <activity
-            android:name=".Activities.MainActivity"
+            android:name="com.jerry.dbtest.Activities.MainActivity"
             android:label="@string/title_activity_loader" />
         <activity
-            android:name=".Activities.LoaderActivity"
+            android:name="com.jerry.dbtest.Activities.LoaderActivity"
             android:label="@string/title_activity_async_task_loader" />
         <activity
-            android:name=".Activities.RequestActivity"
+            android:name="com.jerry.dbtest.Activities.RequestActivity"
             android:label="@string/title_activity_request" />
         <activity
-            android:name=".Activities.AsyncActivity"
+            android:name="com.jerry.dbtest.Activities.AsyncActivity"
             android:label="@string/title_activity_async" />
         <activity
-            android:name=".Activities.SoapActivity"
+            android:name="com.jerry.dbtest.Activities.SoapActivity"
             android:label="@string/title_activity_soap" />
         <activity
-            android:name=".Activities.WebActivity"
+            android:name="com.jerry.dbtest.Activities.WebActivity"
             android:label="@string/title_activity_web" />
         <activity
-            android:name=".Activities.AnniActivity"
+            android:name="com.jerry.dbtest.Activities.AnniActivity"
             android:label="@string/title_activity_anni" />
         <activity
-            android:name=".Activities.MenuActivity"
+            android:name="com.jerry.dbtest.Activities.MenuActivity"
             android:label="@string/title_activity_menu" />
         <activity
-            android:name=".Activities.SurfaceViewActivity"
+            android:name="com.jerry.dbtest.Activities.SurfaceViewActivity"
             android:label="@string/title_activity_surface_view" />
         <activity
-            android:name=".Activities.BitmapActivity"
+            android:name="com.jerry.dbtest.Activities.BitmapActivity"
             android:label="@string/title_activity_bitmap">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -70,8 +73,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Activities.MainStartActivity" />
-        <activity android:name=".Activities.UpgradeActivity"></activity>
+        <activity android:name="com.jerry.dbtest.Activities.MainStartActivity" />
+        <activity android:name="com.jerry.dbtest.Activities.UpgradeActivity"></activity>
     </application>
 
 </manifest>
