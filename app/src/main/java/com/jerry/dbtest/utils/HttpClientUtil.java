@@ -1,22 +1,28 @@
 package com.jerry.dbtest.utils;
 
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
+
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class HttpClientUtil {
-//    public static HttpClient httpClient = null;
-//
-//    public static HttpClient getHttpClient() {
-//        if (httpClient == null) {
-//            // wap网络采用特殊httpclient模式
-//            HttpParams httpParameters = new BasicHttpParams();
-//            HttpConnectionParams.setConnectionTimeout(httpParameters, 8000);
-//            HttpConnectionParams.setSoTimeout(httpParameters, 32000);
-//            httpClient = new DefaultHttpClient(httpParameters);
-//        }
-//        return httpClient;
-//    }
+    public static HttpClient httpClient = null;
+
+    public static HttpClient getHttpClient() {
+        if (httpClient == null) {
+            // wap网络采用特殊httpclient模式
+            HttpParams httpParameters = new BasicHttpParams();
+            HttpConnectionParams.setConnectionTimeout(httpParameters, 8000);
+            HttpConnectionParams.setSoTimeout(httpParameters, 32000);
+            httpClient = new DefaultHttpClient(httpParameters);
+        }
+        return httpClient;
+    }
 
     /**
      * @param

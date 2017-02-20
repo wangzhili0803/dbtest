@@ -12,13 +12,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.ImageLoader;
-import com.android.volley.toolbox.ImageRequest;
-import com.android.volley.toolbox.NetworkImageView;
-import com.android.volley.toolbox.Volley;
 import com.jerry.dbtest.R;
 
 import org.json.JSONObject;
@@ -30,8 +23,8 @@ public class RequestActivity extends Activity implements View.OnClickListener {
     private Button btn_request;
     private ImageView iv;
     private TextView tv_response;
-    NetworkImageView netiv;
-    private RequestQueue queue;
+//    NetworkImageView netiv;
+//    private RequestQueue queue;
 //    private HttpClient httpClient;
     private JSONObject jsondata;
     private LruCache<String, Bitmap> cache;
@@ -66,8 +59,8 @@ public class RequestActivity extends Activity implements View.OnClickListener {
         btn_request.setOnClickListener(this);
         iv = (ImageView) findViewById(R.id.iv);
         tv_response = (TextView) findViewById(R.id.tv_respose);
-        netiv = (NetworkImageView) findViewById(R.id.netiv);
-        queue = Volley.newRequestQueue(this);
+//        netiv = (NetworkImageView) findViewById(R.id.netiv);
+//        queue = Volley.newRequestQueue(this);
         cache = new LruCache<String, Bitmap>(10 * 1024 * 1024);
     }
 
@@ -139,37 +132,37 @@ public class RequestActivity extends Activity implements View.OnClickListener {
 //                });
 //                queue.add(request);
 
-                ImageRequest request = new ImageRequest(url_img, new Response.Listener<Bitmap>() {
-                    @Override
-                    public void onResponse(Bitmap bitmap) {
-                        iv.setImageBitmap(bitmap);
-                    }
-                }, 0, 0, Bitmap.Config.RGB_565, new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError volleyError) {
+//                ImageRequest request = new ImageRequest(url_img, new Response.Listener<Bitmap>() {
+//                    @Override
+//                    public void onResponse(Bitmap bitmap) {
+//                        iv.setImageBitmap(bitmap);
+//                    }
+//                }, 0, 0, Bitmap.Config.RGB_565, new Response.ErrorListener() {
+//                    @Override
+//                    public void onErrorResponse(VolleyError volleyError) {
+//
+//                    }
+//                });
+//                queue.add(request);
 
-                    }
-                });
-                queue.add(request);
-
-                ImageLoader loader = new ImageLoader(queue, new ImageLoader.ImageCache() {
-
-                    @Override
-                    public Bitmap getBitmap(String s) {
-                        return cache.get(s);
-                    }
-
-                    @Override
-                    public void putBitmap(String s, Bitmap bitmap) {
-                        cache.put(s, bitmap);
-                    }
-                });
+//                ImageLoader loader = new ImageLoader(queue, new ImageLoader.ImageCache() {
+//
+//                    @Override
+//                    public Bitmap getBitmap(String s) {
+//                        return cache.get(s);
+//                    }
+//
+//                    @Override
+//                    public void putBitmap(String s, Bitmap bitmap) {
+//                        cache.put(s, bitmap);
+//                    }
+//                });
 //                ImageLoader.ImageListener listener = ImageLoader.getImageListener(iv, R.mipmap.ic_launcher, R.mipmap.kahui);
 //                loader.get(url_img, listener, 0, 0);
-                netiv.setVisibility(View.VISIBLE);
-                netiv.setDefaultImageResId(R.mipmap.ic_launcher);
-                netiv.setErrorImageResId(R.mipmap.kahui);
-                netiv.setImageUrl(url_img, loader);
+//                netiv.setVisibility(View.VISIBLE);
+//                netiv.setDefaultImageResId(R.mipmap.ic_launcher);
+//                netiv.setErrorImageResId(R.mipmap.kahui);
+//                netiv.setImageUrl(url_img, loader);
         }
     }
 

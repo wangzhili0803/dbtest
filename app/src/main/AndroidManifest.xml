@@ -7,10 +7,10 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_LOGS" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-
     <application
-        android:name="com.jerry.dbtest.FYApplication"
+        android:name="com.jerry.dbtest.SampleApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -74,7 +74,11 @@
             </intent-filter>
         </activity>
         <activity android:name="com.jerry.dbtest.Activities.MainStartActivity" />
-        <activity android:name="com.jerry.dbtest.Activities.UpgradeActivity"></activity>
+        <activity android:name="com.jerry.dbtest.Activities.UpgradeActivity"></activity><!-- ATTENTION: This was auto-generated to add Google Play services to your project for
+     App Indexing.  See https://g.co/AppIndexing/AndroidStudio for more information. -->
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
     </application>
 
 </manifest>
