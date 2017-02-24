@@ -5,30 +5,30 @@ apply from: 'tinker-support.gradle'
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:23.1.1'
     //    compile("com.tencent.tinker:tinker-android-lib:${TINKER_VERSION}") { changing = true }
     //    provided("com.tencent.tinker:tinker-android-anno:${TINKER_VERSION}") { changing = true }
-    compile 'com.android.support:multidex:1.0.1'
-    compile 'com.tencent.bugly:crashreport_upgrade:latest.release'
     // 升级SDK
     compile files('libs/commons-lang.jar')
     //    compile files('libs/Volley.jar')
     compile files('libs/android-async-http-1.4.6.jar')
     compile files('libs/ksoap2-android-assembly-3.0.0-jar-with-dependencies.jar')
-    compile 'com.android.support:support-v4:23.4.0'
-    compile 'com.squareup.retrofit2:retrofit:2.0.0-beta4'
     //Retrofit2所需要的包
-    compile 'com.squareup.retrofit2:converter-gson:2.0.0-beta4'
     //ConverterFactory的Gson依赖包
-    compile 'com.squareup.retrofit2:converter-scalars:2.0.0-beta4'
     //ConverterFactory的String依赖包
     //以下SDK开发者请根据需要自行选择
     //如果你想应用能够兼容Android6.0，请添加此依赖(org.apache.http.legacy.jar)
+    compile 'com.android.support:appcompat-v7:23.4.0'
+    compile 'com.android.support:multidex:1.0.1'
+    compile 'com.tencent.bugly:crashreport_upgrade:latest.release'
+    compile 'com.android.support:support-v4:23.4.0'
+    compile 'com.squareup.retrofit2:retrofit:2.0.0-beta4'
+    compile 'com.squareup.retrofit2:converter-gson:2.0.0-beta4'
+    compile 'com.squareup.retrofit2:converter-scalars:2.0.0-beta4'
     compile 'cn.bmob.android:http-legacy:1.0'
-    compile 'com.google.android.gms:play-services-appindexing:8.4.0'
+    compile 'com.google.android.gms:play-services-appindexing:9.8.0'
     compile 'io.reactivex:rxjava:1.2.6'
     compile 'io.reactivex:rxandroid:1.2.1'
+    testCompile 'junit:junit:4.12'
 }
 
 def gitSha() {
@@ -97,7 +97,7 @@ android {
          * so we can get the newly git version easily!
          */
         buildConfigField "String", "TINKER_ID", "\"${getTinkerIdValue()}\""
-        buildConfigField "String", "PLATFORM",  "\"all\""
+        buildConfigField "String", "PLATFORM", "\"all\""
     }
 
     buildTypes {
@@ -354,7 +354,7 @@ if (buildWithTinker()) {
     }
 
     List<String> flavors = new ArrayList<>();
-    project.android.productFlavors.each {flavor ->
+    project.android.productFlavors.each { flavor ->
         flavors.add(flavor.name)
     }
     boolean hasFlavors = flavors.size() > 0

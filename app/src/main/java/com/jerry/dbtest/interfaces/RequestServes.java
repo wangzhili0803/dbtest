@@ -3,6 +3,7 @@ package com.jerry.dbtest.interfaces;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 public interface RequestServes {
@@ -13,4 +14,9 @@ public interface RequestServes {
     @GET("Mobile/GetMobileOwnership")
     Call<String> getCallString(@Query("mobile") String mobile,
                            @Query("authkey") String authkey);
+
+    @GET("Mobile/{GetMobileOwnership}")
+    Call<String> getCallString(@Path("GetMobileOwnership") String GetMobileOwnership,
+                               @Query("mobile") String mobile,
+                               @Query("authkey") String authkey);
 }

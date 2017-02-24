@@ -9,8 +9,9 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
     <application
-        android:name="com.jerry.dbtest.SampleApplication"
+        android:name=".SampleApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -30,55 +31,60 @@
         </provider>
 
         <activity
-            android:name="com.jerry.dbtest.Activities.AsyncTaskLoaderActivity"
+            android:name=".Activities.AsyncTaskLoaderActivity"
             android:label="@string/app_name" />
 
         <provider
-            android:name="com.jerry.dbtest.provider.HelloProvider"
+            android:name=".provider.HelloProvider"
             android:authorities="com.jerry.dbtest.provider.HelloProvider" />
 
         <activity
-            android:name="com.jerry.dbtest.Activities.MainActivity"
-            android:label="@string/title_activity_loader" />
+            android:name=".Activities.MainActivity"
+            android:label="@string/title_activity_loader">
+        </activity>
         <activity
-            android:name="com.jerry.dbtest.Activities.LoaderActivity"
+            android:name=".Activities.LoaderActivity"
             android:label="@string/title_activity_async_task_loader" />
         <activity
-            android:name="com.jerry.dbtest.Activities.RequestActivity"
+            android:name=".Activities.RequestActivity"
             android:label="@string/title_activity_request" />
         <activity
-            android:name="com.jerry.dbtest.Activities.AsyncActivity"
+            android:name=".Activities.AsyncActivity"
             android:label="@string/title_activity_async" />
         <activity
-            android:name="com.jerry.dbtest.Activities.SoapActivity"
+            android:name=".Activities.SoapActivity"
             android:label="@string/title_activity_soap" />
         <activity
-            android:name="com.jerry.dbtest.Activities.WebActivity"
+            android:name=".Activities.WebActivity"
             android:label="@string/title_activity_web" />
         <activity
-            android:name="com.jerry.dbtest.Activities.AnniActivity"
+            android:name=".Activities.AnniActivity"
             android:label="@string/title_activity_anni" />
         <activity
-            android:name="com.jerry.dbtest.Activities.MenuActivity"
+            android:name=".Activities.MenuActivity"
             android:label="@string/title_activity_menu" />
         <activity
-            android:name="com.jerry.dbtest.Activities.SurfaceViewActivity"
+            android:name=".Activities.SurfaceViewActivity"
             android:label="@string/title_activity_surface_view" />
         <activity
-            android:name="com.jerry.dbtest.Activities.BitmapActivity"
-            android:label="@string/title_activity_bitmap">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity android:name="com.jerry.dbtest.Activities.MainStartActivity" />
-        <activity android:name="com.jerry.dbtest.Activities.UpgradeActivity"></activity><!-- ATTENTION: This was auto-generated to add Google Play services to your project for
-     App Indexing.  See https://g.co/AppIndexing/AndroidStudio for more information. -->
+            android:name=".Activities.BitmapActivity"
+            android:label="@string/title_activity_bitmap"></activity>
+        <activity android:name=".Activities.MainStartActivity" />
+        <activity android:name=".Activities.UpgradeActivity" />
+        <!--
+ ATTENTION: This was auto-generated to add Google Play services to your project for
+     App Indexing.  See https://g.co/AppIndexing/AndroidStudio for more information.
+        -->
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
+
+        <activity android:name=".Activities.RetroActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>
