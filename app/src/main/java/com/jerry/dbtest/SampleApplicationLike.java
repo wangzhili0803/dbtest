@@ -1,15 +1,15 @@
 package com.jerry.dbtest;
 
+import com.tencent.bugly.Bugly;
+import com.tencent.bugly.beta.Beta;
+import com.tencent.tinker.loader.app.DefaultApplicationLike;
+
 import android.annotation.TargetApi;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.support.multidex.MultiDex;
-
-import com.tencent.bugly.Bugly;
-import com.tencent.bugly.beta.Beta;
-import com.tencent.tinker.loader.app.DefaultApplicationLike;
 
 /**
  * Created by wzl-pc on 2017/2/16.
@@ -30,7 +30,7 @@ public class SampleApplicationLike extends DefaultApplicationLike {
         super.onCreate();
         // 这里实现SDK初始化，appId替换成你的在Bugly平台申请的appId
         // 调试时，将第三个参数改为true
-        Bugly.init(getApplication(), "202d1fda06", false);
+        Bugly.init(getApplication(), "900029763", true);
     }
 
 

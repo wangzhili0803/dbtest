@@ -52,7 +52,7 @@ public class RetroActivity extends Activity {
 //        uploadFile();
 
 //        uploadFiles();
-        Toast.makeText(this,"before change",Toast.LENGTH_SHORT).show();
+        Toast.makeText(this,"after change",Toast.LENGTH_SHORT).show();
     }
 
     private void uploadFiles() {
