@@ -3,6 +3,10 @@
 buildscript {
     repositories {
         jcenter()
+        // error-prone相关配置
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:2.2.3'
@@ -10,6 +14,8 @@ buildscript {
         classpath "com.tencent.bugly:tinker-support:latest.release"
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
+        // error-prone相关配置
+        classpath "net.ltgt.gradle:gradle-errorprone-plugin:0.0.9"
     }
 }
 
@@ -20,4 +26,16 @@ allprojects {
         //Bmob的maven仓库地址--必填
         maven { url "https://raw.github.com/bmob/bmob-android-sdk/master" }
     }
+    //error-prone相关配置
+    //如果接受的参数有enableErrorProne则应用插件，否则不应用
+    if (project.hasProperty("enableErrorProne")) {
+        apply plugin: "net.ltgt.errorprone"
+        tasks.withType(JavaCompile) {
+            options.compilerArgs += ['-Xep:ArrayToString:WARN']
+        }
+        tasks.withType(JavaCompile) {
+            options.compilerArgs += ['-Xep:FallThrough:WARN']
+        }
+    }
+
 }

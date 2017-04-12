@@ -1,20 +1,21 @@
 package com.jerry.dbtest.Activities;
 
-import android.app.Activity;
-import android.os.Bundle;
-import android.os.Environment;
-import android.util.Log;
-import android.view.View;
+import java.io.File;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import com.jerry.dbtest.R;
 import com.jerry.dbtest.entity.Repo;
 import com.jerry.dbtest.entity.User;
 import com.jerry.dbtest.interfaces.GitHubService;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import android.app.Activity;
+import android.os.Bundle;
+import android.os.Environment;
+import android.util.Log;
+import android.view.View;
+import android.widget.Toast;
 
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
@@ -50,7 +51,8 @@ public class RetroActivity extends Activity {
 
 //        uploadFile();
 
-        uploadFiles();
+//        uploadFiles();
+        Toast.makeText(this,"before change",Toast.LENGTH_SHORT).show();
     }
 
     private void uploadFiles() {
