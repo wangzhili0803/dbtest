@@ -2,6 +2,7 @@
 
 buildscript {
     repositories {
+        mavenLocal()
         jcenter()
         // error-prone相关配置
         maven {
@@ -17,6 +18,7 @@ buildscript {
         // in the individual module build.gradle files
         // error-prone相关配置
         classpath "net.ltgt.gradle:gradle-errorprone-plugin:0.0.9"
+        classpath 'me.tatarka:gradle-retrolambda:3.6.0'
     }
 }
 
@@ -38,5 +40,4 @@ allprojects {
             options.compilerArgs += ['-Xep:FallThrough:WARN']
         }
     }
-
 }

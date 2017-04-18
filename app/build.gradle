@@ -1,46 +1,29 @@
 apply plugin: 'com.android.application'
 // 依赖插件脚本
 apply from: 'tinker-support.gradle'
+apply plugin: 'me.tatarka.retrolambda'
 
-dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    //    compile("com.tencent.tinker:tinker-android-lib:${TINKER_VERSION}") { changing = true }
-    //    provided("com.tencent.tinker:tinker-android-anno:${TINKER_VERSION}") { changing = true }
-    // 升级SDK
-//    compile files('libs/commons-lang.jar')
-    //    compile files('libs/Volley.jar')
-//    compile files('libs/android-async-http-1.4.6.jar')
-//    compile files('libs/ksoap2-android-assembly-3.0.0-jar-with-dependencies.jar')
-    //Retrofit2所需要的包
-    //ConverterFactory的Gson依赖包
-    //ConverterFactory的String依赖包
-    //以下SDK开发者请根据需要自行选择
-    //如果你想应用能够兼容Android6.0，请添加此依赖(org.apache.http.legacy.jar)
-    compile 'com.android.support:appcompat-v7:23.4.0'
-    compile 'com.android.support:multidex:1.0.1'
-    //注释掉原有bugly的仓库
-    //compile 'com.tencent.bugly:crashreport:latest.release'//其中latest.release指代最新版本号，也可以指定明确的版本号，例如2.3.2
-    compile 'com.tencent.bugly:crashreport_upgrade:latest.release'//其中latest.release指代最新版本号，也可以指定明确的版本号，例如1.2.0
-    compile 'com.tencent.bugly:nativecrashreport:latest.release' //其中latest.release指代最新版本号，也可以指定明确的版本号，例如2.2.0
-
-    compile 'com.android.support:support-v4:23.4.0'
-    compile 'com.squareup.retrofit2:retrofit:2.0.0-beta4'
-    compile 'com.squareup.retrofit2:converter-gson:2.0.0-beta4'
-    compile 'com.squareup.retrofit2:converter-scalars:2.0.0-beta4'
-    compile 'cn.bmob.android:http-legacy:1.0'
-    compile 'com.google.android.gms:play-services-appindexing:9.8.0'
-    compile 'io.reactivex:rxjava:1.2.6'
-    compile 'io.reactivex:rxandroid:1.2.1'
-    testCompile 'junit:junit:4.12'
-}
-
-def javaVersion = JavaVersion.VERSION_1_7
+def javaVersion = JavaVersion.VERSION_1_8
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "23.0.2"
+    buildToolsVersion "25.0.2"
     useLibrary 'org.apache.http.legacy'
-
+    defaultConfig {
+        applicationId "com.jerry.dbtest"
+        minSdkVersion 15
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0.0"
+        /**
+         * you can use multiDex and install it in your ApplicationLifeCycle implement
+         */
+        multiDexEnabled true
+        ndk {
+            // 设置支持的SO库架构
+            abiFilters 'armeabi' //, 'x86', 'armeabi-v7a', 'x86_64', 'arm64-v8a'
+        }
+    }
     compileOptions {
         sourceCompatibility javaVersion
         targetCompatibility javaVersion
@@ -48,6 +31,9 @@ android {
     //recommend
     dexOptions {
         jumboMode = true
+    }
+    lintOptions {
+        abortOnError false
     }
 
     signingConfigs {
@@ -64,22 +50,6 @@ android {
 
         debug {
             storeFile file("./keystore/debug.keystore")
-        }
-    }
-
-    defaultConfig {
-        applicationId "com.jerry.dbtest"
-        minSdkVersion 19
-        targetSdkVersion 23
-        versionCode 1
-        versionName "1.0.0"
-        /**
-         * you can use multiDex and install it in your ApplicationLifeCycle implement
-         */
-        multiDexEnabled true
-        ndk {
-            // 设置支持的SO库架构
-            abiFilters 'armeabi' //, 'x86', 'armeabi-v7a', 'x86_64', 'arm64-v8a'
         }
     }
 
@@ -101,4 +71,32 @@ android {
             jniLibs.srcDirs = ['libs']
         }
     }
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    //Retrofit2所需要的包
+    //ConverterFactory的Gson依赖包
+    //ConverterFactory的String依赖包
+    //以下SDK开发者请根据需要自行选择
+    //如果你想应用能够兼容Android6.0，请添加此依赖(org.apache.http.legacy.jar)
+    compile 'com.android.support:appcompat-v7:23.4.0'
+    compile 'com.android.support:multidex:1.0.1'
+    //注释掉原有bugly的仓库
+    //compile 'com.tencent.bugly:crashreport:latest.release'//其中latest.release指代最新版本号，也可以指定明确的版本号，例如2.3.2
+    compile 'com.tencent.bugly:crashreport_upgrade:latest.release'
+    //其中latest.release指代最新版本号，也可以指定明确的版本号，例如1.2.0
+    compile 'com.tencent.bugly:nativecrashreport:latest.release'
+    //其中latest.release指代最新版本号，也可以指定明确的版本号，例如2.2.0
+    compile 'com.android.support:support-v4:23.4.0'
+    compile 'com.squareup.retrofit2:retrofit:2.0.0-beta4'
+    compile 'com.squareup.retrofit2:converter-gson:2.0.0-beta4'
+    compile 'com.squareup.retrofit2:converter-scalars:2.0.0-beta4'
+    compile 'cn.bmob.android:http-legacy:1.0'
+    compile 'com.google.android.gms:play-services-appindexing:9.8.0'
+    compile 'io.reactivex:rxjava:1.2.6'
+    compile 'io.reactivex:rxandroid:1.2.1'
+    compile 'com.android.support.constraint:constraint-layout:1.0.0-alpha7'
+    testCompile 'junit:junit:4.12'
+    compile 'com.android.support:design:23+'
 }
