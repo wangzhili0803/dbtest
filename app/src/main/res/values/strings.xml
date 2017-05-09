@@ -18,4 +18,5 @@
     <string name="title_activity_menu">MenuActivity</string>
     <string name="title_activity_surface_view">SurfaceViewActivity</string>
     <string name="title_activity_bitmap">BitmapActivity</string>
+    <string name="title_activity_test">TestActivity</string>
 </resources>

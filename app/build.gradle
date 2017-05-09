@@ -2,11 +2,12 @@ apply plugin: 'com.android.application'
 // 依赖插件脚本
 apply from: 'tinker-support.gradle'
 apply plugin: 'me.tatarka.retrolambda'
+apply plugin: 'com.neenbedankt.android-apt'
 
 def javaVersion = JavaVersion.VERSION_1_8
 
 android {
-    compileSdkVersion 23
+    compileSdkVersion 25
     buildToolsVersion "25.0.2"
     useLibrary 'org.apache.http.legacy'
     defaultConfig {
@@ -43,6 +44,11 @@ android {
                 storePassword "testres"
                 keyAlias "testres"
                 keyPassword "testres"
+                // 满足下面两个条件时需要此配置
+                // 1. Gradle版本 >= 2.14.1
+                // 2. Android Gradle Plugin 版本 >= 2.2.0
+                // 作用是只使用旧版签名，禁用V2版签名模式
+                v2SigningEnabled false
             } catch (ex) {
                 throw new InvalidUserDataException(ex.toString())
             }
@@ -80,7 +86,9 @@ dependencies {
     //ConverterFactory的String依赖包
     //以下SDK开发者请根据需要自行选择
     //如果你想应用能够兼容Android6.0，请添加此依赖(org.apache.http.legacy.jar)
-    compile 'com.android.support:appcompat-v7:23.4.0'
+    compile 'com.android.support:appcompat-v7:25+'
+    compile 'com.android.support:support-v4:25+'
+    compile 'com.android.support:design:25+'
     compile 'com.android.support:multidex:1.0.1'
     //注释掉原有bugly的仓库
     //compile 'com.tencent.bugly:crashreport:latest.release'//其中latest.release指代最新版本号，也可以指定明确的版本号，例如2.3.2
@@ -88,7 +96,6 @@ dependencies {
     //其中latest.release指代最新版本号，也可以指定明确的版本号，例如1.2.0
     compile 'com.tencent.bugly:nativecrashreport:latest.release'
     //其中latest.release指代最新版本号，也可以指定明确的版本号，例如2.2.0
-    compile 'com.android.support:support-v4:23.4.0'
     compile 'com.squareup.retrofit2:retrofit:2.0.0-beta4'
     compile 'com.squareup.retrofit2:converter-gson:2.0.0-beta4'
     compile 'com.squareup.retrofit2:converter-scalars:2.0.0-beta4'
@@ -96,7 +103,10 @@ dependencies {
     compile 'com.google.android.gms:play-services-appindexing:9.8.0'
     compile 'io.reactivex:rxjava:1.2.6'
     compile 'io.reactivex:rxandroid:1.2.1'
-    compile 'com.android.support.constraint:constraint-layout:1.0.0-alpha7'
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:design:23+'
+    compile 'com.jakewharton:butterknife:8.5.1'
+    apt 'com.jakewharton:butterknife-compiler:8.5.1'
+    compile 'com.mcxiaoke.gradle:packer-helper:1.0.9'
+    compile 'com.umeng.analytics:analytics:6.1.0'
 }

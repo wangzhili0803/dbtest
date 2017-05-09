@@ -19,6 +19,8 @@ buildscript {
         // error-prone相关配置
         classpath "net.ltgt.gradle:gradle-errorprone-plugin:0.0.9"
         classpath 'me.tatarka:gradle-retrolambda:3.6.0'
+        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
+        classpath 'com.mcxiaoke.gradle:packer-ng:1.0.9'
     }
 }
 
