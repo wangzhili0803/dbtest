@@ -14,7 +14,7 @@ public class SampleApplication extends TinkerApplication {
 
     public SampleApplication() {
         super(ShareConstants.TINKER_ENABLE_ALL, "com.jerry.dbtest.SampleApplicationLike",
-                "com.tencent.tinker.loader.TinkerLoader", false);
+                "com.tencent.tinker.loader.TinkerLoader", true);
     }
 
     @Override

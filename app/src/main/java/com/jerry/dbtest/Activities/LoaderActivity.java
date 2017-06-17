@@ -1,21 +1,21 @@
 package com.jerry.dbtest.Activities;
 
+import com.jerry.dbtest.R;
+import com.jerry.dbtest.dbtools.GameDataBase;
+import com.jerry.dbtest.dbtools.GameDatabaseAdapter;
+import com.jerry.dbtest.entity.GamePlayer;
+
+import android.app.Activity;
 import android.app.LoaderManager;
 import android.content.CursorLoader;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.app.Activity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
-
-import com.jerry.dbtest.R;
-import com.jerry.dbtest.dbtools.GameDataBase;
-import com.jerry.dbtest.dbtools.GameDatabaseAdapter;
-import com.jerry.dbtest.entity.GamePlayer;
 
 public class LoaderActivity extends Activity implements View.OnClickListener, LoaderManager.LoaderCallbacks<Cursor> {
 

@@ -40,7 +40,7 @@
 
         <activity
             android:name=".Activities.MainActivity"
-            android:label="@string/title_activity_loader"></activity>
+            android:label="@string/title_activity_loader" />
         <activity
             android:name=".Activities.LoaderActivity"
             android:label="@string/title_activity_async_task_loader" />
@@ -78,9 +78,9 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
-        <activity android:name=".Activities.RetroActivity"/>
+        <activity android:name=".Activities.RetroActivity" />
         <activity
-            android:name=".Activities.TestActivity"
+            android:name=".Activities.CityMainActivity"
             android:label="@string/title_activity_test">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -88,6 +88,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".Activities.CityActivity" />
+        <activity android:name=".Activities.DistrictActivity" />
+        <activity android:name=".Activities.TestActivity"></activity>
     </application>
 
 </manifest>

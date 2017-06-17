@@ -1,11 +1,6 @@
 package com.jerry.dbtest.Activities;
 
-import android.app.Activity;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
-import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
+import java.util.ArrayList;
 
 import com.jerry.dbtest.R;
 import com.jerry.dbtest.dbtools.GameDatabaseAdapter;
@@ -14,7 +9,12 @@ import com.jerry.dbtest.fragments.AddFragment;
 import com.jerry.dbtest.fragments.GamePlayerFragment;
 import com.jerry.dbtest.fragments.UpdateFragment;
 
-import java.util.ArrayList;
+import android.app.Activity;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 
 public class MainActivity extends Activity implements AddFragment.AddListener,
         GamePlayerFragment.GamePlayerListener, UpdateFragment.UpdateListener {
