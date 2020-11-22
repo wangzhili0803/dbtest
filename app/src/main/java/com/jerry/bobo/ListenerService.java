@@ -59,7 +59,9 @@ public class ListenerService extends BaseListenerService {
         mWeakHandler = new WeakHandler(msg -> {
             switch (msg.what) {
                 case MSG_DO_TASK:
-                    mWeakHandler.postDelayed(this::doTask, TIME_LONGLONG);
+                    if (AppUtils.playing) {
+                        mWeakHandler.postDelayed(this::doTask, TIME_LONGLONG);
+                    }
                     return true;
                 case UNINSTALL_APP:
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -175,14 +177,6 @@ public class ListenerService extends BaseListenerService {
         super.start(start);
     }
 
-    private void stopScript() {
-        if (AppUtils.playing) {
-            AppUtils.playing = false;
-            errorCount = 0;
-            pause();
-        }
-    }
-
     @Override
     public void onDestroy() {
         stopScript();
@@ -190,7 +184,20 @@ public class ListenerService extends BaseListenerService {
     }
 
     private void doTask() {
-        ToastUtil.showLongText("do task");
+        switch (taskIndex) {
+            case 0:
+                if (isHome()) {
+                    taskIndex++;
+                    exeClick(mWidth >> 1, (int) (mHeight * 0.95));
+                } else {
+                    back();
+                }
+                break;
+            case 1:
+                break;
+            default:
+                break;
+        }
         mWeakHandler.sendEmptyMessage(MSG_DO_TASK);
     }
 
@@ -198,7 +205,7 @@ public class ListenerService extends BaseListenerService {
      * 是否在首页
      */
     private boolean isHome() {
-        return false;
+        return hasText("消息", "文档", "通讯录", "发现");
     }
 
     /**

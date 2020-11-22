@@ -25,6 +25,7 @@ import org.greenrobot.eventbus.EventBus;
 import com.jerry.baselib.BaseApp;
 import com.jerry.baselib.Key;
 import com.jerry.baselib.R;
+import com.jerry.baselib.common.util.AppUtils;
 import com.jerry.baselib.common.util.CollectionUtils;
 import com.jerry.baselib.common.util.FileUtil;
 import com.jerry.baselib.common.util.LogUtils;
@@ -47,6 +48,7 @@ public abstract class BaseListenerService extends AccessibilityService {
     protected static final int TIME_LONG = 4000;
     protected static final int TIME_LONGLONG = 6000;
     protected static int ERRORCOUNT = 3;
+    protected int taskIndex;
     protected int errorCount;
     protected String packageName;
     /**
@@ -100,10 +102,19 @@ public abstract class BaseListenerService extends AccessibilityService {
     /**
      * 开启任务
      */
-    public void start(int start) {
+    protected void start(int start) {
         removeAllMessages();
         errorCount = 0;
         mWeakHandler.sendEmptyMessage(start);
+    }
+
+    protected void stopScript() {
+        if (AppUtils.playing) {
+            AppUtils.playing = false;
+            errorCount = 0;
+            taskIndex = 0;
+            pause();
+        }
     }
 
     /**
@@ -185,6 +196,23 @@ public abstract class BaseListenerService extends AccessibilityService {
      */
     public void pause() {
         removeAllMessages();
+    }
+
+    /**
+     * 判断是否含有文案
+     */
+    protected boolean hasText(String... texts) {
+        AccessibilityNodeInfo rootNode = getRootInActiveWindow();
+        if (rootNode == null) {
+            return false;
+        }
+        for (String text : texts) {
+            List<AccessibilityNodeInfo> indicators = rootNode.findAccessibilityNodeInfosByText(text);
+            if (!CollectionUtils.isEmpty(indicators)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
