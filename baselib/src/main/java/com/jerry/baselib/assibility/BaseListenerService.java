@@ -208,7 +208,7 @@ public abstract class BaseListenerService extends AccessibilityService {
         }
         for (String text : texts) {
             List<AccessibilityNodeInfo> indicators = rootNode.findAccessibilityNodeInfosByText(text);
-            if (!CollectionUtils.isEmpty(indicators)) {
+            if (CollectionUtils.isEmpty(indicators)) {
                 return false;
             }
         }
