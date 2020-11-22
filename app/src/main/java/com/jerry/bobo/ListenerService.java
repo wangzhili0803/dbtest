@@ -6,6 +6,7 @@ import java.util.List;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.net.Uri;
@@ -13,6 +14,7 @@ import android.os.Build;
 import android.provider.Settings;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
+import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
 
@@ -111,6 +113,10 @@ public class ListenerService extends BaseListenerService {
                     public void onItemClick(int position, String title) {
                         if (AppUtils.playing) {
                             stopScript();
+                            itemList.clear();
+                            itemList.add(startItem);
+                            menu.updateFloatItemList(itemList);
+                            menu.hide();
                             return;
                         }
                         UserManager.getInstance().requestUser(data -> {
@@ -134,9 +140,6 @@ public class ListenerService extends BaseListenerService {
                 });
             menu.show();
         }
-//        if (!EventBus.getDefault().isRegistered(ListenerService.this)) {
-//            EventBus.getDefault().register(ListenerService.this);
-//        }
     }
 
     /**
@@ -158,6 +161,18 @@ public class ListenerService extends BaseListenerService {
     protected void removeAllMessages() {
         super.removeAllMessages();
         mWeakHandler.removeMessages(MSG_DO_TASK);
+    }
+
+    @Override
+    public void start(final int start) {
+        PackageManager packageManager = getPackageManager();
+        Intent intent = packageManager.getLaunchIntentForPackage("com.alibaba.android.rimet");
+        if (intent == null) {
+            Toast.makeText(this, "未安装", Toast.LENGTH_LONG).show();
+        } else {
+            startActivity(intent);
+        }
+        super.start(start);
     }
 
     private void stopScript() {

@@ -84,13 +84,6 @@ public class MainActivity extends BaseActivity implements LoginActionListener {
     @Override
     public void onClick(final View v) {
         setContentFragment(v.getId());
-//        PackageManager packageManager = getPackageManager();
-//        Intent intent = packageManager.getLaunchIntentForPackage("com.alibaba.android.rimet");
-//        if (intent == null) {
-//            Toast.makeText(this, "未安装", Toast.LENGTH_LONG).show();
-//        } else {
-//            startActivity(intent);
-//        }
     }
 
 
