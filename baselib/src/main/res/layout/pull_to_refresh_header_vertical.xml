@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="@dimen/sixty_dp"
+    android:layout_gravity="center"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:paddingTop="@dimen/header_footer_top_bottom_padding"
+    android:paddingBottom="@dimen/header_footer_top_bottom_padding">
+
+    <com.jerry.baselib.common.ptrlib.RefreshingView
+        android:id="@+id/loading_image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center" />
+
+    <TextView
+        android:id="@+id/pull_to_refresh_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:textColor="@color/second_text_color"
+        android:textSize="@dimen/_13sp" />
+</LinearLayout>

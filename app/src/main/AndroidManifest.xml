@@ -1,96 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.jerry.dbtest">
-
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.READ_LOGS" />
-    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    package="com.jerry.bobo">
 
     <application
-        android:name=".SampleApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:name=".MyApplication"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity
-            android:name="com.tencent.bugly.beta.ui.BetaActivity"
-            android:theme="@android:style/Theme.Translucent" />
-
-        <provider
-            android:name="android.support.v4.content.FileProvider"
-            android:authorities="com.jerry.dbtest.fileProvider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/provider_paths" />
-        </provider>
-
-        <activity
-            android:name=".Activities.AsyncTaskLoaderActivity"
-            android:label="@string/app_name" />
-
-        <provider
-            android:name=".provider.HelloProvider"
-            android:authorities="com.jerry.dbtest.provider.HelloProvider" />
-
-        <activity
-            android:name=".Activities.MainActivity"
-            android:label="@string/title_activity_loader" />
-        <activity
-            android:name=".Activities.LoaderActivity"
-            android:label="@string/title_activity_async_task_loader" />
-        <activity
-            android:name=".Activities.RequestActivity"
-            android:label="@string/title_activity_request" />
-        <activity
-            android:name=".Activities.AsyncActivity"
-            android:label="@string/title_activity_async" />
-        <activity
-            android:name=".Activities.SoapActivity"
-            android:label="@string/title_activity_soap" />
-        <activity
-            android:name=".Activities.WebActivity"
-            android:label="@string/title_activity_web" />
-        <activity
-            android:name=".Activities.AnniActivity"
-            android:label="@string/title_activity_anni" />
-        <activity
-            android:name=".Activities.MenuActivity"
-            android:label="@string/title_activity_menu" />
-        <activity
-            android:name=".Activities.SurfaceViewActivity"
-            android:label="@string/title_activity_surface_view" />
-        <activity
-            android:name=".Activities.BitmapActivity"
-            android:label="@string/title_activity_bitmap" />
-        <activity android:name=".Activities.MainStartActivity" />
-        <activity android:name=".Activities.UpgradeActivity" />
-        <!--
- ATTENTION: This was auto-generated to add Google Play services to your project for
-     App Indexing.  See https://g.co/AppIndexing/AndroidStudio for more information.
-        -->
-        <meta-data
-            android:name="com.google.android.gms.version"
-            android:value="@integer/google_play_services_version" />
-
-        <activity android:name=".Activities.RetroActivity" />
-        <activity
-            android:name=".Activities.CityMainActivity"
-            android:label="@string/title_activity_test">
+        <activity android:name=".setting.SettingActivity"></activity>
+        <activity android:name=".home.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Activities.CityActivity" />
-        <activity android:name=".Activities.DistrictActivity" />
-        <activity android:name=".Activities.TestActivity"></activity>
+
+        <service
+            android:enabled="true"
+            android:exported="false"
+            android:label="@string/app_name"
+            android:name=".ListenerService"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_info" />
+        </service>
     </application>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.SYSTEM_OVERLAY_WINDOW" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <uses-permission android:name="android.permission.WRITE_EBIND_ACCESSIBILITY_SERVICEXTERNAL_STORAGE" />
 
 </manifest>

@@ -1,0 +1,35 @@
+<resources>
+    <dimen name="half_dp">0.5dp</dimen>
+    <dimen name="one_dp">1dp</dimen>
+    <dimen name="two_dp">2dp</dimen>
+    <dimen name="four_dp">4dp</dimen>
+    <dimen name="five_dp">5dp</dimen>
+    <dimen name="six_dp">6dp</dimen>
+    <dimen name="eight_dp">8dp</dimen>
+    <dimen name="sixteen_dp">16dp</dimen>
+    <dimen name="twenty_dp">20dp</dimen>
+    <dimen name="_25dp">25dp</dimen>
+    <dimen name="thirty_dp">30dp</dimen>
+    <dimen name="_35dp">35dp</dimen>
+    <dimen name="_42dp">42dp</dimen>
+    <dimen name="_45dp">45dp</dimen>
+    <dimen name="fifty_dp">50dp</dimen>
+    <dimen name="_55dp">55dp</dimen>
+    <dimen name="sixty_dp">60dp</dimen>
+
+    <dimen name="_10sp">10sp</dimen>
+    <dimen name="_12sp">12sp</dimen>
+    <dimen name="_13sp">13sp</dimen>
+    <dimen name="_14sp">14sp</dimen>
+    <dimen name="_15sp">15sp</dimen>
+    <dimen name="_16sp">16sp</dimen>
+    <dimen name="_17sp">17sp</dimen>
+    <dimen name="_18sp">18sp</dimen>
+
+    <dimen name="header_footer_top_bottom_padding">12dp</dimen>
+    <dimen name="page_margin">14dp</dimen>
+    <dimen name="status_bar_height">24dp</dimen>
+    <dimen name="title_bar_height">72dp</dimen>
+    <dimen name="dialog_title">52dp</dimen>
+
+</resources>

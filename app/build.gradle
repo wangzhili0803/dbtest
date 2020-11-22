@@ -1,112 +1,161 @@
 apply plugin: 'com.android.application'
-// 依赖插件脚本
-apply from: 'tinker-support.gradle'
-apply plugin: 'me.tatarka.retrolambda'
-apply plugin: 'com.neenbedankt.android-apt'
+apply plugin: 'AndResGuard'
+def releaseAPKs = file("${buildDir}/outputs/apk/release")
+def keystoreDir = file(rootDir.getAbsolutePath() + "/keystore")
 
-def javaVersion = JavaVersion.VERSION_1_8
+static def fileNameDate() {
+    return new Date().format("MMddHHmm", TimeZone.getDefault())
+}
+
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.2"
-    useLibrary 'org.apache.http.legacy'
-    defaultConfig {
-        applicationId "com.jerry.dbtest"
-        minSdkVersion 15
-        targetSdkVersion 23
-        versionCode 1
-        versionName "1.0.0"
-        /**
-         * you can use multiDex and install it in your ApplicationLifeCycle implement
-         */
-        multiDexEnabled true
-        ndk {
-            // 设置支持的SO库架构
-            abiFilters 'armeabi', 'x86'//, 'armeabi-v7a', 'x86_64', 'arm64-v8a'
+
+    signingConfigs {
+        config {
+            keyAlias packer.keysore
+            keyPassword '098765'
+            storeFile new File(keystoreDir, packer.keysore + '.keystore')
+            storePassword '098765'
+            v2SigningEnabled false
         }
     }
-    compileOptions {
-        sourceCompatibility javaVersion
-        targetCompatibility javaVersion
+
+    compileSdkVersion build_versions.target_sdk
+    defaultConfig {
+        applicationId packer.APPLICATION_ID
+        minSdkVersion build_versions.min_sdk
+        targetSdkVersion build_versions.target_sdk
+        versionCode packer.VERSION_CODE
+        versionName packer.VERSION_NAME
+        multiDexEnabled = true
+
+        buildConfigField("String", "TO_APP_ID", packer.TO_APP_ID)
+        buildConfigField("String", "BUGLY_APP_ID", packer.BUGLY_APP_ID)
+        buildConfigField("String", "AVOS_APP_ID", packer.AVOS_APP_ID)
+        buildConfigField("String", "AVOS_APP_KEY", packer.AVOS_APP_KEY)
+        buildConfigField("String", "FILE_PROVIDER", packer.FILE_PROVIDER)
+        buildConfigField("String", "SIGN", '"s1d8124ec4zm2s2c839saeu72g3d34c0"')
+
+        ndk {
+            // 设置支持的SO库架构
+            abiFilters 'armeabi'
+        }
+
+        packagingOptions {
+            exclude 'META-INF/DEPENDENCIES'
+            exclude 'META-INF/NOTICE'
+            exclude 'META-INF/LICENSE'
+            exclude 'META-INF/LICENSE.txt'
+            exclude 'META-INF/NOTICE.txt'
+        }
     }
-    //recommend
-    dexOptions {
-        jumboMode = true
+    buildTypes {
+        release {
+            //设置混淆
+            minifyEnabled true
+            shrinkResources true
+            zipAlignEnabled true
+            pseudoLocalesEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
+            applicationVariants.all { variant ->
+                tasks.all {
+                    if (it.name.contains("resguardRelease")) {
+                        it.doLast {
+                            variant.outputs.each { output ->
+                                if (releaseAPKs.exists()) {
+                                    releaseAPKs.eachFile { file ->
+                                        if (file.name.startsWith(packer.SRC_DIR)) {
+                                            file.delete()
+                                        }
+                                    }
+
+                                    if (file("${releaseAPKs}/AndResGuard_app-release/app-release_signed_7zip_aligned.apk").exists()) {
+                                        copy {
+                                            from "${releaseAPKs}/AndResGuard_app-release/app-release_signed_7zip_aligned.apk"
+                                            into file("${releaseAPKs}")
+                                            rename { String fileName ->
+                                                "${packer.SRC_DIR}_v${defaultConfig.versionName}_${fileNameDate()}.apk"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        debug {
+            minifyEnabled false
+            signingConfig signingConfigs.config
+        }
     }
+
+    sourceSets {
+        main {
+            java.srcDirs = ["src/main/java", "src/${packer.SRC_DIR}/java"]
+            res.srcDirs = ["src/main/res", "src/${packer.SRC_DIR}/res"]
+        }
+    }
+
+
+    repositories {
+        flatDir { dirs 'libs' }
+    }
+
     lintOptions {
         abortOnError false
     }
 
-    signingConfigs {
-        release {
-            try {
-                storeFile file("./keystore/release.keystore")
-                storePassword "testres"
-                keyAlias "testres"
-                keyPassword "testres"
-                // 满足下面两个条件时需要此配置
-                // 1. Gradle版本 >= 2.14.1
-                // 2. Android Gradle Plugin 版本 >= 2.2.0
-                // 作用是只使用旧版签名，禁用V2版签名模式
-                v2SigningEnabled false
-            } catch (ex) {
-                throw new InvalidUserDataException(ex.toString())
-            }
-        }
-
-        debug {
-            storeFile file("./keystore/debug.keystore")
-        }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    buildTypes {
-
-        release {
-            minifyEnabled false
-            signingConfig signingConfigs.release
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-        debug {
-            debuggable true
-            minifyEnabled false
-            signingConfig signingConfigs.debug
-        }
-    }
-    sourceSets {
-        main {
-            jniLibs.srcDirs = ['libs']
-        }
-    }
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    //Retrofit2所需要的包
-    //ConverterFactory的Gson依赖包
-    //ConverterFactory的String依赖包
-    //以下SDK开发者请根据需要自行选择
-    //如果你想应用能够兼容Android6.0，请添加此依赖(org.apache.http.legacy.jar)
-    //注释掉原有bugly的仓库
-    //compile 'com.tencent.bugly:crashreport:latest.release'//其中latest.release指代最新版本号，也可以指定明确的版本号，例如2.3.2
-    //其中latest.release指代最新版本号，也可以指定明确的版本号，例如1.2.0
-    //其中latest.release指代最新版本号，也可以指定明确的版本号，例如2.2.0
-    compile 'com.android.support:appcompat-v7:25.3.1'
-    compile 'com.android.support:support-v4:25.3.1'
-    compile 'com.android.support:design:25.3.1'
-    compile 'com.android.support:multidex:1.0.1'
-    compile 'com.tencent.bugly:crashreport_upgrade:latest.release'
-    compile 'com.tencent.bugly:nativecrashreport:latest.release'
-    compile 'com.squareup.retrofit2:retrofit:2.0.0-beta4'
-    compile 'com.squareup.retrofit2:converter-gson:2.0.0-beta4'
-    compile 'com.squareup.retrofit2:converter-scalars:2.0.0-beta4'
-    compile 'cn.bmob.android:http-legacy:1.0'
-    compile 'com.google.android.gms:play-services-appindexing:9.8.0'
-    compile 'io.reactivex:rxjava:1.2.6'
-    compile 'io.reactivex:rxandroid:1.2.1'
-    compile 'com.android.support.constraint:constraint-layout:1.0.2'
-    compile 'com.jakewharton:butterknife:8.5.1'
-    compile 'com.mcxiaoke.gradle:packer-helper:1.0.9'
-    compile 'com.umeng.analytics:analytics:6.1.0'
-    testCompile 'junit:junit:4.12'
-    apt 'com.jakewharton:butterknife-compiler:8.5.1'
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation project(path: ':baselib')
+    implementation project(path: ':antifake')
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+}
+
+andResGuard {
+    // mappingFile = file("./resource_mapping.txt")
+    mappingFile = null
+    use7zip = true
+    useSign = true
+    keepRoot = false
+    whiteList = [
+            // for your icon
+            "R.drawable.icon",
+            // for fabric
+            "R.string.com.crashlytics.*",
+            // for google-services
+            "R.string.google_app_id",
+            "R.string.gcm_defaultSenderId",
+            "R.string.default_web_client_id",
+            "R.string.ga_trackingId",
+            "R.string.firebase_database_url",
+            "R.string.google_api_key",
+            "R.string.google_crash_reporting_api_key",
+            "R.id.webView",
+            "R.drawable.push",
+            "R.drawable.push_small",
+            "R.layout.getui_notification",
+            "R.id.getui_*"
+    ]
+    compressFilePattern = [
+            "*.png",
+            "*.jpg",
+            "*.jpeg",
+            "*.gif",
+            "resources.arsc"
+    ]
+    sevenzip {
+        artifact = 'com.tencent.mm:SevenZip:1.2.15'
+//        path = "/usr/local/bin/7za"
+    }
 }

@@ -1,0 +1,37 @@
+/**
+ * Shared file between builds so that they can all use the same dependencies and
+ * maven repositories.
+ **/
+
+def build_versions = [:]
+build_versions.min_sdk = 21
+build_versions.target_sdk = 29
+ext.build_versions = build_versions
+
+
+ext {
+    packer = [
+//            // xiaolei
+//            APPLICATION_ID: "com.jerry.bobo",
+//            SRC_DIR       : "bobo",
+//            VERSION_CODE  : 10000,
+//            VERSION_NAME  : "1.0",
+//            keysore       : "bobo",
+//            BUGLY_APP_ID  : '"42fab9b5e2"',
+//            AVOS_APP_ID   : '"e72FFCgILcgDybDLRk6M9Rgs-MdYXbMMI"',
+//            AVOS_APP_KEY  : '"ylRnmKMdxJKbcOPUk3tmv4ln"',
+//            FILE_PROVIDER : '"com.jerry.bobo.fileProvider"',
+
+            // liubo
+            APPLICATION_ID: "com.jerry.dddk",
+            SRC_DIR       : "dddk",
+            VERSION_CODE  : 10000,
+            VERSION_NAME  : "1.0",
+            keysore       : "dddk",
+            BUGLY_APP_ID  : '"3d0b640817"',
+            AVOS_APP_ID   : '"hysp5ww5RJsulT8fLVgeKMQl-MdYXbMMI"',
+            AVOS_APP_KEY  : '"Mm68OpIRXukmhsExQXNLjKQv"',
+            FILE_PROVIDER : '"com.jerry.dddk.fileProvider"',
+            TO_APP_ID     : '"com.alibaba.android.rimet"',
+    ]
+}

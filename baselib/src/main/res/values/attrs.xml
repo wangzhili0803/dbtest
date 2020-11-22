@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="PtrFrameLayout">
+        <!-- Optional. If you put header and content in xml, you can you these to specify them. -->
+        <attr name="ptr_header" format="reference" />
+        <attr name="ptr_content" format="reference" />
+
+        <!-- the resistance when you are moving the frame -->
+        <attr name="ptr_resistance" format="float" />
+
+        <!-- the ration of the height of the header to trigger refresh -->
+        <attr name="ptr_ratio_of_header_height_to_refresh" format="float" />
+
+        <attr name="ptr_duration_to_close" format="integer" />
+        <attr name="ptr_duration_to_close_header" format="integer" />
+
+        <!-- pull to refresh, otherwise release to refresh, default is release to refresh -->
+        <attr name="ptr_pull_to_fresh" format="boolean" />
+
+        <!-- keep header when refreshing-->
+        <attr name="ptr_keep_header_when_refresh" format="boolean" />
+    </declare-styleable>
+
+    <!-- 日期控件 -->
+    <declare-styleable name="NumberPicker">
+        <attr name="solidColor" format="color|reference" />
+        <attr name="selectionDivider" format="reference" />
+        <attr name="selectionDividerHeight" format="dimension" />
+        <attr name="selectionDividersDistance" format="dimension" />
+        <attr name="internalMinHeight" format="dimension" />
+        <attr name="internalMaxHeight" format="dimension" />
+        <attr name="internalMinWidth" format="dimension" />
+        <attr name="internalMaxWidth" format="dimension" />
+        <attr name="internalLayout" format="reference" />
+        <attr name="virtualButtonPressedDrawable" format="reference" />
+    </declare-styleable>
+
+    <declare-styleable name="PagerSlidingTabStrip">
+        <attr name="pstsUnderlineColor" format="color" />
+        <attr name="pstsSelectedColor" format="color" />
+        <attr name="pstsDividerColor" format="color" />
+        <attr name="pstsDefaultColor" format="color" />
+        <attr name="pstsIndicatorWidth" format="dimension" />
+        <attr name="pstsIndicatorHeight" format="dimension" />
+        <attr name="pstsUnderlineHeight" format="dimension" />
+        <attr name="pstsDividerPadding" format="dimension" />
+        <attr name="pstsTabPaddingLeftRight" format="dimension" />
+        <attr name="pstsScrollOffset" format="dimension" />
+        <attr name="pstsTabBackground" format="reference" />
+        <attr name="pstsShouldExpand" format="boolean" />
+        <attr name="pstsUnderlineExpand" format="boolean" />
+        <attr name="pstsTextAllCaps" format="boolean" />
+    </declare-styleable>
+</resources>

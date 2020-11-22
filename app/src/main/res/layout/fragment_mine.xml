@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/top_bg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.35"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="@drawable/header"
+        app:layout_constraintBottom_toTopOf="@+id/top_bg"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0"
+        tools:layout_editor_absoluteX="-16dp"/>
+
+    <ImageView
+        android:id="@+id/iv_user"
+        android:layout_width="@dimen/_55dp"
+        android:layout_height="@dimen/_55dp"
+        android:layout_marginTop="80dp"
+        android:layout_marginStart="@dimen/page_margin"
+        android:layout_marginEnd="8dp"
+        android:padding="@dimen/two_dp"
+        android:background="@color/white"
+        android:src="@mipmap/ic_launcher"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.491"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+        android:id="@+id/tv_user"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/sixteen_dp"
+        android:drawablePadding="@dimen/eight_dp"
+        android:text="@string/user_login"
+        android:textColor="@color/primary_text_color"
+        android:textSize="@dimen/_14sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/iv_user" />
+
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/top_bg">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/twenty_dp"
+                android:background="@color/white"
+                android:gravity="center"
+                android:orientation="horizontal">
+                <TextView
+                    android:id="@+id/btn_wechat"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawablePadding="@dimen/eight_dp"
+                    android:text="@string/login_by_wx"
+                    app:drawableTopCompat="@drawable/icon64_appwx_logo" />
+
+                <TextView
+                    android:id="@+id/btn_device"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/thirty_dp"
+                    android:drawablePadding="@dimen/eight_dp"
+                    android:text="@string/login_device"
+                    app:drawableTopCompat="@drawable/device_login" />
+
+            </LinearLayout>
+
+            <View style="@style/horizontal_line_style"/>
+
+            <TextView
+                android:id="@+id/tv_setting"
+                style="@style/arrow_style"
+                android:drawablePadding="@dimen/eight_dp"
+                android:text="@string/setting"
+                app:drawableStartCompat="@drawable/setting" />
+
+            <View style="@style/horizontal_line_style" />
+
+        </LinearLayout>
+    </ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

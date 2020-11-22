@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/dialog_bg"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:paddingBottom="@dimen/eight_dp"
+        android:paddingTop="@dimen/eight_dp"
+        android:text="@string/time_setting"
+        android:textSize="@dimen/_16sp" />
+
+    <View style="@style/horizontal_line_style" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/datepicker_bg"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <com.jerry.baselib.common.weidgt.NumberPicker
+            android:id="@+id/hour_np"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <View style="@style/vertical_line_style" />
+
+        <com.jerry.baselib.common.weidgt.NumberPicker
+            android:id="@+id/min_np"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+    </LinearLayout>
+
+    <include layout="@layout/dialog_bottom_btns" />
+
+</LinearLayout>

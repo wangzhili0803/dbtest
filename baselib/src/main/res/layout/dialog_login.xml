@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@drawable/shape_grey"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/title_tv"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dialog_title"
+        android:gravity="center"
+        android:text="@string/login"
+        android:textColor="@color/primary_text_color"
+        android:textSize="@dimen/_17sp" />
+
+    <EditText
+        android:id="@+id/et_phone"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_45dp"
+        android:padding="@dimen/eight_dp"
+        android:background="@drawable/edit_bg"
+        android:drawablePadding="@dimen/four_dp"
+        android:drawableStart="@drawable/account"
+        android:hint="@string/phone_num"
+        android:inputType="phone"
+        android:maxLength="11"
+        android:textSize="@dimen/_16sp"
+        tools:text="17777777" />
+
+    <EditText
+        android:id="@+id/et_livecode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/eight_dp"
+        android:paddingStart="@dimen/five_dp"
+        android:paddingEnd="@dimen/five_dp"
+        android:background="@drawable/edit_bg"
+        android:drawablePadding="@dimen/four_dp"
+        android:drawableStart="@drawable/passwd"
+        android:hint="@string/passwd"
+        android:inputType="textPassword"
+        android:maxLength="20"
+        android:maxLines="1"
+        android:textSize="@dimen/_16sp"
+        tools:text="hdfshjfklsjdf" />
+
+    <include layout="@layout/dialog_bottom_btns" />
+
+</LinearLayout>

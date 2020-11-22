@@ -1,0 +1,33 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/shape_grey"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/title_tv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/page_margin"
+        android:gravity="center"
+        android:text="@string/notice"
+        android:textColor="@color/primary_text_color"
+        android:textSize="@dimen/_17sp" />
+
+    <TextView
+        android:id="@+id/msg_tv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:lineSpacingExtra="@dimen/six_dp"
+        android:paddingBottom="@dimen/sixteen_dp"
+        android:paddingLeft="@dimen/twenty_dp"
+        android:paddingRight="@dimen/twenty_dp"
+        android:text="@string/really_delete"
+        android:visibility="gone"
+        android:textColor="@color/second_text_color"
+        android:textSize="@dimen/_15sp" />
+
+    <include layout="@layout/dialog_bottom_btns" />
+
+</LinearLayout>

@@ -1,0 +1,23 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/dialog_bg"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/msg_tv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="@dimen/sixteen_dp"
+        android:paddingBottom="@dimen/sixteen_dp"
+        android:paddingLeft="@dimen/twenty_dp"
+        android:paddingRight="@dimen/twenty_dp"
+        android:gravity="center"
+        android:lineSpacingExtra="@dimen/six_dp"
+        android:textColor="@color/primary_text_color"
+        android:textSize="@dimen/_17sp"
+        tools:text="确认删除吗" />
+
+    <include layout="@layout/dialog_bottom_btns" />
+</LinearLayout>

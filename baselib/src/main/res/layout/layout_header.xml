@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/title_bar_height"
+    android:background="@color/title_background_color">
+
+    <View
+        android:id="@+id/status_bar_place_holder"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/status_bar_height"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+        android:id="@+id/tv_title"
+        android:textStyle="bold"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginStart="@dimen/page_margin"
+        android:ellipsize="middle"
+        android:gravity="center_vertical"
+        android:textColor="@color/white"
+        android:textSize="@dimen/_18sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/status_bar_place_holder"
+        tools:text="TITLE"/>
+
+    <TextView
+        android:id="@+id/tv_right"
+        android:textStyle="bold"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginEnd="@dimen/page_margin"
+        android:paddingStart="@dimen/eight_dp"
+        android:paddingEnd="@dimen/eight_dp"
+        android:gravity="center"
+        android:textColor="@color/white"
+        android:textSize="@dimen/_16sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/status_bar_place_holder"
+        tools:text="save"/>
+
+    <TextView
+        android:textStyle="bold"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginEnd="@dimen/page_margin"
+        android:paddingStart="@dimen/eight_dp"
+        android:paddingEnd="@dimen/eight_dp"
+        android:gravity="center"
+        android:textColor="@color/white"
+        android:textSize="@dimen/_16sp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/tv_right"
+        app:layout_constraintTop_toBottomOf="@+id/status_bar_place_holder"
+        tools:text="save"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

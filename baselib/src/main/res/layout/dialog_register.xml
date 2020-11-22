@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/shape_grey"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/title_tv"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dialog_title"
+        android:gravity="center"
+        android:text="@string/register"
+        android:textColor="@color/primary_text_color"
+        android:textSize="@dimen/_17sp" />
+
+    <EditText
+        android:id="@+id/et_phone"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_45dp"
+        android:background="@drawable/edit_bg"
+        android:hint="@string/phone_num"
+        android:inputType="phone"
+        android:maxLength="11"
+        android:padding="5dp"
+        android:textSize="16sp" />
+
+    <EditText
+        android:id="@+id/et_passwd"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/eight_dp"
+        android:paddingStart="@dimen/five_dp"
+        android:paddingEnd="@dimen/five_dp"
+        android:background="@drawable/edit_bg"
+        android:hint="@string/register_passwd"
+        android:inputType="textPassword"
+        android:maxLines="3"
+        android:textSize="@dimen/_16sp" />
+
+    <EditText
+        android:id="@+id/et_conpasswd"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/eight_dp"
+        android:paddingStart="5dp"
+        android:paddingEnd="5dp"
+        android:background="@drawable/edit_bg"
+        android:hint="@string/confirm_passwd"
+        android:inputType="textPassword"
+        android:maxLines="3"
+        android:textSize="16sp"/>
+
+    <EditText
+        android:id="@+id/et_invitation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/edit_bg"
+        android:hint="@string/invitation_code"
+        android:maxLines="3"
+        android:padding="@dimen/eight_dp"
+        android:paddingStart="@dimen/five_dp"
+        android:paddingEnd="@dimen/five_dp"
+        android:textSize="@dimen/_16sp" />
+
+    <include layout="@layout/dialog_bottom_btns" />
+
+</LinearLayout>

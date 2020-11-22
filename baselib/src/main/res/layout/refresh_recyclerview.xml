@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.jerry.baselib.common.ptrlib.PtrFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/ptrFrameLayout"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@color/gray_bg"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:ptr_duration_to_close="200"
+    app:ptr_duration_to_close_header="600"
+    app:ptr_keep_header_when_refresh="true"
+    app:ptr_pull_to_fresh="false"
+    app:ptr_ratio_of_header_height_to_refresh="1.2"
+    app:ptr_resistance="1.7">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        style="@style/custom_scrollbar_style"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" />
+</com.jerry.baselib.common.ptrlib.PtrFrameLayout>

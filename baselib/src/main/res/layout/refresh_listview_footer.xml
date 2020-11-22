@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center">
+
+    <LinearLayout
+        android:id="@+id/loading_view"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/fifty_dp"
+        android:background="@color/white"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:paddingBottom="@dimen/five_dp"
+        android:paddingTop="@dimen/five_dp">
+
+        <RelativeLayout
+            android:layout_width="@dimen/_25dp"
+            android:layout_height="@dimen/_25dp"
+            android:layout_gravity="center_vertical">
+
+            <ProgressBar
+                android:layout_width="@dimen/_25dp"
+                android:layout_height="@dimen/_25dp"
+                android:layout_centerInParent="true"
+                android:indeterminateDrawable="@drawable/progress_layout" />
+        </RelativeLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="@dimen/five_dp"
+            android:gravity="center"
+            android:text="@string/loading"
+            android:textColor="@color/light_text_color"
+            android:textSize="@dimen/_14sp" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/no_more_view"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/fifty_dp"
+        android:background="@color/transparent"
+        android:gravity="center"
+        android:text="@string/no_more_data"
+        android:textColor="@color/second_text_color"
+        android:textSize="@dimen/_13sp"
+        android:visibility="gone" />
+
+</RelativeLayout>

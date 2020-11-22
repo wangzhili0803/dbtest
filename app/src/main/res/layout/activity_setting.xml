@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <include layout="@layout/layout_header"/>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_45dp"
+                android:background="@color/white">
+
+                <TextView
+                    style="@style/menu_label"
+                    android:layout_height="match_parent"
+                    android:layout_width="wrap_content"
+                    android:paddingStart="@dimen/page_margin"
+                    android:text="@string/app_version" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:paddingEnd="@dimen/page_margin"
+                    android:gravity="center_vertical|end" />
+
+            </LinearLayout>
+
+            <View style="@style/horizontal_line_style"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_45dp"
+                android:paddingStart="@dimen/page_margin"
+                android:background="@drawable/white_bg_selector"
+                android:gravity="center_vertical"
+                android:text="@string/cache_clear"
+                android:textColor="@color/primary_text_color"
+                android:textSize="@dimen/_16sp" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</LinearLayout>

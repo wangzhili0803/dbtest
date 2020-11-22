@@ -2,44 +2,29 @@
 
 buildscript {
     repositories {
-        mavenLocal()
+        apply from: 'config.gradle'
+        google()
         jcenter()
-        // error-prone相关配置
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
+        mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.2.3'
-//        classpath "com.tencent.tinker:tinker-patch-gradle-plugin:${TINKER_VERSION}"
-        // tinkersupport插件, 其中lastest.release指拉取最新版本，也可以指定明确版本号，例如1.0.4
-        classpath "com.tencent.bugly:tinker-support:1.0.6"
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
-        // error-prone相关配置
-        classpath "net.ltgt.gradle:gradle-errorprone-plugin:0.0.9"
-        classpath 'me.tatarka:gradle-retrolambda:3.6.0'
-        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
-        classpath 'com.mcxiaoke.gradle:packer-ng:1.0.9'
+        classpath "com.android.tools.build:gradle:3.3.2"
+        classpath "com.tencent.mm:AndResGuard-gradle-plugin:1.2.15"
+        classpath "org.greenrobot:greendao-gradle-plugin:3.2.2"
     }
 }
 
 allprojects {
     repositories {
-        mavenLocal()
+        google()
         jcenter()
-        //Bmob的maven仓库地址--必填
-        maven { url "https://raw.github.com/bmob/bmob-android-sdk/master" }
-    }
-    //error-prone相关配置
-    //如果接受的参数有enableErrorProne则应用插件，否则不应用
-    if (project.hasProperty("enableErrorProne")) {
-        apply plugin: "net.ltgt.errorprone"
-        tasks.withType(JavaCompile) {
-            options.compilerArgs += ['-Xep:ArrayToString:WARN']
-        }
-        tasks.withType(JavaCompile) {
-            options.compilerArgs += ['-Xep:FallThrough:WARN']
+        maven { url 'https://jitpack.io' }
+        maven{
+            url 'http://mvn.gt.igexin.com/nexus/content/repositories/releases'
         }
     }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
 }

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center">
+
+    <com.jerry.baselib.common.weidgt.ProgressBall
+        android:id="@+id/progressBall"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center">
+
+        <TextView
+            android:id="@+id/progress_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxEms="2"
+            android:text="0"
+            android:textColor="@color/unite_366899"
+            android:textSize="@dimen/_18sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@id/progress_tv"
+            android:layout_toEndOf="@+id/progress_tv"
+            android:text="@string/percentage_sign"
+            android:textColor="@color/unite_366899"
+            android:textSize="@dimen/_12sp" />
+
+    </RelativeLayout>
+
+</merge>

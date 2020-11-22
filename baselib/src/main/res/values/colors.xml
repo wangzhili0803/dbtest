@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#000000</color>
+    <!-- 主题色 -->
+    <color name="title_background_color">#FF9800</color>
+    <!-- 背景色 -->
+    <color name="white">#ffffffff</color>
+    <color name="white_pressed">#EEEEEE</color>
+    <!--<color name="main_tab_checked">#CD5757</color>-->
+    <color name="transparent">#00000000</color>
+    <color name="grey">#d0cfce</color>
+
+    <color name="red_primary">#ff4f4c</color>
+    <color name="blue_primary">#2098FB</color>
+    <color name="primary_text_color">#333333</color>
+    <color name="second_text_color">#666666</color>
+    <color name="light_text_color">#999999</color>
+    <color name="gray_bg">#f2f5f7</color>
+    <color name="gray_bg_pressed">#dfdfdf</color>
+    <color name="gray_line_color_primary">#d8d8d8</color>
+
+    <color name="unite_366899">#366899</color>
+    <color name="unite_e9f0f6">#e9f0f6</color>
+    <color name="blue_second">#5782ac</color>
+
+    <drawable name="transparent_drawable">#00000000</drawable>
+</resources>
