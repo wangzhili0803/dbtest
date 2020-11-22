@@ -25,6 +25,7 @@ import com.jerry.baselib.common.flow.FloatLogoMenu;
 import com.jerry.baselib.common.flow.FloatMenuView;
 import com.jerry.baselib.common.util.AppUtils;
 import com.jerry.baselib.common.util.DisplayUtil;
+import com.jerry.baselib.common.util.LogUtils;
 import com.jerry.baselib.common.util.ToastUtil;
 import com.jerry.baselib.common.util.UserManager;
 import com.jerry.baselib.common.util.WeakHandler;
@@ -186,7 +187,7 @@ public class ListenerService extends BaseListenerService {
     private void doTask() {
         switch (taskIndex) {
             case 0:
-                if (isHome()) {
+                if (isHomePage()) {
                     taskIndex++;
                     exeClick(mWidth >> 1, (int) (mHeight * 0.95));
                 } else {
@@ -194,6 +195,29 @@ public class ListenerService extends BaseListenerService {
                 }
                 break;
             case 1:
+                taskIndex++;
+                exeClick(mWidth >> 3, (int) (mHeight * 0.53));
+                break;
+            case 2:
+                if (isDkPage()) {
+                    exeClick(mWidth >> 1, (int) (mHeight * 0.6));
+                    taskIndex++;
+                } else {
+                    backToHome(result -> {
+                        taskIndex = 0;
+                        doTask();
+                    });
+                }
+                break;
+            case 3:
+                if (hasText("打卡成功")) {
+                    LogUtils.d("doTask: 打卡成功");
+                } else {
+                    backToHome(result -> {
+                        taskIndex = 0;
+                        doTask();
+                    });
+                }
                 break;
             default:
                 break;
@@ -201,10 +225,8 @@ public class ListenerService extends BaseListenerService {
         mWeakHandler.sendEmptyMessage(MSG_DO_TASK);
     }
 
-    /**
-     * 是否在首页
-     */
-    private boolean isHome() {
+    @Override
+    protected boolean isHomePage() {
         return hasText("消息", "文档", "通讯录", "发现");
     }
 
@@ -212,8 +234,6 @@ public class ListenerService extends BaseListenerService {
      * 是否在打卡页面
      */
     private boolean isDkPage() {
-        return false;
+        return hasText("打卡", "统计", "设置");
     }
-
-
 }

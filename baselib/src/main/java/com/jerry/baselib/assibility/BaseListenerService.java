@@ -46,7 +46,7 @@ public abstract class BaseListenerService extends AccessibilityService {
     protected static int TIME_SHORT = 2000;
     protected static int TIME_MIDDLE = 3000;
     protected static final int TIME_LONG = 4000;
-    protected static final int TIME_LONGLONG = 6000;
+    protected static final int TIME_LONGLONG = 8000;
     protected static int ERRORCOUNT = 3;
     protected int taskIndex;
     protected int errorCount;
@@ -98,6 +98,11 @@ public abstract class BaseListenerService extends AccessibilityService {
     public void onInterrupt() {
         ToastUtil.showShortText("我快被终结了啊-----");
     }
+
+    /**
+     * 是否在首页
+     */
+    protected abstract boolean isHomePage();
 
     /**
      * 开启任务
@@ -196,6 +201,14 @@ public abstract class BaseListenerService extends AccessibilityService {
      */
     public void pause() {
         removeAllMessages();
+    }
+
+    protected void backToHome(EndCallback endCallback) {
+        if (isHomePage()) {
+            endCallback.onEnd(true);
+        } else {
+            performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK);
+        }
     }
 
     /**
