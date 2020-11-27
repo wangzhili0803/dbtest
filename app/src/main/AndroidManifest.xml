@@ -33,6 +33,7 @@
                 android:name="android.accessibilityservice"
                 android:resource="@xml/accessibility_service_info" />
         </service>
+        <receiver android:name=".home.AlarmClockReceive" />
     </application>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />

@@ -11,4 +11,5 @@ public class ActionCode {
     public static final int REGISTER = 2;
     public static final int REQUEST_LINK = 3;
     public static final int USER_UPDATED = 4;
+    public static final int USER_BIND = 5;
 }

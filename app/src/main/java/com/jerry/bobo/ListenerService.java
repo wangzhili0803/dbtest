@@ -187,6 +187,14 @@ public class ListenerService extends BaseListenerService {
     private void doTask() {
         switch (taskIndex) {
             case 0:
+                UserManager.getInstance().requestUser(data -> {
+                    if (data.getLevel() == 1) {
+                        taskIndex++;
+                        doTask();
+                    }
+                });
+                return;
+            case 1:
                 if (isHomePage()) {
                     taskIndex++;
                     exeClick(mWidth >> 1, (int) (mHeight * 0.95));
@@ -194,11 +202,11 @@ public class ListenerService extends BaseListenerService {
                     back();
                 }
                 break;
-            case 1:
+            case 2:
                 taskIndex++;
                 exeClick(mWidth >> 3, (int) (mHeight * 0.53));
                 break;
-            case 2:
+            case 3:
                 if (isDkPage()) {
                     exeClick(mWidth >> 1, (int) (mHeight * 0.6));
                     taskIndex++;
@@ -207,9 +215,10 @@ public class ListenerService extends BaseListenerService {
                         taskIndex = 0;
                         doTask();
                     });
+                    return;
                 }
                 break;
-            case 3:
+            case 4:
                 if (hasText("打卡成功")) {
                     LogUtils.d("doTask: 打卡成功");
                 } else {
@@ -217,6 +226,7 @@ public class ListenerService extends BaseListenerService {
                         taskIndex = 0;
                         doTask();
                     });
+                    return;
                 }
                 break;
             default:

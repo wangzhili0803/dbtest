@@ -1,26 +1,39 @@
 package com.jerry.bobo.home;
 
 import java.io.File;
+import java.util.Calendar;
 
 import android.annotation.SuppressLint;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.provider.Settings;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.LinearLayout;
 
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
+import com.jerry.baselib.ActionCode;
+import com.jerry.baselib.Key;
 import com.jerry.baselib.common.base.BaseActivity;
+import com.jerry.baselib.common.bean.AxUser;
 import com.jerry.baselib.common.util.AppUtils;
 import com.jerry.baselib.common.util.BitmapUtil;
 import com.jerry.baselib.common.util.FileUtil;
 import com.jerry.baselib.common.util.UserManager;
+import com.jerry.baselib.common.weidgt.BindingDialog;
 import com.jerry.baselib.common.weidgt.LoginDialog;
 import com.jerry.baselib.common.weidgt.NoticeDialog;
 import com.jerry.bobo.R;
@@ -31,6 +44,7 @@ public class MainActivity extends BaseActivity implements LoginActionListener {
 
     @SuppressLint("StaticFieldLeak")
     private static MainActivity mainActivity;
+    private static final int INTERVAL = 1000 * 60 * 60 * 24;// 24h
     protected static final int TO_ACCESSIBILITY = 101;
     private HomeFragment mHomeFragment;
     private MineFragment mMineFragment;
@@ -48,14 +62,55 @@ public class MainActivity extends BaseActivity implements LoginActionListener {
         return R.layout.activity_main;
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEvent(Bundle bundle) {
+        if (bundle.getInt(Key.ACTION) == ActionCode.USER_BIND) {
+            String wxCode = (String) bundle.get(Key.WXCODE);
+            if (TextUtils.isEmpty(wxCode)) {
+                toast("获取登录信息失败");
+                return;
+            }
+            LoginDialog loginDialog = new LoginDialog(this);
+            loginDialog.setWxCode(wxCode);
+            loginDialog.setOnDataChangedListener(data -> {
+                closeLoadingDialog();
+                if (data == null) {
+                    return;
+                }
+                if (data.getCode() == 1) {
+                    loginDialog.dismiss();
+                    showBinding(data.getData());
+                }
+                if (data.getCode() == 0) {
+                    mMineFragment.updateUi();
+                }
+            });
+            loginDialog.show();
+        }
+    }
+
     @Override
     protected void initView() {
+        EventBus.getDefault().register(this);
         mainActivity = this;
         tabBar = findViewById(R.id.tab_bar);
         findViewById(R.id.tv_main).setOnClickListener(this);
+        findViewById(R.id.tv_me).setOnClickListener(this);
         fragmentManager = getSupportFragmentManager();
         setContentFragment(R.id.tv_main);
         init();
+        initAlarm();
+    }
+
+    private void initAlarm() {
+        AlarmManager alarmService = (AlarmManager) getSystemService(ALARM_SERVICE);
+        Calendar instance = Calendar.getInstance();
+        instance.set(Calendar.HOUR_OF_DAY, 22);
+        instance.set(Calendar.MINUTE, 24);
+        instance.set(Calendar.SECOND, 0);
+        Intent alarmIntent = new Intent(this, AlarmClockReceive.class);
+        PendingIntent broadcast = PendingIntent.getBroadcast(this, 0, alarmIntent, 0);
+        alarmService.setRepeating(AlarmManager.RTC_WAKEUP, instance.getTimeInMillis(), INTERVAL, broadcast);
     }
 
 
@@ -82,6 +137,12 @@ public class MainActivity extends BaseActivity implements LoginActionListener {
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
+    }
+
+    @Override
     public void onClick(final View v) {
         setContentFragment(v.getId());
     }
@@ -100,7 +161,7 @@ public class MainActivity extends BaseActivity implements LoginActionListener {
             } else {
                 transaction.show(mHomeFragment);
             }
-        } else if (viewId == R.id.tab_me) {
+        } else if (viewId == R.id.tv_me) {
             if (mMineFragment == null) {
                 mMineFragment = new MineFragment();
                 transaction.add(R.id.content, mMineFragment);
@@ -130,7 +191,9 @@ public class MainActivity extends BaseActivity implements LoginActionListener {
         LoginDialog loginDialog = new LoginDialog(this);
         loginDialog.setOnDataChangedListener(data -> {
             closeLoadingDialog();
-            // TODO 登录成功
+            if (mMineFragment != null) {
+                mMineFragment.updateUi();
+            }
         });
         loginDialog.show();
     }
@@ -143,9 +206,26 @@ public class MainActivity extends BaseActivity implements LoginActionListener {
         noticeDialog.setPositiveListener(view -> {
             noticeDialog.dismiss();
             UserManager.getInstance().logout(true, data -> {
-                // TODO 登出成功
+                if (mMineFragment != null) {
+                    mMineFragment.updateUi();
+                }
             });
         });
         noticeDialog.show();
+    }
+
+    private void showBinding(AxUser user) {
+        if (user == null) {
+            toast("待绑定的用户为空");
+            return;
+        }
+        BindingDialog bindingDialog = new BindingDialog(MainActivity.this, user, data -> {
+            UserManager.getInstance().saveUser(data);
+            if (mMineFragment != null) {
+                mMineFragment.updateUi();
+            }
+        });
+        bindingDialog.setUser(user);
+        bindingDialog.show();
     }
 }

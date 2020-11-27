@@ -29,8 +29,8 @@ ext {
             VERSION_NAME  : "1.0",
             keysore       : "dddk",
             BUGLY_APP_ID  : '"3d0b640817"',
-            AVOS_APP_ID   : '"hysp5ww5RJsulT8fLVgeKMQl-MdYXbMMI"',
-            AVOS_APP_KEY  : '"Mm68OpIRXukmhsExQXNLjKQv"',
+            AVOS_APP_ID   : '"74kS56hHebxhvPaW2vqqK24V-MdYXbMMI"',
+            AVOS_APP_KEY  : '"ldxw4KNVCQ1IQydJgN5pV3xk"',
             FILE_PROVIDER : '"com.jerry.dddk.fileProvider"',
             TO_APP_ID     : '"com.alibaba.android.rimet"',
     ]

@@ -27,7 +27,7 @@
             app:drawableTopCompat="@drawable/selector_home" />
 
         <TextView
-            android:id="@+id/tab_me"
+            android:id="@+id/tv_me"
             style="@style/tab_bar_text_style"
             android:text="@string/mine"
             app:drawableTopCompat="@drawable/selector_tab_me" />
