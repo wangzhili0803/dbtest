@@ -1,4 +1,4 @@
-package com.jerry.bobo.home;
+package com.jerry.bitcoin.home;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

@@ -23,11 +23,10 @@ ext {
 //            FILE_PROVIDER : '"com.jerry.bobo.fileProvider"',
 
             // liubo
-            APPLICATION_ID: "com.jerry.dddk",
-            SRC_DIR       : "dddk",
+            APPLICATION_ID: "com.jerry.bitcoin",
+            SRC_DIR       : "bitcoin",
             VERSION_CODE  : 10000,
             VERSION_NAME  : "1.0",
-            keysore       : "dddk",
             BUGLY_APP_ID  : '"3d0b640817"',
             AVOS_APP_ID   : '"74kS56hHebxhvPaW2vqqK24V-MdYXbMMI"',
             AVOS_APP_KEY  : '"ldxw4KNVCQ1IQydJgN5pV3xk"',

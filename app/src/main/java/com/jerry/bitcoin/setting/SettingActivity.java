@@ -1,4 +1,4 @@
-package com.jerry.bobo.setting;
+package com.jerry.bitcoin.setting;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -21,7 +21,7 @@ import com.jerry.baselib.common.util.FileUtil;
 import com.jerry.baselib.common.util.PreferenceHelp;
 import com.jerry.baselib.common.util.StringUtil;
 import com.jerry.baselib.greendao.ProductDao.Properties;
-import com.jerry.bobo.R;
+import com.jerry.bitcoin.R;
 
 /**
  * @author Jerry

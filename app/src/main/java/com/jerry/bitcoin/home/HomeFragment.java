@@ -1,9 +1,9 @@
-package com.jerry.bobo.home;
+package com.jerry.bitcoin.home;
 
 import android.view.View;
 
 import com.jerry.baselib.common.base.BaseFragment;
-import com.jerry.bobo.R;
+import com.jerry.bitcoin.R;
 
 /**
  * @author Jerry

@@ -1,4 +1,4 @@
-package com.jerry.bobo;
+package com.jerry.bitcoin;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +29,7 @@ import com.jerry.baselib.common.util.LogUtils;
 import com.jerry.baselib.common.util.ToastUtil;
 import com.jerry.baselib.common.util.UserManager;
 import com.jerry.baselib.common.util.WeakHandler;
-import com.jerry.bobo.home.MainActivity;
+import com.jerry.bitcoin.home.MainActivity;
 
 /**
  * Created by cxk on 2017/2/4. email:471497226@qq.com

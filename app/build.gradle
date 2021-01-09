@@ -12,9 +12,9 @@ android {
 
     signingConfigs {
         config {
-            keyAlias packer.keysore
+            keyAlias 'jerry'
             keyPassword '098765'
-            storeFile new File(keystoreDir, packer.keysore + '.keystore')
+            storeFile new File(keystoreDir, 'jerry.keystore')
             storePassword '098765'
             v2SigningEnabled false
         }

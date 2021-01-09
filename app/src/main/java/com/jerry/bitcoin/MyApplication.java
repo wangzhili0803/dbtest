@@ -1,11 +1,11 @@
-package com.jerry.bobo;
+package com.jerry.bitcoin;
 
 import android.content.Intent;
 
 import com.jerry.baselib.BaseApp;
 import com.jerry.baselib.Key;
 import com.jerry.baselib.common.util.AppUtils;
-import com.jerry.bobo.home.MainActivity;
+import com.jerry.bitcoin.home.MainActivity;
 import com.tencent.bugly.Bugly;
 import com.tencent.bugly.BuglyStrategy;
 import com.tencent.bugly.beta.Beta;

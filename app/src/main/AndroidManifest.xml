@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.jerry.bobo">
+    package="com.jerry.bitcoin">
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:name=".MyApplication"
+        android:name="com.jerry.bitcoin.MyApplication"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".setting.SettingActivity"></activity>
-        <activity android:name=".home.MainActivity">
+        <activity android:name="com.jerry.bitcoin.setting.SettingActivity"/>
+        <activity android:name="com.jerry.bitcoin.home.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -23,7 +23,7 @@
             android:enabled="true"
             android:exported="false"
             android:label="@string/app_name"
-            android:name=".ListenerService"
+            android:name="com.jerry.bitcoin.ListenerService"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService" />
@@ -33,7 +33,7 @@
                 android:name="android.accessibilityservice"
                 android:resource="@xml/accessibility_service_info" />
         </service>
-        <receiver android:name=".home.AlarmClockReceive" />
+        <receiver android:name="com.jerry.bitcoin.home.AlarmClockReceive" />
     </application>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />

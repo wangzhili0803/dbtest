@@ -1,4 +1,4 @@
-package com.jerry.bobo.home;
+package com.jerry.bitcoin.home;
 
 import android.content.Context;
 import android.content.Intent;
@@ -17,10 +17,10 @@ import com.jerry.baselib.common.base.BaseFragment;
 import com.jerry.baselib.common.util.AppUtils;
 import com.jerry.baselib.common.util.UserManager;
 import com.jerry.baselib.common.weidgt.NoticeDialog;
-import com.jerry.bobo.ListenerService;
-import com.jerry.bobo.R;
-import com.jerry.bobo.interfaces.LoginActionListener;
-import com.jerry.bobo.setting.SettingActivity;
+import com.jerry.bitcoin.ListenerService;
+import com.jerry.bitcoin.R;
+import com.jerry.bitcoin.interfaces.LoginActionListener;
+import com.jerry.bitcoin.setting.SettingActivity;
 import com.snail.antifake.jni.EmulatorDetectUtil;
 
 /**

@@ -1,4 +1,4 @@
-package com.jerry.bobo.interfaces;
+package com.jerry.bitcoin.interfaces;
 
 /**
  *

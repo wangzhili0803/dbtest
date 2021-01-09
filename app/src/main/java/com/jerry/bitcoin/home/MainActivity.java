@@ -1,4 +1,4 @@
-package com.jerry.bobo.home;
+package com.jerry.bitcoin.home;
 
 import java.io.File;
 import java.util.Calendar;
@@ -36,8 +36,8 @@ import com.jerry.baselib.common.util.UserManager;
 import com.jerry.baselib.common.weidgt.BindingDialog;
 import com.jerry.baselib.common.weidgt.LoginDialog;
 import com.jerry.baselib.common.weidgt.NoticeDialog;
-import com.jerry.bobo.R;
-import com.jerry.bobo.interfaces.LoginActionListener;
+import com.jerry.bitcoin.R;
+import com.jerry.bitcoin.interfaces.LoginActionListener;
 import com.tencent.bugly.beta.Beta;
 
 public class MainActivity extends BaseActivity implements LoginActionListener {
