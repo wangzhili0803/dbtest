@@ -19,6 +19,10 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".setting.SettingActivity" />
+
+        <receiver android:name=".home.AlarmClockReceive" />
+
         <service
             android:enabled="true"
             android:exported="false"

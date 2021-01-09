@@ -92,7 +92,7 @@ public class PtrSimpleHeader extends LinearLayout implements PtrUIHandler {
         final int mOffsetToRefresh = frame.getOffsetToRefresh();
         final int currentPos = ptrIndicator.getCurrentPosY();
         final int lastPos = ptrIndicator.getLastPosY();
-        // System.out.println(mOffsetToRefresh + ",," + currentPos + ",," + lastPos);
+        // LogUtils.d(mOffsetToRefresh + ",," + currentPos + ",," + lastPos);
 
         float scaleOfLayout = 1;
         if (currentPos > 0 && currentPos < mOffsetToRefresh) {

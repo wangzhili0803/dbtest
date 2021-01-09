@@ -41,6 +41,12 @@ android {
             abiFilters 'armeabi'
         }
 
+        manifestPlaceholders = [
+                GETUI_APP_ID : "iFWybqXv3i80bVg1UpcA1",
+                GETUI_APP_KEY : "ohGZUH7KZQALcA7V6iNzy5",
+                GETUI_APP_SECRET : "Gp9aROX7mW6hDyLOpfZ9l9"
+        ]
+
         packagingOptions {
             exclude 'META-INF/DEPENDENCIES'
             exclude 'META-INF/NOTICE'

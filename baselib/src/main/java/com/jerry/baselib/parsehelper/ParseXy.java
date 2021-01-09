@@ -7,7 +7,6 @@ import android.graphics.BitmapFactory;
 import android.text.TextUtils;
 import android.webkit.URLUtil;
 
-import com.jerry.baselib.common.bean.LookUrl;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Attributes;
@@ -16,6 +15,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.jerry.baselib.common.bean.Area;
+import com.jerry.baselib.common.bean.LookUrl;
 import com.jerry.baselib.common.bean.Product;
 import com.jerry.baselib.common.bean.TypeManager;
 import com.jerry.baselib.common.okhttp.OkHttpUtils;

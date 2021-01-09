@@ -5,8 +5,11 @@ import android.app.Application;
 
 import androidx.multidex.MultiDex;
 
+import com.igexin.sdk.PushManager;
 import com.jerry.baselib.common.util.ForegroundCallbacks;
 import com.jerry.baselib.common.util.StringUtil;
+import com.jerry.baselib.push.GIntentService;
+import com.jerry.baselib.push.GPushService;
 
 import cn.leancloud.AVLogger;
 import cn.leancloud.AVOSCloud;
@@ -41,6 +44,8 @@ public abstract class BaseApp extends Application {
         mForegroundCallbacks = new ForegroundCallbacks();
         MultiDex.install(this);
         registerActivityLifecycleCallbacks(mForegroundCallbacks);
+        PushManager.getInstance().initialize(mInstance, GPushService.class);
+        PushManager.getInstance().registerPushIntentService(mInstance, GIntentService.class);
     }
 
 

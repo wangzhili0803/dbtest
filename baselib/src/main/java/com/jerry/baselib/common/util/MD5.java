@@ -91,7 +91,7 @@ public class MD5 {
             File file = new File(pathname);
             //long size = file.length();
             //1024*1024 就是 1MB
-            //System.out.println(size/1024/1024);
+            //LogUtils.d(size/1024/1024);
             //获取分割文件的名称
             names = getPartitionFileNames(pathname);
             in = new DataInputStream(new FileInputStream(file));
