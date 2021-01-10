@@ -6,7 +6,6 @@ import java.util.List;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.net.Uri;
@@ -14,20 +13,23 @@ import android.os.Build;
 import android.provider.Settings;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
-import android.widget.Toast;
+import android.view.accessibility.AccessibilityNodeInfo;
 
 import androidx.core.content.ContextCompat;
 
 import com.jerry.baselib.BaseApp;
+import com.jerry.baselib.Key;
 import com.jerry.baselib.assibility.BaseListenerService;
 import com.jerry.baselib.common.flow.FloatItem;
 import com.jerry.baselib.common.flow.FloatLogoMenu;
 import com.jerry.baselib.common.flow.FloatMenuView;
 import com.jerry.baselib.common.util.AppUtils;
+import com.jerry.baselib.common.util.CollectionUtils;
 import com.jerry.baselib.common.util.DisplayUtil;
 import com.jerry.baselib.common.util.LogUtils;
+import com.jerry.baselib.common.util.ParseUtil;
+import com.jerry.baselib.common.util.StringUtil;
 import com.jerry.baselib.common.util.ToastUtil;
-import com.jerry.baselib.common.util.UserManager;
 import com.jerry.baselib.common.util.WeakHandler;
 import com.jerry.bitcoin.home.MainActivity;
 
@@ -45,6 +47,10 @@ public class ListenerService extends BaseListenerService {
     private static final int MSG_DO_TASK = 101;
     private static final int UNINSTALL_APP = 1;
 
+    private static final String coinType = "XRP";
+    private static final String buyType = "出售";
+    private static final String payType = "ali_pay";
+
     private FloatLogoMenu menu;
 
     private final FloatItem startItem = new FloatItem("开始", 0x99000000, 0x99000000,
@@ -60,9 +66,7 @@ public class ListenerService extends BaseListenerService {
         mWeakHandler = new WeakHandler(msg -> {
             switch (msg.what) {
                 case MSG_DO_TASK:
-                    if (AppUtils.playing) {
-                        mWeakHandler.postDelayed(this::doTask, TIME_LONGLONG);
-                    }
+                    mWeakHandler.postDelayed(this::doTask, TIME_LONGLONG);
                     return true;
                 case UNINSTALL_APP:
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -122,23 +126,21 @@ public class ListenerService extends BaseListenerService {
                             menu.hide();
                             return;
                         }
-                        UserManager.getInstance().requestUser(data -> {
-                            if (AppUtils.isAccessibilitySettingsOff(ListenerService.this)) {
-                                Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
-                                ListenerService.this.startActivity(intent);
-                                ToastUtil.showLongText("请先开启辅助哦");
-                                return;
-                            }
-                            AppUtils.playing = true;
-                            if (position != 0) {
-                                return;
-                            }
-                            start(MSG_DO_TASK);
-                            itemList.clear();
-                            itemList.add(stopItem);
-                            menu.updateFloatItemList(itemList);
-                            menu.hide();
-                        });
+                        if (AppUtils.isAccessibilitySettingsOff(ListenerService.this)) {
+                            Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+                            ListenerService.this.startActivity(intent);
+                            ToastUtil.showLongText("请先开启辅助哦");
+                            return;
+                        }
+                        AppUtils.playing = true;
+                        if (position != 0) {
+                            return;
+                        }
+                        start(MSG_DO_TASK);
+                        itemList.clear();
+                        itemList.add(stopItem);
+                        menu.updateFloatItemList(itemList);
+                        menu.hide();
                     }
                 });
             menu.show();
@@ -167,72 +169,62 @@ public class ListenerService extends BaseListenerService {
     }
 
     @Override
-    public void start(final int start) {
-        PackageManager packageManager = getPackageManager();
-        Intent intent = packageManager.getLaunchIntentForPackage("com.alibaba.android.rimet");
-        if (intent == null) {
-            Toast.makeText(this, "未安装", Toast.LENGTH_LONG).show();
-        } else {
-            startActivity(intent);
-        }
-        super.start(start);
-    }
-
-    @Override
     public void onDestroy() {
         stopScript();
         super.onDestroy();
     }
 
     private void doTask() {
+        if (!AppUtils.playing) {
+            return;
+        }
         switch (taskIndex) {
             case 0:
-                UserManager.getInstance().requestUser(data -> {
-                    if (data.getLevel() == 1) {
-                        taskIndex++;
-                        doTask();
+                AccessibilityNodeInfo validNode = getValidNode();
+                if (validNode != null) {
+                    String rationed = getNodeText(validNode, "rationedExchangeVol");
+                    String priceStr = getNodeText(validNode, "unitPriceValue");
+                    if (rationed != null && priceStr != null) {
+                        rationed = rationed.trim().replace(Key.SPACE, Key.NIL).replace(Key.COMMA, Key.NIL).replace("¥", Key.NIL);
+                        String[] minMax = StringUtil.safeSplit(rationed, Key.LINE);
+                        double min = ParseUtil.parseDouble(minMax[0]);
+                        double max = ParseUtil.parseDouble(minMax[1]);
+                        double price = ParseUtil.parseDouble(priceStr);
+                        LogUtils.d("fsdfsf");
                     }
-                });
-                return;
-            case 1:
-                if (isHomePage()) {
-                    taskIndex++;
-                    exeClick(mWidth >> 1, (int) (mHeight * 0.95));
-                } else {
-                    back();
-                }
-                break;
-            case 2:
-                taskIndex++;
-                exeClick(mWidth >> 3, (int) (mHeight * 0.53));
-                break;
-            case 3:
-                if (isDkPage()) {
-                    exeClick(mWidth >> 1, (int) (mHeight * 0.6));
-                    taskIndex++;
-                } else {
-                    backToHome(result -> {
-                        taskIndex = 0;
-                        doTask();
-                    });
-                    return;
-                }
-                break;
-            case 4:
-                if (hasText("打卡成功")) {
-                    LogUtils.d("doTask: 打卡成功");
-                } else {
-                    backToHome(result -> {
-                        taskIndex = 0;
-                        doTask();
-                    });
-                    return;
                 }
                 break;
             default:
                 break;
         }
         mWeakHandler.sendEmptyMessage(MSG_DO_TASK);
+    }
+
+    private AccessibilityNodeInfo getValidNode() {
+        List<AccessibilityNodeInfo> listViews = getRootInActiveWindow()
+            .findAccessibilityNodeInfosByViewId(packageName + "list_view");
+//        List<AccessibilityNodeInfo> list = getRootInActiveWindow()
+//            .findAccessibilityNodeInfosByViewId(packageName + "merchant_detail_data_rl");
+        if (!CollectionUtils.isEmpty(listViews)) {
+            int targetIndex = 0;
+            for (int i = 0; i < listViews.size(); i++) {
+                AccessibilityNodeInfo listView = listViews.get(i);
+                String typeStr = getNodeText(listView, "coinUnit");
+                String buyStr = getNodeText(listView, "buy_or_sell_btn");
+                if (coinType.equals(typeStr) && buyType.equals(buyStr)) {
+                    targetIndex = i;
+//                    break;
+                }
+            }
+            AccessibilityNodeInfo list = listViews.get(targetIndex);
+            for (int i = 0; i < list.getChildCount(); i++) {
+                AccessibilityNodeInfo item = list.getChild(i);
+                if (!CollectionUtils.isEmpty(item.findAccessibilityNodeInfosByViewId(packageName + payType))) {
+                    return item;
+                }
+            }
+        }
+        return null;
     }
 
     @Override

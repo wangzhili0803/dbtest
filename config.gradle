@@ -31,6 +31,6 @@ ext {
             AVOS_APP_ID   : '"74kS56hHebxhvPaW2vqqK24V-MdYXbMMI"',
             AVOS_APP_KEY  : '"ldxw4KNVCQ1IQydJgN5pV3xk"',
             FILE_PROVIDER : '"com.jerry.dddk.fileProvider"',
-            TO_APP_ID     : '"com.alibaba.android.rimet"',
+            TO_APP_ID     : '"pro.huobi"',
     ]
 }

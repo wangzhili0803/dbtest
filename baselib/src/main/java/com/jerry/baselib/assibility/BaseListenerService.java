@@ -20,6 +20,8 @@ import android.text.TextUtils;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 
+import androidx.annotation.NonNull;
+
 import org.greenrobot.eventbus.EventBus;
 
 import com.jerry.baselib.BaseApp;
@@ -298,7 +300,7 @@ public abstract class BaseListenerService extends AccessibilityService {
         return txt.toString();
     }
 
-    public String getNodeText(AccessibilityNodeInfo root, String id) {
+    public String getNodeText(@NonNull AccessibilityNodeInfo root, String id) {
         List<AccessibilityNodeInfo> inputs = root.findAccessibilityNodeInfosByViewId(packageName + id);
         if (!CollectionUtils.isEmpty(inputs)) {
             AccessibilityNodeInfo node = inputs.get(inputs.size() - 1);
