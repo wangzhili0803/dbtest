@@ -7,6 +7,7 @@ import android.view.accessibility.AccessibilityNodeInfo;
 
 import com.jerry.baselib.Key;
 import com.jerry.baselib.common.util.CollectionUtils;
+import com.jerry.baselib.common.util.DisplayUtil;
 import com.jerry.baselib.common.util.ParseUtil;
 import com.jerry.baselib.common.util.StringUtil;
 import com.jerry.bitcoin.ListenerService;
@@ -34,14 +35,14 @@ public class CoinColaTask extends BaseTask {
     public CoinBean getBuyInfo(final ListenerService service) {
         AccessibilityNodeInfo validNode = getValidNode(service);
         if (validNode != null) {
-            String rationed = service.getNodeText(validNode, "rationedExchangeVol");
-            String priceStr = service.getNodeText(validNode, "unitPriceValue");
+            String rationed = service.getNodeText(validNode, "tv_limit");
+            String priceStr = service.getNodeText(validNode, "tv_price");
             if (rationed != null && priceStr != null) {
-                rationed = rationed.trim().replace(Key.SPACE, Key.NIL).replace(Key.COMMA, Key.NIL).replace("¥", Key.NIL);
+                rationed = rationed.replace("限额", Key.NIL).replace(Key.COMMA, Key.NIL).replace("CNY", Key.NIL).trim();
                 String[] minMax = StringUtil.safeSplit(rationed, Key.LINE);
                 coinBean.setMin(ParseUtil.parseDouble(minMax[0]));
                 coinBean.setMax(ParseUtil.parseDouble(minMax[1]));
-                coinBean.setPrice(ParseUtil.parseDouble(priceStr));
+                coinBean.setPrice(ParseUtil.parseDouble(priceStr.replace("CNY", Key.NIL).trim()));
                 coinBean.setCurrentTimeMs(System.currentTimeMillis());
             }
         }
@@ -50,26 +51,18 @@ public class CoinColaTask extends BaseTask {
 
     @Override
     protected AccessibilityNodeInfo getValidNode(final ListenerService service) {
-        List<AccessibilityNodeInfo> listViews = service.getRootInActiveWindow()
-            .findAccessibilityNodeInfosByViewId(getPackageName() + "recycler_view_ad");
-        if (!CollectionUtils.isEmpty(listViews)) {
-            int targetIndex = 0;
-            for (int i = 0; i < listViews.size(); i++) {
-                AccessibilityNodeInfo listView = listViews.get(i);
-                Rect rect = new Rect();
-                listView.getBoundsInScreen(rect);
-                String typeStr = service.getNodeText(listView, "coinUnit");
-                String buyStr = service.getNodeText(listView, "buy_or_sell_btn");
-                if (coinType.equals(typeStr) && buyType.equals(buyStr)) {
-                    targetIndex = i;
-                    break;
-                }
-            }
-            AccessibilityNodeInfo list = listViews.get(targetIndex);
-            for (int i = 0; i < list.getChildCount(); i++) {
-                AccessibilityNodeInfo item = list.getChild(i);
-                if (!CollectionUtils.isEmpty(item.findAccessibilityNodeInfosByViewId(getPackageName() + payType))) {
-                    return item;
+        List<AccessibilityNodeInfo> tvOperators = service.getRootInActiveWindow()
+            .findAccessibilityNodeInfosByViewId(getPackageName() + "tv_operator");
+        if (!CollectionUtils.isEmpty(tvOperators)) {
+            for (int i = 0; i < tvOperators.size(); i++) {
+                AccessibilityNodeInfo tvOperator = tvOperators.get(i);
+                // 购买类型一致
+                if (buyType.equals(tvOperator.getText().toString())) {
+                    Rect rect = new Rect();
+                    tvOperator.getBoundsInScreen(rect);
+                    if (rect.left > 0 && rect.right < DisplayUtil.getDisplayWidth()) {
+                        return tvOperator.getParent();
+                    }
                 }
             }
         }
