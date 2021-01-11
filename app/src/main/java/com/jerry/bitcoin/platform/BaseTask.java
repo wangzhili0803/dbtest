@@ -1,6 +1,9 @@
 
 package com.jerry.bitcoin.platform;
 
+import android.view.accessibility.AccessibilityNodeInfo;
+
+import com.jerry.bitcoin.ListenerService;
 import com.jerry.bitcoin.beans.CoinBean;
 import com.jerry.bitcoin.interfaces.TaskCallback;
 
@@ -44,4 +47,6 @@ public abstract class BaseTask implements TaskCallback {
     public void setPayType(final String payType) {
         this.payType = payType;
     }
+
+    protected abstract AccessibilityNodeInfo getValidNode(ListenerService service);
 }

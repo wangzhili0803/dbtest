@@ -29,7 +29,7 @@ import com.jerry.baselib.common.util.WeakHandler;
 import com.jerry.bitcoin.beans.CoinBean;
 import com.jerry.bitcoin.home.MainActivity;
 import com.jerry.bitcoin.interfaces.TaskCallback;
-import com.jerry.bitcoin.platform.HuobiTask;
+import com.jerry.bitcoin.platform.CoinColaTask;
 
 /**
  * Created by cxk on 2017/2/4. email:471497226@qq.com
@@ -57,7 +57,7 @@ public class ListenerService extends BaseListenerService {
     @Override
     public void onCreate() {
         super.onCreate();
-        setTasksCallback(new HuobiTask());
+        setTasksCallback(new CoinColaTask());
         mWeakHandler = new WeakHandler(msg -> {
             switch (msg.what) {
                 case MSG_DO_TASK:

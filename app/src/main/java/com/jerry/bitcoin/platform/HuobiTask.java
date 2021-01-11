@@ -47,7 +47,8 @@ public class HuobiTask extends BaseTask {
         return coinBean;
     }
 
-    private AccessibilityNodeInfo getValidNode(ListenerService service) {
+    @Override
+    protected AccessibilityNodeInfo getValidNode(ListenerService service) {
         List<AccessibilityNodeInfo> listViews = service.getRootInActiveWindow()
             .findAccessibilityNodeInfosByViewId(getPackageName() + "list_view");
         if (!CollectionUtils.isEmpty(listViews)) {
