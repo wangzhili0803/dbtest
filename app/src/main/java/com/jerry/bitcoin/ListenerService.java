@@ -11,25 +11,40 @@ import android.graphics.Point;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
+import android.text.TextUtils;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 
 import androidx.core.content.ContextCompat;
 
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
+import com.alibaba.fastjson.JSON;
 import com.jerry.baselib.BaseApp;
 import com.jerry.baselib.assibility.BaseListenerService;
+import com.jerry.baselib.common.bean.AxiangMeassage;
 import com.jerry.baselib.common.flow.FloatItem;
 import com.jerry.baselib.common.flow.FloatLogoMenu;
 import com.jerry.baselib.common.flow.FloatMenuView;
 import com.jerry.baselib.common.util.AppUtils;
 import com.jerry.baselib.common.util.DisplayUtil;
+import com.jerry.baselib.common.util.JJSON;
 import com.jerry.baselib.common.util.LogUtils;
 import com.jerry.baselib.common.util.ToastUtil;
 import com.jerry.baselib.common.util.WeakHandler;
 import com.jerry.bitcoin.beans.CoinBean;
 import com.jerry.bitcoin.home.MainActivity;
 import com.jerry.bitcoin.interfaces.TaskCallback;
-import com.jerry.bitcoin.platform.CoinColaTask;
+import com.jerry.bitcoin.platform.HuobiTask;
+
+import cn.leancloud.chatkit.event.LCIMIMTypeMessageEvent;
+import cn.leancloud.im.v2.AVIMException;
+import cn.leancloud.im.v2.AVIMMessageOption;
+import cn.leancloud.im.v2.AVIMReservedMessageType;
+import cn.leancloud.im.v2.AVIMTypedMessage;
+import cn.leancloud.im.v2.callback.AVIMConversationCallback;
+import cn.leancloud.im.v2.messages.AVIMTextMessage;
 
 /**
  * Created by cxk on 2017/2/4. email:471497226@qq.com
@@ -44,6 +59,10 @@ public class ListenerService extends BaseListenerService {
      */
     private static final int MSG_DO_TASK = 101;
     private static final int UNINSTALL_APP = 1;
+    /**
+     * 对方的IP
+     */
+    public static String sDeviceIp;
 
     private FloatLogoMenu menu;
 
@@ -53,11 +72,12 @@ public class ListenerService extends BaseListenerService {
         BitmapFactory.decodeResource(BaseApp.getInstance().getResources(), R.drawable.pause), "0");
     private final List<FloatItem> itemList = new ArrayList<>();
     private TaskCallback mTasksCallback;
+    private CoinBean coinBean;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        setTasksCallback(new CoinColaTask());
+        setTasksCallback(new HuobiTask());
         mWeakHandler = new WeakHandler(msg -> {
             switch (msg.what) {
                 case MSG_DO_TASK:
@@ -142,16 +162,14 @@ public class ListenerService extends BaseListenerService {
         }
     }
 
-    /**
-     * 点击text
-     */
-    public static void selfKill() {
-        if (instance == null) {
-            ToastUtil.showLongText("请开启辅助服务哦");
-            return;
-        }
-        instance.mWeakHandler
-            .sendMessage(instance.mWeakHandler.obtainMessage(UNINSTALL_APP, MyApplication.getInstance().getString(R.string.confirm)));
+    @Override
+    public boolean onUnbind(final Intent intent) {
+        return super.onUnbind(intent);
+    }
+
+    @Override
+    protected boolean isHomePage() {
+        return true;
     }
 
     /**
@@ -163,20 +181,15 @@ public class ListenerService extends BaseListenerService {
         mWeakHandler.removeMessages(MSG_DO_TASK);
     }
 
-    @Override
-    public void onDestroy() {
-        stopScript();
-        super.onDestroy();
-    }
-
     private void doTask() {
         if (!AppUtils.playing) {
             return;
         }
         switch (taskIndex) {
             case 0:
-                CoinBean coinBean = mTasksCallback.getBuyInfo(this);
+                coinBean = mTasksCallback.getBuyInfo(this);
                 LogUtils.d(coinBean.toString());
+                sendMessage(JSON.toJSONString(coinBean));
                 break;
             default:
                 break;
@@ -184,20 +197,69 @@ public class ListenerService extends BaseListenerService {
         mWeakHandler.sendEmptyMessage(MSG_DO_TASK);
     }
 
-    @Override
-    protected boolean isHomePage() {
-        return hasText("消息", "文档", "通讯录", "发现");
-    }
-
-    /**
-     * 是否在打卡页面
-     */
-    private boolean isDkPage() {
-        return hasText("打卡", "统计", "设置");
-    }
-
     public void setTasksCallback(final TaskCallback tasksCallback) {
         mTasksCallback = tasksCallback;
         packageName = mTasksCallback.getPackageName();
+    }
+
+    /**
+     * 发送消息给控制端
+     */
+    protected void sendMessage(String content) {
+        if (TextUtils.isEmpty(content)) {
+            return;
+        }
+        AVIMTextMessage message = new AVIMTextMessage();
+        message.setText(content);
+        AVIMMessageOption option = new AVIMMessageOption();
+        if (content.startsWith("tr:")) {
+            option.setTransient(true);
+        } else {
+            option.setReceipt(true);
+        }
+        mTasksCallback.getAvimConversation(imConversation -> {
+            if (imConversation == null) {
+                LogUtils.e("imConversation is null");
+                return;
+            }
+            imConversation.sendMessage(message, option, new AVIMConversationCallback() {
+                @Override
+                public void done(AVIMException e) {
+                    if (null != e) {
+                        ToastUtil.showShortText(e.getMessage());
+                        return;
+                    }
+                    LogUtils.d("imConversation send success");
+                }
+            });
+        });
+    }
+
+
+    /**
+     * 处理推送过来的消息 同理，避免无效消息，此处加了 conversation id 判断
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEvent(LCIMIMTypeMessageEvent messageEvent) {
+        mTasksCallback.getAvimConversation(imConversation -> {
+            if (null != imConversation && null != messageEvent &&
+                imConversation.getConversationId().equals(messageEvent.conversation.getConversationId())) {
+                AVIMTypedMessage typedMessage = messageEvent.message;
+                if (typedMessage.getMessageType() == AVIMReservedMessageType.TextMessageType.getType()) {
+                    String text = ((AVIMTextMessage) typedMessage).getText();
+                    AxiangMeassage meassage = JJSON.parseObject(text, AxiangMeassage.class);
+                    if (meassage != null) {
+                        if (!AppUtils.getDeviceId().equals(meassage.getDeviceId())) {
+                            return;
+                        }
+                        String from = meassage.getNickname();
+                        if (from == null) {
+                            ToastUtil.showShortText("收到来自：" + typedMessage.getFrom() + "的消息，内容为：" + meassage.getContent());
+                        }
+                    }
+                }
+            }
+        });
+
     }
 }

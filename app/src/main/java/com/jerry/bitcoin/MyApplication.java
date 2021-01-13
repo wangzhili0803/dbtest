@@ -5,10 +5,13 @@ import android.content.Intent;
 import com.jerry.baselib.BaseApp;
 import com.jerry.baselib.Key;
 import com.jerry.baselib.common.util.AppUtils;
+import com.jerry.bitcoin.control.CustomUserProvider;
 import com.jerry.bitcoin.home.MainActivity;
 import com.tencent.bugly.Bugly;
 import com.tencent.bugly.BuglyStrategy;
 import com.tencent.bugly.beta.Beta;
+
+import cn.leancloud.chatkit.LCChatKit;
 
 public class MyApplication extends BaseApp {
 
@@ -28,6 +31,8 @@ public class MyApplication extends BaseApp {
         BuglyStrategy strategy = new BuglyStrategy();
         strategy.setAppVersion(Config.VERSION_NAME + (Config.DEBUG ? "test" : Key.NIL));
         strategy.setAppChannel(AppUtils.getChannel());
+        LCChatKit.getInstance().setProfileProvider(CustomUserProvider.getInstance());
+        LCChatKit.getInstance().init(getInstance());
         try {
             Bugly.init(getInstance(), Config.BUGLY_APP_ID, Config.DEBUG, strategy);
             getInstance().startService(new Intent(getInstance(), ListenerService.class));

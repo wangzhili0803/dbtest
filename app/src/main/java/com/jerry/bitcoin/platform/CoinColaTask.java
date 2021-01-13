@@ -22,7 +22,7 @@ public class CoinColaTask extends BaseTask {
 
     public CoinColaTask() {
         coinType = "XRP";
-        buyType = "购买";
+        buyType = 1;
         payType = "ali_pay";
     }
 
@@ -57,7 +57,7 @@ public class CoinColaTask extends BaseTask {
             for (int i = 0; i < tvOperators.size(); i++) {
                 AccessibilityNodeInfo tvOperator = tvOperators.get(i);
                 // 购买类型一致
-                if (buyType.equals(tvOperator.getText().toString())) {
+                if (getBuyTypeStr().equals(tvOperator.getText().toString())) {
                     Rect rect = new Rect();
                     tvOperator.getBoundsInScreen(rect);
                     if (rect.left > 0 && rect.right < DisplayUtil.getDisplayWidth()) {

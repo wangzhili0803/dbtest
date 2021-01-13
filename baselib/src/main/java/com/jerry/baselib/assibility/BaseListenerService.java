@@ -93,6 +93,12 @@ public abstract class BaseListenerService extends AccessibilityService {
         return super.onUnbind(intent);
     }
 
+    @Override
+    public void onDestroy() {
+        stopScript();
+        super.onDestroy();
+    }
+
     /**
      * 必须重写的方法：系统要中断此service返回的响应时会调用。在整个生命周期会被调用多次。
      */

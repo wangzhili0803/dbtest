@@ -20,7 +20,7 @@ public class HuobiTask extends BaseTask {
 
     public HuobiTask() {
         coinType = "XRP";
-        buyType = "出售";
+        buyType = 0;
         payType = "ali_pay";
     }
 
@@ -57,7 +57,7 @@ public class HuobiTask extends BaseTask {
                 AccessibilityNodeInfo listView = listViews.get(i);
                 String typeStr = service.getNodeText(listView, "coinUnit");
                 String buyStr = service.getNodeText(listView, "buy_or_sell_btn");
-                if (coinType.equals(typeStr) && buyType.equals(buyStr)) {
+                if (coinType.equals(typeStr) && getBuyTypeStr().equals(buyStr)) {
                     targetIndex = i;
                     break;
                 }

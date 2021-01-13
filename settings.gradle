@@ -1,2 +1,2 @@
-include ':app', ':antifake', ':baselib'
-rootProject.name = "dddk"
+include ':app', ':antifake', ':baselib', ':antifake', ':lchat'
+rootProject.name = "jerryPro"

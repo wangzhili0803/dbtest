@@ -119,7 +119,7 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation project(path: ':baselib')
     implementation project(path: ':antifake')
-    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation project(':lchat')
 }
 
 andResGuard {
