@@ -48,6 +48,7 @@ public abstract class BaseTask implements TaskCallback {
         return coinType;
     }
 
+    @Override
     public void setCoinType(final String coinType, OnDataChangedListener<AVIMConversation> onDataChangedListener) {
         this.coinType = coinType;
         updateAvimConversation(onDataChangedListener);
@@ -58,6 +59,7 @@ public abstract class BaseTask implements TaskCallback {
         return buyType;
     }
 
+    @Override
     public void setBuyType(final int buyType, OnDataChangedListener<AVIMConversation> onDataChangedListener) {
         this.buyType = buyType;
         updateAvimConversation(onDataChangedListener);
@@ -72,11 +74,11 @@ public abstract class BaseTask implements TaskCallback {
     }
 
     protected String getBuyTypeStr() {
-        return buyType == 0 ? "出售" : "购买";
+        return buyType == TYPE_SELL ? "出售" : "购买";
     }
 
     protected String getAnotherTypeStr() {
-        return coinType + (buyType == 0 ? "购买" : "出售");
+        return coinType + (buyType == TYPE_SELL ? "购买" : "出售");
     }
 
     @Override

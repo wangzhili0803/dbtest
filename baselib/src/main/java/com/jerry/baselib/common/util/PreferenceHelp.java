@@ -26,6 +26,7 @@ public class PreferenceHelp {
     public static final String HOUSE_RENT = "house_rent";
     public static final String HOUSE_RENOVATION = "house_renovation";
     public static final String HOUSE_ROOM_TYPE = "house_room_type";
+    public static final String TASK_PLATFORM = "task_platform";
     /**
      * 0：商品，1：免费送
      */

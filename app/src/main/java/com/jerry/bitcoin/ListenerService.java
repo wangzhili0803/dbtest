@@ -31,11 +31,13 @@ import com.jerry.baselib.common.util.AppUtils;
 import com.jerry.baselib.common.util.DisplayUtil;
 import com.jerry.baselib.common.util.JJSON;
 import com.jerry.baselib.common.util.LogUtils;
+import com.jerry.baselib.common.util.PreferenceHelp;
 import com.jerry.baselib.common.util.ToastUtil;
 import com.jerry.baselib.common.util.WeakHandler;
 import com.jerry.bitcoin.beans.CoinBean;
 import com.jerry.bitcoin.home.MainActivity;
 import com.jerry.bitcoin.interfaces.TaskCallback;
+import com.jerry.bitcoin.platform.CoinColaTask;
 import com.jerry.bitcoin.platform.HuobiTask;
 
 import cn.leancloud.chatkit.event.LCIMIMTypeMessageEvent;
@@ -55,15 +57,17 @@ import cn.leancloud.im.v2.messages.AVIMTextMessage;
 
 public class ListenerService extends BaseListenerService {
 
+    public static final String TYPE_PLATFORMS = "TYPE_PLATFORMS";
+    public static final String TYPE_COINS = "TYPE_COINS";
+    public static final String TYPE_BUYS = "TYPE_BUYS";
     /**
      * 擦亮
      */
     private static final int MSG_DO_TASK = 101;
+    private static final int MSG_BUY_TYPE = 102;
+    private static final int MSG_COIN_TYPE = 103;
+    private static final int MSG_PLATFORM = 104;
     private static final int UNINSTALL_APP = 1;
-    /**
-     * 对方的IP
-     */
-    public static String sDeviceIp;
 
     private FloatLogoMenu menu;
 
@@ -73,16 +77,42 @@ public class ListenerService extends BaseListenerService {
         BitmapFactory.decodeResource(BaseApp.getInstance().getResources(), R.drawable.pause), "0");
     private final List<FloatItem> itemList = new ArrayList<>();
     private TaskCallback mTasksCallback;
+    private HuobiTask mHuobiTask;
+    private CoinColaTask mCoinColaTask;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        setTasksCallback(new HuobiTask());
         mWeakHandler = new WeakHandler(msg -> {
             switch (msg.what) {
                 case MSG_DO_TASK:
                     mWeakHandler.postDelayed(this::ptrRefresh, TIME_LONGLONG);
                     mWeakHandler.postDelayed(this::doTask, TIME_LONGLONG);
+                    return true;
+                case MSG_PLATFORM:
+                    switch (PreferenceHelp.getString(TYPE_PLATFORMS, "huobi")) {
+                        case "coincola":
+                            if (mCoinColaTask == null) {
+                                mCoinColaTask = new CoinColaTask();
+                            }
+                            mTasksCallback = mCoinColaTask;
+                            break;
+                        case "huobi":
+                        default:
+                            if (mHuobiTask == null) {
+                                mHuobiTask = new HuobiTask();
+                            }
+                            mTasksCallback = mHuobiTask;
+                            break;
+                    }
+                    packageName = mTasksCallback.getPackageName();
+                    ToastUtil.showShortText("修改成功！");
+                    return true;
+                case MSG_COIN_TYPE:
+                    mTasksCallback.setCoinType(PreferenceHelp.getString(TYPE_COINS), data -> ToastUtil.showShortText("修改成功！"));
+                    return true;
+                case MSG_BUY_TYPE:
+                    mTasksCallback.setBuyType(PreferenceHelp.getInt(TYPE_BUYS), data -> ToastUtil.showShortText("修改成功！"));
                     return true;
                 case UNINSTALL_APP:
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -99,6 +129,7 @@ public class ListenerService extends BaseListenerService {
                     return false;
             }
         });
+        setTaskPlatform();
         if (!EventBus.getDefault().isRegistered(ListenerService.this)) {
             EventBus.getDefault().register(ListenerService.this);
         }
@@ -212,9 +243,16 @@ public class ListenerService extends BaseListenerService {
         mWeakHandler.postDelayed(this::doTask, TIME_LONGLONG);
     }
 
-    public void setTasksCallback(final TaskCallback tasksCallback) {
-        mTasksCallback = tasksCallback;
-        packageName = mTasksCallback.getPackageName();
+    public static void setTaskPlatform() {
+        instance.mWeakHandler.sendEmptyMessage(MSG_PLATFORM);
+    }
+
+    public static void setBuyType() {
+        instance.mWeakHandler.sendEmptyMessage(MSG_BUY_TYPE);
+    }
+
+    public static void setCoinType() {
+        instance.mWeakHandler.sendEmptyMessage(MSG_COIN_TYPE);
     }
 
     /**

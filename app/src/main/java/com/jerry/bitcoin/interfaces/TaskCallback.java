@@ -1,5 +1,6 @@
 package com.jerry.bitcoin.interfaces;
 
+import com.jerry.baselib.common.util.OnDataChangedListener;
 import com.jerry.bitcoin.ListenerService;
 import com.jerry.bitcoin.beans.CoinBean;
 
@@ -24,6 +25,10 @@ public interface TaskCallback {
     String getPackageName();
 
     int getBuyType();
+
+    void setBuyType(final int buyType, OnDataChangedListener<AVIMConversation> onDataChangedListener);
+
+    void setCoinType(final String coinType, OnDataChangedListener<AVIMConversation> onDataChangedListener);
 
     /**
      * 获取购买币的信息
