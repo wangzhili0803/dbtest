@@ -20,8 +20,9 @@ public class HuobiTask extends BaseTask {
 
     public HuobiTask() {
         coinType = "XRP";
-        buyType = 0;
+        buyType = TYPE_SELL;
         payType = "ali_pay";
+        updateAvimConversation(null);
     }
 
     @Override

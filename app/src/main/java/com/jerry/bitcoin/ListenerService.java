@@ -17,13 +17,13 @@ import android.view.accessibility.AccessibilityEvent;
 
 import androidx.core.content.ContextCompat;
 
+import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import com.alibaba.fastjson.JSON;
 import com.jerry.baselib.BaseApp;
 import com.jerry.baselib.assibility.BaseListenerService;
-import com.jerry.baselib.common.bean.AxiangMeassage;
 import com.jerry.baselib.common.flow.FloatItem;
 import com.jerry.baselib.common.flow.FloatLogoMenu;
 import com.jerry.baselib.common.flow.FloatMenuView;
@@ -39,6 +39,7 @@ import com.jerry.bitcoin.interfaces.TaskCallback;
 import com.jerry.bitcoin.platform.HuobiTask;
 
 import cn.leancloud.chatkit.event.LCIMIMTypeMessageEvent;
+import cn.leancloud.im.v2.AVIMConversation;
 import cn.leancloud.im.v2.AVIMException;
 import cn.leancloud.im.v2.AVIMMessageOption;
 import cn.leancloud.im.v2.AVIMReservedMessageType;
@@ -72,7 +73,6 @@ public class ListenerService extends BaseListenerService {
         BitmapFactory.decodeResource(BaseApp.getInstance().getResources(), R.drawable.pause), "0");
     private final List<FloatItem> itemList = new ArrayList<>();
     private TaskCallback mTasksCallback;
-    private CoinBean coinBean;
 
     @Override
     public void onCreate() {
@@ -98,6 +98,17 @@ public class ListenerService extends BaseListenerService {
                     return false;
             }
         });
+        if (!EventBus.getDefault().isRegistered(ListenerService.this)) {
+            EventBus.getDefault().register(ListenerService.this);
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (EventBus.getDefault().isRegistered(ListenerService.this)) {
+            EventBus.getDefault().unregister(ListenerService.this);
+        }
     }
 
     @SuppressLint("SwitchIntDef")
@@ -185,16 +196,11 @@ public class ListenerService extends BaseListenerService {
         if (!AppUtils.playing) {
             return;
         }
-        switch (taskIndex) {
-            case 0:
-                coinBean = mTasksCallback.getBuyInfo(this);
-                LogUtils.d(coinBean.toString());
-                sendMessage(JSON.toJSONString(coinBean));
-                break;
-            default:
-                break;
+        if (mTasksCallback.getBuyType() == TaskCallback.TYPE_SELL) {
+            CoinBean coinBean = mTasksCallback.getBuyInfo(this);
+            sendMessage(JSON.toJSONString(coinBean));
         }
-        mWeakHandler.sendEmptyMessage(MSG_DO_TASK);
+        mWeakHandler.postDelayed(this::doTask, TIME_LONGLONG);
     }
 
     public void setTasksCallback(final TaskCallback tasksCallback) {
@@ -217,11 +223,8 @@ public class ListenerService extends BaseListenerService {
         } else {
             option.setReceipt(true);
         }
-        mTasksCallback.getAvimConversation(imConversation -> {
-            if (imConversation == null) {
-                LogUtils.e("imConversation is null");
-                return;
-            }
+        AVIMConversation imConversation = mTasksCallback.getAvimConversation();
+        if (imConversation != null) {
             imConversation.sendMessage(message, option, new AVIMConversationCallback() {
                 @Override
                 public void done(AVIMException e) {
@@ -232,7 +235,7 @@ public class ListenerService extends BaseListenerService {
                     LogUtils.d("imConversation send success");
                 }
             });
-        });
+        }
     }
 
 
@@ -241,25 +244,17 @@ public class ListenerService extends BaseListenerService {
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEvent(LCIMIMTypeMessageEvent messageEvent) {
-        mTasksCallback.getAvimConversation(imConversation -> {
-            if (null != imConversation && null != messageEvent &&
+        AVIMConversation imConversation = mTasksCallback.getAvimConversation();
+        if (imConversation != null) {
+            if (imConversation != null && messageEvent != null &&
                 imConversation.getConversationId().equals(messageEvent.conversation.getConversationId())) {
                 AVIMTypedMessage typedMessage = messageEvent.message;
                 if (typedMessage.getMessageType() == AVIMReservedMessageType.TextMessageType.getType()) {
                     String text = ((AVIMTextMessage) typedMessage).getText();
-                    AxiangMeassage meassage = JJSON.parseObject(text, AxiangMeassage.class);
-                    if (meassage != null) {
-                        if (!AppUtils.getDeviceId().equals(meassage.getDeviceId())) {
-                            return;
-                        }
-                        String from = meassage.getNickname();
-                        if (from == null) {
-                            ToastUtil.showShortText("收到来自：" + typedMessage.getFrom() + "的消息，内容为：" + meassage.getContent());
-                        }
-                    }
+                    CoinBean meassage = JJSON.parseObject(text, CoinBean.class);
+                    ToastUtil.showShortText("收到来自：" + typedMessage.getFrom() + "的消息，内容为：" + meassage.toString());
                 }
             }
-        });
-
+        }
     }
 }

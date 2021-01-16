@@ -111,7 +111,6 @@ public final class LCChatKit {
                         protected void internalDone0(Object o, AVException e) {
                             LCChatProfileProvider profileProvider = LCChatKit.getInstance().getProfileProvider();
                             if (null != profileProvider) {
-                                profileProvider.fetchUsers();
                                 callback.internalDone(avimClient, e);
                             } else {
                                 callback.internalDone(null, new AVException(new Throwable("please setProfileProvider first!")));

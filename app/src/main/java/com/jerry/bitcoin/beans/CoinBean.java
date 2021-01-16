@@ -43,4 +43,14 @@ public class CoinBean {
     public void setCurrentTimeMs(final long currentTimeMs) {
         this.currentTimeMs = currentTimeMs;
     }
+
+    @Override
+    public String toString() {
+        return "CoinBean{" +
+            "min=" + min +
+            ", max=" + max +
+            ", price=" + price +
+            ", currentTimeMs=" + currentTimeMs +
+            '}';
+    }
 }

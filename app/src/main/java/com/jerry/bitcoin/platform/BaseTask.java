@@ -48,18 +48,19 @@ public abstract class BaseTask implements TaskCallback {
         return coinType;
     }
 
-    public void setCoinType(final String coinType) {
+    public void setCoinType(final String coinType, OnDataChangedListener<AVIMConversation> onDataChangedListener) {
         this.coinType = coinType;
-        mAvimConversation = null;
+        updateAvimConversation(onDataChangedListener);
     }
 
+    @Override
     public int getBuyType() {
         return buyType;
     }
 
-    public void setBuyType(final int buyType) {
+    public void setBuyType(final int buyType, OnDataChangedListener<AVIMConversation> onDataChangedListener) {
         this.buyType = buyType;
-        mAvimConversation = null;
+        updateAvimConversation(onDataChangedListener);
     }
 
     public String getPayType() {
@@ -75,40 +76,43 @@ public abstract class BaseTask implements TaskCallback {
     }
 
     protected String getAnotherTypeStr() {
-        return buyType == 0 ? "购买" : "出售";
+        return coinType + (buyType == 0 ? "购买" : "出售");
     }
 
     @Override
-    public void getAvimConversation(OnDataChangedListener<AVIMConversation> onDataChangedListener) {
-        if (mAvimConversation == null) {
-            LCChatKit.getInstance().open(coinType + getBuyTypeStr(), new AVIMClientCallback() {
-                @Override
-                public void done(AVIMClient avimClient, AVIMException e) {
-                    if (null != e) {
-                        ToastUtil.showShortText(e.getMessage());
+    public AVIMConversation getAvimConversation() {
+        return mAvimConversation;
+    }
+
+    public void updateAvimConversation(OnDataChangedListener<AVIMConversation> onDataChangedListener) {
+        LCChatKit.getInstance().open(coinType + getBuyTypeStr(), new AVIMClientCallback() {
+            @Override
+            public void done(AVIMClient avimClient, AVIMException e) {
+                if (null != e) {
+                    ToastUtil.showShortText(e.getMessage());
+                    if (onDataChangedListener != null) {
                         onDataChangedListener.onDataChanged(mAvimConversation);
-                        return;
                     }
-                    ToastUtil.showShortText("设备已连接");
-                    LCChatKit.getInstance().getClient()
-                        .createConversation(Collections.singletonList(getAnotherTypeStr()), "", null, false, true,
-                            new AVIMConversationCreatedCallback() {
-                                @Override
-                                public void done(AVIMConversation avimConversation, AVIMException e) {
-                                    if (null != e) {
-                                        ToastUtil.showShortText(e.getMessage());
-                                    } else {
-                                        mAvimConversation = avimConversation;
-                                        LCIMConversationItemCache.getInstance().insertConversation(avimConversation.getConversationId());
-                                    }
-                                    onDataChangedListener.onDataChanged(mAvimConversation);
-                                }
-                            });
+                    return;
                 }
-            });
-        } else {
-            onDataChangedListener.onDataChanged(mAvimConversation);
-        }
+                ToastUtil.showShortText("设备已连接");
+                LCChatKit.getInstance().getClient().createConversation(Collections.singletonList(getAnotherTypeStr()), "", null, false, true,
+                    new AVIMConversationCreatedCallback() {
+                        @Override
+                        public void done(AVIMConversation avimConversation, AVIMException e) {
+                            if (null != e) {
+                                ToastUtil.showShortText(e.getMessage());
+                            } else {
+                                mAvimConversation = avimConversation;
+                                LCIMConversationItemCache.getInstance().insertConversation(avimConversation.getConversationId());
+                            }
+                            if (onDataChangedListener != null) {
+                                onDataChangedListener.onDataChanged(mAvimConversation);
+                            }
+                        }
+                    });
+            }
+        });
     }
 
     protected abstract AccessibilityNodeInfo getValidNode(ListenerService service);

@@ -9,7 +9,5 @@ public interface LCChatProfileProvider {
 
     void fetchProfiles(List<String> userIdList, LCChatProfilesCallBack profilesCallBack);
 
-    void fetchUsers();
-
     List<LCChatKitUser> getAllUsers();
 }

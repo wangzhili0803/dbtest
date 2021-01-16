@@ -22,8 +22,9 @@ public class CoinColaTask extends BaseTask {
 
     public CoinColaTask() {
         coinType = "XRP";
-        buyType = 1;
+        buyType = TYPE_BUY;
         payType = "ali_pay";
+        updateAvimConversation(null);
     }
 
     @Override
@@ -42,7 +43,7 @@ public class CoinColaTask extends BaseTask {
                 String[] minMax = StringUtil.safeSplit(rationed, Key.LINE);
                 coinBean.setMin(ParseUtil.parseDouble(minMax[0]));
                 coinBean.setMax(ParseUtil.parseDouble(minMax[1]));
-                coinBean.setPrice(ParseUtil.parseDouble(priceStr.replace("CNY", Key.NIL).trim()));
+                coinBean.setPrice(ParseUtil.parseDouble(priceStr.replace(Key.COMMA, Key.NIL).replace("CNY", Key.NIL).trim()));
                 coinBean.setCurrentTimeMs(System.currentTimeMillis());
             }
         }

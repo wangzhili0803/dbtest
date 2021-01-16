@@ -2,11 +2,6 @@ package com.jerry.bitcoin.control;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-
-import com.jerry.baselib.Key;
-import com.jerry.baselib.common.util.AppUtils;
-import com.jerry.baselib.common.util.UserManager;
 
 import cn.leancloud.chatkit.LCChatKitUser;
 import cn.leancloud.chatkit.LCChatProfileProvider;
@@ -43,18 +38,6 @@ public class CustomUserProvider implements LCChatProfileProvider {
             }
         }
         callBack.done(userList, null);
-    }
-
-    @Override
-    public void fetchUsers() {
-        CHAT_KIT_USERS.clear();
-        String currentDev = AppUtils.getDeviceId();
-        Set<String> devices = UserManager.getInstance().getUser().getDevices();
-        for (String device : devices) {
-            if (!device.equals(currentDev)) {
-                CHAT_KIT_USERS.add(new LCChatKitUser(device, device, Key.NIL));
-            }
-        }
     }
 
     @Override
