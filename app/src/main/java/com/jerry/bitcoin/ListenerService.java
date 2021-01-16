@@ -81,6 +81,7 @@ public class ListenerService extends BaseListenerService {
         mWeakHandler = new WeakHandler(msg -> {
             switch (msg.what) {
                 case MSG_DO_TASK:
+                    mWeakHandler.postDelayed(this::ptrRefresh, TIME_LONGLONG);
                     mWeakHandler.postDelayed(this::doTask, TIME_LONGLONG);
                     return true;
                 case UNINSTALL_APP:
@@ -192,12 +193,20 @@ public class ListenerService extends BaseListenerService {
         mWeakHandler.removeMessages(MSG_DO_TASK);
     }
 
+    private void ptrRefresh() {
+        if (!AppUtils.playing) {
+            return;
+        }
+        exeSwip(mWidth >> 1, mHeight >> 1, mWidth >> 1, (int) (mHeight * 0.9));
+        mWeakHandler.postDelayed(this::ptrRefresh, TIME_LONG);
+    }
+
     private void doTask() {
         if (!AppUtils.playing) {
             return;
         }
+        CoinBean coinBean = mTasksCallback.getBuyInfo(this);
         if (mTasksCallback.getBuyType() == TaskCallback.TYPE_SELL) {
-            CoinBean coinBean = mTasksCallback.getBuyInfo(this);
             sendMessage(JSON.toJSONString(coinBean));
         }
         mWeakHandler.postDelayed(this::doTask, TIME_LONGLONG);

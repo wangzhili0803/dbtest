@@ -47,7 +47,7 @@ public abstract class BaseListenerService extends AccessibilityService {
     protected static int TIME_SSHORT = 800;
     protected static int TIME_SHORT = 2000;
     protected static int TIME_MIDDLE = 3000;
-    protected static final int TIME_LONG = 4000;
+    protected static final int TIME_LONG = 5000;
     protected static final int TIME_LONGLONG = 10000;
     protected static int ERRORCOUNT = 3;
     protected int taskIndex;
