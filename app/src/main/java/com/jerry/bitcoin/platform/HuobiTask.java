@@ -21,7 +21,6 @@ public class HuobiTask extends BaseTask {
     public HuobiTask() {
         coinType = "XRP";
         buyType = TYPE_SELL;
-        payType = "ali_pay";
         updateAvimConversation(null);
     }
 
@@ -64,12 +63,7 @@ public class HuobiTask extends BaseTask {
                 }
             }
             AccessibilityNodeInfo list = listViews.get(targetIndex);
-            for (int i = 0; i < list.getChildCount(); i++) {
-                AccessibilityNodeInfo item = list.getChild(i);
-                if (!CollectionUtils.isEmpty(item.findAccessibilityNodeInfosByViewId(getPackageName() + payType))) {
-                    return item;
-                }
-            }
+            return list.getChild(0);
         }
         return null;
     }

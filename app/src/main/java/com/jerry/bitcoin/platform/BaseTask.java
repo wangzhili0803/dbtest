@@ -38,7 +38,6 @@ public abstract class BaseTask implements TaskCallback {
      * 0：出售，1：购买
      */
     protected int buyType;
-    protected String payType;
 
     public CoinBean getCoinBean() {
         return coinBean;
@@ -63,14 +62,6 @@ public abstract class BaseTask implements TaskCallback {
     public void setBuyType(final int buyType, OnDataChangedListener<AVIMConversation> onDataChangedListener) {
         this.buyType = buyType;
         updateAvimConversation(onDataChangedListener);
-    }
-
-    public String getPayType() {
-        return payType;
-    }
-
-    public void setPayType(final String payType) {
-        this.payType = payType;
     }
 
     protected String getBuyTypeStr() {

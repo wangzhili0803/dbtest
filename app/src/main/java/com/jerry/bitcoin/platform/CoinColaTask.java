@@ -23,7 +23,6 @@ public class CoinColaTask extends BaseTask {
     public CoinColaTask() {
         coinType = "XRP";
         buyType = TYPE_BUY;
-        payType = "ali_pay";
         updateAvimConversation(null);
     }
 

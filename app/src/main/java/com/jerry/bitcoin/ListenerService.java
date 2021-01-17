@@ -79,6 +79,10 @@ public class ListenerService extends BaseListenerService {
     private TaskCallback mTasksCallback;
     private HuobiTask mHuobiTask;
     private CoinColaTask mCoinColaTask;
+    /**
+     * 当前最新刷新信息
+     */
+    private CoinBean mCoinBean;
 
     @Override
     public void onCreate() {
@@ -236,9 +240,9 @@ public class ListenerService extends BaseListenerService {
         if (!AppUtils.playing) {
             return;
         }
-        CoinBean coinBean = mTasksCallback.getBuyInfo(this);
+        mCoinBean = mTasksCallback.getBuyInfo(this);
         if (mTasksCallback.getBuyType() == TaskCallback.TYPE_SELL) {
-            sendMessage(JSON.toJSONString(coinBean));
+            sendMessage(JSON.toJSONString(mCoinBean));
         }
         mWeakHandler.postDelayed(this::doTask, TIME_LONGLONG);
     }
@@ -298,10 +302,29 @@ public class ListenerService extends BaseListenerService {
                 AVIMTypedMessage typedMessage = messageEvent.message;
                 if (typedMessage.getMessageType() == AVIMReservedMessageType.TextMessageType.getType()) {
                     String text = ((AVIMTextMessage) typedMessage).getText();
-                    CoinBean meassage = JJSON.parseObject(text, CoinBean.class);
-                    ToastUtil.showShortText("收到来自：" + typedMessage.getFrom() + "的消息，内容为：" + meassage.toString());
+                    CoinBean sellCoin = JJSON.parseObject(text, CoinBean.class);
+                    if (sellCoin.getPrice() > mCoinBean.getPrice()) {
+                        LogUtils.w("发现低价：卖价：" + sellCoin.getPrice() + "，买价：" + mCoinBean.getPrice());
+                        double maxLimit = findMaxLimit(sellCoin);
+                        if (maxLimit > 0) {
+                            LogUtils.w("发现执行：卖价：" + sellCoin.getPrice() + "，买价：" + mCoinBean.getPrice());
+                        }
+                        giveNotice();
+                    }
+                    ToastUtil.showShortText("收到来自：" + typedMessage.getFrom() + "的消息，内容为：" + sellCoin.toString());
                 }
             }
         }
+    }
+
+    private double findMaxLimit(CoinBean sellCoin) {
+        double min1 = sellCoin.getMin();
+        double max1 = sellCoin.getMax();
+        double min2 = mCoinBean.getMin();
+        double max2 = mCoinBean.getMax();
+        if ((max2 > min1 && min2 < max1) && (max1 > min2 && min1 < max2)) {
+            return Math.min(max1, max2);
+        }
+        return 0;
     }
 }
