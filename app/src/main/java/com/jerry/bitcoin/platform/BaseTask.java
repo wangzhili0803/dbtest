@@ -52,13 +52,13 @@ public abstract class BaseTask implements TaskCallback {
     public BaseTask() {
         coinType = PreferenceHelp.getString(ListenerService.TYPE_COINS, CoinConstant.XRP);
         buyType = PreferenceHelp.getInt(ListenerService.TYPE_BUYS);
-        updateAvimConversation(null);
+        openConversation(null);
     }
 
     @Override
     public void setCoinType(final String coinType, OnDataChangedListener<AVIMConversation> onDataChangedListener) {
         this.coinType = coinType;
-        updateAvimConversation(onDataChangedListener);
+        openConversation(onDataChangedListener);
     }
 
     @Override
@@ -69,7 +69,7 @@ public abstract class BaseTask implements TaskCallback {
     @Override
     public void setBuyType(final int buyType, OnDataChangedListener<AVIMConversation> onDataChangedListener) {
         this.buyType = buyType;
-        updateAvimConversation(onDataChangedListener);
+        openConversation(onDataChangedListener);
     }
 
     protected String getBuyTypeStr() {
@@ -85,7 +85,8 @@ public abstract class BaseTask implements TaskCallback {
         return mAvimConversation;
     }
 
-    private void updateAvimConversation(OnDataChangedListener<AVIMConversation> onDataChangedListener) {
+    @Override
+    public void openConversation(OnDataChangedListener<AVIMConversation> onDataChangedListener) {
         LCChatKit.getInstance().open(coinType + getBuyTypeStr(), new AVIMClientCallback() {
             @Override
             public void done(AVIMClient avimClient, AVIMException e) {

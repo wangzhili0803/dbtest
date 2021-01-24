@@ -39,4 +39,9 @@ public interface TaskCallback {
      * 获取消息管理器
      */
     AVIMConversation getAvimConversation();
+
+    /**
+     * 断线重连
+     */
+    void openConversation(OnDataChangedListener<AVIMConversation> onDataChangedListener);
 }

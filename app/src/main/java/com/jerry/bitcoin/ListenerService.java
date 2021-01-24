@@ -281,6 +281,7 @@ public class ListenerService extends BaseListenerService {
                 public void done(AVIMException e) {
                     if (null != e) {
                         ToastUtil.showShortText(e.getMessage());
+                        mTasksCallback.openConversation(null);
                         return;
                     }
                     LogUtils.d("imConversation send success");
