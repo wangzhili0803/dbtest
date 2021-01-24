@@ -18,12 +18,6 @@ import com.jerry.bitcoin.beans.CoinBean;
  */
 public class HuobiTask extends BaseTask {
 
-    public HuobiTask() {
-        coinType = "XRP";
-        buyType = TYPE_SELL;
-        updateAvimConversation(null);
-    }
-
     @Override
     public String getPackageName() {
         return "pro.huobi:id/";

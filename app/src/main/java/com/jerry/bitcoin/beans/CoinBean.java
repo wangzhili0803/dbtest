@@ -1,11 +1,13 @@
 package com.jerry.bitcoin.beans;
 
+import com.jerry.baselib.common.bean.AVBaseObject;
+
 /**
  * @author Jerry
  * @createDate 1/11/21
  * @description
  */
-public class CoinBean {
+public class CoinBean extends AVBaseObject {
 
     private double min;
     private double max;

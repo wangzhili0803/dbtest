@@ -6,9 +6,11 @@ import java.util.Collections;
 import android.view.accessibility.AccessibilityNodeInfo;
 
 import com.jerry.baselib.common.util.OnDataChangedListener;
+import com.jerry.baselib.common.util.PreferenceHelp;
 import com.jerry.baselib.common.util.ToastUtil;
 import com.jerry.bitcoin.ListenerService;
 import com.jerry.bitcoin.beans.CoinBean;
+import com.jerry.bitcoin.beans.CoinConstant;
 import com.jerry.bitcoin.interfaces.TaskCallback;
 
 import cn.leancloud.chatkit.LCChatKit;
@@ -47,6 +49,12 @@ public abstract class BaseTask implements TaskCallback {
         return coinType;
     }
 
+    public BaseTask() {
+        coinType = PreferenceHelp.getString(ListenerService.TYPE_COINS, CoinConstant.XRP);
+        buyType = PreferenceHelp.getInt(ListenerService.TYPE_BUYS);
+        updateAvimConversation(null);
+    }
+
     @Override
     public void setCoinType(final String coinType, OnDataChangedListener<AVIMConversation> onDataChangedListener) {
         this.coinType = coinType;
@@ -77,7 +85,7 @@ public abstract class BaseTask implements TaskCallback {
         return mAvimConversation;
     }
 
-    public void updateAvimConversation(OnDataChangedListener<AVIMConversation> onDataChangedListener) {
+    private void updateAvimConversation(OnDataChangedListener<AVIMConversation> onDataChangedListener) {
         LCChatKit.getInstance().open(coinType + getBuyTypeStr(), new AVIMClientCallback() {
             @Override
             public void done(AVIMClient avimClient, AVIMException e) {

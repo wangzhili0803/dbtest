@@ -308,6 +308,11 @@ public class ListenerService extends BaseListenerService {
                         double maxLimit = findMaxLimit(sellCoin);
                         if (maxLimit > 0) {
                             LogUtils.w("发现执行：卖价：" + sellCoin.getPrice() + "，买价：" + mCoinBean.getPrice());
+                            CoinBean coinBean = new CoinBean();
+                            coinBean.setPrice(1);
+                            coinBean.setMin(2);
+                            coinBean.setMax(3);
+                            coinBean.save();
                         }
                         giveNotice();
                     }

@@ -20,12 +20,6 @@ import com.jerry.bitcoin.beans.CoinBean;
  */
 public class CoinColaTask extends BaseTask {
 
-    public CoinColaTask() {
-        coinType = "XRP";
-        buyType = TYPE_BUY;
-        updateAvimConversation(null);
-    }
-
     @Override
     public String getPackageName() {
         return "com.newgo.coincola:id/";

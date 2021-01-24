@@ -12,12 +12,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.jerry.baselib.common.base.BaseFragment;
 import com.jerry.baselib.common.base.BaseRecyclerAdapter;
-import com.jerry.baselib.common.base.BaseRecyclerAdapter.OnItemClickListener;
 import com.jerry.baselib.common.base.RecyclerViewHolder;
-import com.jerry.baselib.common.ptrlib.widget.PtrRecyclerView;
 import com.jerry.baselib.common.util.PreferenceHelp;
 import com.jerry.bitcoin.ListenerService;
 import com.jerry.bitcoin.R;
+import com.jerry.bitcoin.beans.CoinConstant;
 import com.jerry.bitcoin.interfaces.TaskCallback;
 
 /**
@@ -36,11 +35,12 @@ public class HomeFragment extends BaseFragment {
     static {
         PLATFORMS.add("huobi");
         PLATFORMS.add("coincola");
-        COINS.add("BTC");
-        COINS.add("ETH");
-        COINS.add("EOS");
-        COINS.add("XRP");
-        COINS.add("LTC");
+        COINS.add(CoinConstant.USDT);
+        COINS.add(CoinConstant.BTC);
+        COINS.add(CoinConstant.ETH);
+        COINS.add(CoinConstant.EOS);
+        COINS.add(CoinConstant.XRP);
+        COINS.add(CoinConstant.LTC);
         BUYS.add(TaskCallback.TYPE_SELL);
         BUYS.add(TaskCallback.TYPE_BUY);
     }
@@ -101,7 +101,7 @@ public class HomeFragment extends BaseFragment {
             public void convert(final RecyclerViewHolder holder, final int position, final int viewType, final String bean) {
                 TextView textView = holder.getView(R.id.textView);
                 textView.setText(bean);
-                textView.setSelected(bean.equals(PreferenceHelp.getString(ListenerService.TYPE_COINS, "XRP")));
+                textView.setSelected(bean.equals(PreferenceHelp.getString(ListenerService.TYPE_COINS, CoinConstant.XRP)));
             }
         };
         coinsAdapter.setOnItemClickListener((itemView, position) -> {
