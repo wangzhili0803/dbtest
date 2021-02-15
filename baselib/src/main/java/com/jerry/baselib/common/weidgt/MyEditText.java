@@ -13,7 +13,7 @@ import com.jerry.baselib.common.util.OnDataChangedListener;
 /**
  * 带清空按钮的EditText
  */
-public class MyEditText extends EditText {
+public class MyEditText extends androidx.appcompat.widget.AppCompatEditText {
 
     private Drawable dLeft;
     private Drawable dRight;

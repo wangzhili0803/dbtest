@@ -6,6 +6,7 @@ import android.graphics.Rect;
 import android.view.accessibility.AccessibilityNodeInfo;
 
 import com.jerry.baselib.Key;
+import com.jerry.baselib.assibility.EndCallback;
 import com.jerry.baselib.common.util.CollectionUtils;
 import com.jerry.baselib.common.util.DisplayUtil;
 import com.jerry.baselib.common.util.ParseUtil;
@@ -34,9 +35,9 @@ public class CoinColaTask extends BaseTask {
             if (rationed != null && priceStr != null) {
                 rationed = rationed.replace("限额", Key.NIL).replace(Key.COMMA, Key.NIL).replace("CNY", Key.NIL).trim();
                 String[] minMax = StringUtil.safeSplit(rationed, Key.LINE);
-                coinBean.setMin(ParseUtil.parseDouble(minMax[0]));
-                coinBean.setMax(ParseUtil.parseDouble(minMax[1]));
-                coinBean.setPrice(ParseUtil.parseDouble(priceStr.replace(Key.COMMA, Key.NIL).replace("CNY", Key.NIL).trim()));
+                coinBean.setMin(ParseUtil.parse2Double(minMax[0]));
+                coinBean.setMax(ParseUtil.parse2Double(minMax[1]));
+                coinBean.setPrice(ParseUtil.parse2Double(priceStr.replace(Key.COMMA, Key.NIL).replace("CNY", Key.NIL).trim()));
                 coinBean.setCurrentTimeMs(System.currentTimeMillis());
             }
         }
@@ -61,5 +62,15 @@ public class CoinColaTask extends BaseTask {
             }
         }
         return null;
+    }
+
+    @Override
+    public void buyOrder(final ListenerService service, final EndCallback endCallback) {
+
+    }
+
+    @Override
+    public void saleOrder(final ListenerService service, final EndCallback endCallback) {
+
     }
 }

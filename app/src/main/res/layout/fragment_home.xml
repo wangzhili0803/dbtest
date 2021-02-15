@@ -4,6 +4,34 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <include layout="@layout/layout_header"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            style="@style/menu_label"
+            android:text="买入价不大于：" />
+        <com.jerry.baselib.common.weidgt.MyEditText
+            android:id="@+id/et_price_buy"
+            style="@style/style_item"
+            android:inputType="numberDecimal" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            style="@style/menu_label"
+            android:text="卖出价不小于" />
+        <com.jerry.baselib.common.weidgt.MyEditText
+            android:id="@+id/et_price_sale"
+            style="@style/style_item"
+            android:inputType="numberDecimal" />
+    </LinearLayout>
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

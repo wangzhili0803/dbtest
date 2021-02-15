@@ -5,7 +5,6 @@ import java.util.Collections;
 
 import android.view.accessibility.AccessibilityNodeInfo;
 
-import com.jerry.baselib.common.util.LogUtils;
 import com.jerry.baselib.common.util.OnDataChangedListener;
 import com.jerry.baselib.common.util.PreferenceHelp;
 import com.jerry.baselib.common.util.ToastUtil;
@@ -31,8 +30,6 @@ public abstract class BaseTask implements TaskCallback {
 
     protected final CoinBean coinBean = new CoinBean();
 
-    private boolean isConnecting;
-
     protected AVIMConversation mAvimConversation;
 
     /**
@@ -43,6 +40,14 @@ public abstract class BaseTask implements TaskCallback {
      * 0：出售，1：购买
      */
     protected int buyType;
+    /**
+     * 任务步骤
+     */
+    protected int taskStep;
+    /**
+     * 错误次数
+     */
+    protected int errorCount;
 
     public CoinBean getCoinBean() {
         return coinBean;
@@ -88,19 +93,12 @@ public abstract class BaseTask implements TaskCallback {
         return mAvimConversation;
     }
 
-    @Override
-    public void openConversation(OnDataChangedListener<AVIMConversation> onDataChangedListener) {
-        if (isConnecting) {
-            LogUtils.w("connect is buildding");
-            return;
-        }
-        isConnecting = true;
+    private void openConversation(OnDataChangedListener<AVIMConversation> onDataChangedListener) {
         String connectId = coinType + getBuyTypeStr();
         LCChatKit.getInstance().open(connectId, new AVIMClientCallback() {
             @Override
             public void done(AVIMClient avimClient, AVIMException e) {
                 if (null != e) {
-                    isConnecting = false;
                     ToastUtil.showShortText(e.getMessage());
                     if (onDataChangedListener != null) {
                         onDataChangedListener.onDataChanged(mAvimConversation);
@@ -112,7 +110,6 @@ public abstract class BaseTask implements TaskCallback {
                     new AVIMConversationCreatedCallback() {
                         @Override
                         public void done(AVIMConversation avimConversation, AVIMException e) {
-                            isConnecting = false;
                             if (null != e) {
                                 ToastUtil.showShortText(e.getMessage());
                             } else {

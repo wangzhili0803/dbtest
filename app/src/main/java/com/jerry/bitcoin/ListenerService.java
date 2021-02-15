@@ -15,15 +15,13 @@ import android.text.TextUtils;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 
-import androidx.core.content.ContextCompat;
-
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import com.alibaba.fastjson.JSON;
 import com.jerry.baselib.BaseApp;
 import com.jerry.baselib.assibility.BaseListenerService;
+import com.jerry.baselib.assibility.EndCallback;
 import com.jerry.baselib.common.flow.FloatItem;
 import com.jerry.baselib.common.flow.FloatLogoMenu;
 import com.jerry.baselib.common.flow.FloatMenuView;
@@ -35,11 +33,13 @@ import com.jerry.baselib.common.util.PreferenceHelp;
 import com.jerry.baselib.common.util.ToastUtil;
 import com.jerry.baselib.common.util.WeakHandler;
 import com.jerry.bitcoin.beans.CoinBean;
+import com.jerry.bitcoin.beans.CoinConstant;
 import com.jerry.bitcoin.home.MainActivity;
 import com.jerry.bitcoin.interfaces.TaskCallback;
 import com.jerry.bitcoin.platform.CoinColaTask;
 import com.jerry.bitcoin.platform.HuobiTask;
 
+import androidx.core.content.ContextCompat;
 import cn.leancloud.chatkit.event.LCIMIMTypeMessageEvent;
 import cn.leancloud.im.v2.AVIMConversation;
 import cn.leancloud.im.v2.AVIMException;
@@ -48,6 +48,7 @@ import cn.leancloud.im.v2.AVIMReservedMessageType;
 import cn.leancloud.im.v2.AVIMTypedMessage;
 import cn.leancloud.im.v2.callback.AVIMConversationCallback;
 import cn.leancloud.im.v2.messages.AVIMTextMessage;
+import cn.leancloud.session.AVConnectionManager;
 
 /**
  * Created by cxk on 2017/2/4. email:471497226@qq.com
@@ -228,6 +229,10 @@ public class ListenerService extends BaseListenerService {
         mWeakHandler.removeMessages(MSG_DO_TASK);
     }
 
+    public void postDelayed(Runnable runnable) {
+        mWeakHandler.postDelayed(runnable, TIME_MIDDLE);
+    }
+
     private void ptrRefresh() {
         if (!AppUtils.playing) {
             return;
@@ -240,9 +245,46 @@ public class ListenerService extends BaseListenerService {
         if (!AppUtils.playing) {
             return;
         }
-        mCoinBean = mTasksCallback.getBuyInfo(this);
-        if (mTasksCallback.getBuyType() == TaskCallback.TYPE_SELL) {
-            sendMessage(JSON.toJSONString(mCoinBean));
+        CoinBean tmp = mTasksCallback.getBuyInfo(this);
+        if (tmp != null) {
+            if (mTasksCallback.getBuyType() == TaskCallback.TYPE_SELL) {
+                if (tmp.getPrice() >= PreferenceHelp.getFloat(CoinConstant.KEY_SALE)) {
+                    // 执行卖出操作
+                    mTasksCallback.saleOrder(this, result -> {
+                        if (result) {
+                            LogUtils.d("出售下单成功！");
+                        } else {
+                            LogUtils.d("出售下单失败！");
+                        }
+                    });
+                    return;
+                }
+            } else {
+                if (tmp.getPrice() <= PreferenceHelp.getFloat(CoinConstant.KEY_BUY)) {
+                    // 执买入操作
+                    mTasksCallback.buyOrder(this, result -> {
+                        if (result) {
+                            LogUtils.d("购买下单成功！");
+                        } else {
+                            LogUtils.d("购买下单失败！");
+                        }
+                    });
+                    return;
+                }
+            }
+            mCoinBean = tmp;
+//            // 平台间检测
+//            if (mTasksCallback.getBuyType() == TaskCallback.TYPE_SELL && !tmp.equals(mCoinBean)) {
+//                String tmpInfo = JSON.toJSONString(tmp);
+//                sendMessage(tmpInfo, result -> {
+//                    if (result) {
+//                        mCoinBean = tmp;
+//                        ToastUtil.showShortText("当前信息：" + mCoinBean);
+//                    }
+//                });
+//            } else {
+//                mCoinBean = tmp;
+//            }
         }
         mWeakHandler.postDelayed(this::doTask, TIME_LONGLONG);
     }
@@ -262,7 +304,7 @@ public class ListenerService extends BaseListenerService {
     /**
      * 发送消息给控制端
      */
-    protected void sendMessage(String content) {
+    protected void sendMessage(String content, EndCallback callback) {
         if (TextUtils.isEmpty(content)) {
             return;
         }
@@ -281,9 +323,10 @@ public class ListenerService extends BaseListenerService {
                 public void done(AVIMException e) {
                     if (null != e) {
                         ToastUtil.showShortText(e.getMessage());
-                        mTasksCallback.openConversation(null);
+                        AVConnectionManager.getInstance().startConnection();
                         return;
                     }
+                    callback.onEnd(true);
                     LogUtils.d("imConversation send success");
                 }
             });
@@ -298,8 +341,7 @@ public class ListenerService extends BaseListenerService {
     public void onEvent(LCIMIMTypeMessageEvent messageEvent) {
         AVIMConversation imConversation = mTasksCallback.getAvimConversation();
         if (imConversation != null) {
-            if (imConversation != null && messageEvent != null &&
-                imConversation.getConversationId().equals(messageEvent.conversation.getConversationId())) {
+            if (messageEvent != null && imConversation.getConversationId().equals(messageEvent.conversation.getConversationId())) {
                 AVIMTypedMessage typedMessage = messageEvent.message;
                 if (typedMessage.getMessageType() == AVIMReservedMessageType.TextMessageType.getType()) {
                     String text = ((AVIMTextMessage) typedMessage).getText();

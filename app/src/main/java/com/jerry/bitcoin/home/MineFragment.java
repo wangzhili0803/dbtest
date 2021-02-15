@@ -10,6 +10,7 @@ import android.widget.TextView;
 import androidx.fragment.app.Fragment;
 
 import org.greenrobot.eventbus.EventBus;
+import org.jetbrains.annotations.NotNull;
 
 import com.jerry.baselib.ActionCode;
 import com.jerry.baselib.Key;
@@ -33,7 +34,7 @@ public class MineFragment extends BaseFragment {
     private LoginActionListener mLoginActionListener;
 
     @Override
-    public void onAttach(final Context context) {
+    public void onAttach(@NotNull final Context context) {
         super.onAttach(context);
         mLoginActionListener = (LoginActionListener) context;
     }

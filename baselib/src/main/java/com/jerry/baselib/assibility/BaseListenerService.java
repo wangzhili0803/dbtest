@@ -20,8 +20,6 @@ import android.text.TextUtils;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 
-import androidx.annotation.NonNull;
-
 import org.greenrobot.eventbus.EventBus;
 
 import com.jerry.baselib.BaseApp;
@@ -34,6 +32,8 @@ import com.jerry.baselib.common.util.LogUtils;
 import com.jerry.baselib.common.util.OnDataChangedListener;
 import com.jerry.baselib.common.util.ToastUtil;
 import com.jerry.baselib.common.util.WeakHandler;
+
+import androidx.annotation.NonNull;
 
 /**
  * Created by cxk on 2017/2/4. email:471497226@qq.com
@@ -320,26 +320,18 @@ public abstract class BaseListenerService extends AccessibilityService {
     }
 
     public boolean input(String id, String text) {
-        return input(id, text, true);
-    }
-
-    public boolean input(String id, String text, boolean last) {
         AccessibilityNodeInfo root = getRootInActiveWindow();
         if (root != null) {
             List<AccessibilityNodeInfo> inputs = root.findAccessibilityNodeInfosByViewId(packageName + id);
             if (!CollectionUtils.isEmpty(inputs)) {
-                AccessibilityNodeInfo node = inputs.get(last ? inputs.size() - 1 : 0);
-                Bundle arguments = new Bundle();
-                arguments.putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, text);
-                node.performAction(AccessibilityNodeInfo.ACTION_FOCUS);
-                node.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, arguments);
+                input(inputs.get(0), text);
                 return true;
             }
         }
         return false;
     }
 
-    public void input(AccessibilityNodeInfo node, String text) {
+    private void input(AccessibilityNodeInfo node, String text) {
         //粘贴板
         Bundle arguments = new Bundle();
         arguments.putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, text);
@@ -477,14 +469,15 @@ public abstract class BaseListenerService extends AccessibilityService {
     }
 
     @SuppressLint("DefaultLocale")
-    public void clickFirst(String id) {
+    public boolean clickFirst(String id) {
         AccessibilityNodeInfo newRootNode = getRootInActiveWindow();
         if (newRootNode != null) {
             List<AccessibilityNodeInfo> nodes = newRootNode.findAccessibilityNodeInfosByViewId(packageName + id);
             if (!CollectionUtils.isEmpty(nodes)) {
-                exeClick(nodes.get(0));
+                return exeClick(nodes.get(0));
             }
         }
+        return false;
     }
 
     @SuppressLint("DefaultLocale")
@@ -500,20 +493,12 @@ public abstract class BaseListenerService extends AccessibilityService {
     }
 
     @SuppressLint("DefaultLocale")
-    public boolean exeClickId(String id, int parentIn) {
-        return exeClickId(getRootInActiveWindow(), id, parentIn);
-    }
-
-    @SuppressLint("DefaultLocale")
-    public boolean exeClickId(AccessibilityNodeInfo parent, String id, int parentIn) {
+    public boolean exeClickId(AccessibilityNodeInfo parent, String id) {
         if (parent != null) {
             List<AccessibilityNodeInfo> nodes = parent.findAccessibilityNodeInfosByViewId(packageName + id);
             if (!CollectionUtils.isEmpty(nodes)) {
-                AccessibilityNodeInfo target = nodes.get(nodes.size() - 1);
-                for (int i = 0; i < parentIn; i++) {
-                    target = target.getParent();
-                }
-                return target.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                AccessibilityNodeInfo target = nodes.get(0);
+                return exeClick(target);
             }
         }
         return false;
@@ -617,10 +602,5 @@ public abstract class BaseListenerService extends AccessibilityService {
         } finally {
             FileUtil.close(dataOutputStream, outputStream);
         }
-    }
-
-    protected interface EndCallback {
-
-        void onEnd(boolean result);
     }
 }

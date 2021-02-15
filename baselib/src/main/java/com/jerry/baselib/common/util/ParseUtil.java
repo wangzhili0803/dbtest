@@ -1,9 +1,9 @@
 package com.jerry.baselib.common.util;
 
-import android.text.TextUtils;
-
 import java.text.NumberFormat;
 import java.util.Locale;
+
+import android.text.TextUtils;
 
 /**
  * 基本数据类型解析工具类
@@ -77,6 +77,13 @@ public class ParseUtil {
             ignored.printStackTrace();
         }
         return defaultFloat;
+    }
+
+    /**
+     * 解析以字符串表示的双精度浮点类型
+     */
+    public static double parse2Double(String s) {
+        return MathUtil.halfEven(parseDouble(s, 0.0), 2);
     }
 
     /**

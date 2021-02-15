@@ -13,7 +13,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.jerry.baselib.common.base.BaseFragment;
 import com.jerry.baselib.common.base.BaseRecyclerAdapter;
 import com.jerry.baselib.common.base.RecyclerViewHolder;
+import com.jerry.baselib.common.util.ParseUtil;
 import com.jerry.baselib.common.util.PreferenceHelp;
+import com.jerry.baselib.common.weidgt.MyTextWatcher;
 import com.jerry.bitcoin.ListenerService;
 import com.jerry.bitcoin.R;
 import com.jerry.bitcoin.beans.CoinConstant;
@@ -31,6 +33,9 @@ public class HomeFragment extends BaseFragment {
     private static final List<String> PLATFORMS = new ArrayList<>();
     private static final List<String> COINS = new ArrayList<>();
     private static final List<Integer> BUYS = new ArrayList<>();
+
+    private TextView etPriceBuy;
+    private TextView etPriceSale;
 
     static {
         PLATFORMS.add("huobi");
@@ -52,6 +57,24 @@ public class HomeFragment extends BaseFragment {
 
     @Override
     protected void initView(final View view) {
+        TextView tvTitle = view.findViewById(R.id.tv_title);
+        tvTitle.setText(R.string.app_name);
+        etPriceBuy = view.findViewById(R.id.et_price_buy);
+        etPriceSale = view.findViewById(R.id.et_price_sale);
+        etPriceBuy.addTextChangedListener(new MyTextWatcher() {
+            @Override
+            public void onTextChanged(final CharSequence s, final int start, final int before, final int count) {
+                PreferenceHelp.putFloat(CoinConstant.KEY_BUY, ParseUtil.parseFloat(s.toString()));
+            }
+        });
+        etPriceSale.addTextChangedListener(new MyTextWatcher() {
+            @Override
+            public void onTextChanged(final CharSequence s, final int start, final int before, final int count) {
+                PreferenceHelp.putFloat(CoinConstant.KEY_SALE, ParseUtil.parseFloat(s.toString()));
+            }
+        });
+        etPriceBuy.setText(String.valueOf(PreferenceHelp.getFloat(CoinConstant.KEY_BUY, 0)));
+        etPriceSale.setText(String.valueOf(PreferenceHelp.getFloat(CoinConstant.KEY_SALE, 0)));
         GridLayoutManager platformLayoutManager = new GridLayoutManager(mActivity, SPAN_COUNT);
         platformLayoutManager.setSpanSizeLookup(new SpanSizeLookup() {
             @Override

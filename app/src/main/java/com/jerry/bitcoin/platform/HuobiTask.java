@@ -5,6 +5,7 @@ import java.util.List;
 import android.view.accessibility.AccessibilityNodeInfo;
 
 import com.jerry.baselib.Key;
+import com.jerry.baselib.assibility.EndCallback;
 import com.jerry.baselib.common.util.CollectionUtils;
 import com.jerry.baselib.common.util.ParseUtil;
 import com.jerry.baselib.common.util.StringUtil;
@@ -32,9 +33,9 @@ public class HuobiTask extends BaseTask {
             if (rationed != null && priceStr != null) {
                 rationed = rationed.trim().replace(Key.SPACE, Key.NIL).replace(Key.COMMA, Key.NIL).replace("¥", Key.NIL);
                 String[] minMax = StringUtil.safeSplit(rationed, Key.LINE);
-                coinBean.setMin(ParseUtil.parseDouble(minMax[0]));
-                coinBean.setMax(ParseUtil.parseDouble(minMax[1]));
-                coinBean.setPrice(ParseUtil.parseDouble(priceStr));
+                coinBean.setMin(ParseUtil.parse2Double(minMax[0]));
+                coinBean.setMax(ParseUtil.parse2Double(minMax[1]));
+                coinBean.setPrice(ParseUtil.parse2Double(priceStr));
                 coinBean.setCurrentTimeMs(System.currentTimeMillis());
             }
         }
@@ -60,5 +61,85 @@ public class HuobiTask extends BaseTask {
             return list.getChild(0);
         }
         return null;
+    }
+
+    @Override
+    public void buyOrder(final ListenerService service, final EndCallback endCallback) {
+        if (errorCount >= 3) {
+            endCallback.onEnd(false);
+            return;
+        }
+        int tempStep = taskStep;
+        switch (taskStep) {
+            case 0:
+                AccessibilityNodeInfo validNode = getValidNode(service);
+                if (validNode != null) {
+                    if (service.exeClickId(validNode, "buy_or_sell_btn")) {
+                        errorCount = 0;
+                        taskStep++;
+                    }
+                }
+                break;
+            case 1:
+                if (service.input("order_edit_text", "5000")) {
+                    errorCount = 0;
+                    taskStep++;
+                }
+                break;
+            case 2:
+                if (service.clickFirst("place_order")) {
+                    errorCount = 0;
+                    taskStep++;
+                }
+                break;
+            case 3:
+            default:
+                endCallback.onEnd(true);
+                return;
+        }
+        if (tempStep == taskStep) {
+            errorCount++;
+        }
+        service.postDelayed(() -> buyOrder(service, endCallback));
+    }
+
+    @Override
+    public void saleOrder(final ListenerService service, final EndCallback endCallback) {
+        if (errorCount >= 3) {
+            endCallback.onEnd(false);
+            return;
+        }
+        int tempStep = taskStep;
+        switch (taskStep) {
+            case 0:
+                AccessibilityNodeInfo validNode = getValidNode(service);
+                if (validNode != null) {
+                    if (service.exeClickId(validNode, "buy_or_sell_btn")) {
+                        errorCount = 0;
+                        taskStep++;
+                    }
+                }
+                break;
+            case 1:
+                if (service.input("order_edit_text", "5000")) {
+                    errorCount = 0;
+                    taskStep++;
+                }
+                break;
+            case 2:
+                if (service.clickFirst("place_order")) {
+                    errorCount = 0;
+                    taskStep++;
+                }
+                break;
+            case 3:
+            default:
+                endCallback.onEnd(true);
+                return;
+        }
+        if (tempStep == taskStep) {
+            errorCount++;
+        }
+        service.postDelayed(() -> saleOrder(service, endCallback));
     }
 }

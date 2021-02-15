@@ -61,6 +61,18 @@ public class PreferenceHelp {
         sp.edit().putInt(strKey, strData).apply();
     }
 
+    public static float getFloat(String strKey) {
+        return sp.getFloat(strKey, 0);
+    }
+
+    public static float getFloat(String strKey, int strDefault) {
+        return sp.getFloat(strKey, strDefault);
+    }
+
+    public static void putFloat(String strKey, float strData) {
+        sp.edit().putFloat(strKey, strData).apply();
+    }
+
     public static long getLong(String strKey) {
         return sp.getLong(strKey, 0);
     }

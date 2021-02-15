@@ -1,5 +1,6 @@
 package com.jerry.bitcoin.interfaces;
 
+import com.jerry.baselib.assibility.EndCallback;
 import com.jerry.baselib.common.util.OnDataChangedListener;
 import com.jerry.bitcoin.ListenerService;
 import com.jerry.bitcoin.beans.CoinBean;
@@ -41,7 +42,12 @@ public interface TaskCallback {
     AVIMConversation getAvimConversation();
 
     /**
-     * 断线重连
+     * 购买下单
      */
-    void openConversation(OnDataChangedListener<AVIMConversation> onDataChangedListener);
+    void buyOrder(ListenerService service, EndCallback endCallback);
+
+    /**
+     * 出售下单
+     */
+    void saleOrder(ListenerService service, EndCallback endCallback);
 }

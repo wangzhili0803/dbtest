@@ -7,6 +7,9 @@ package com.jerry.bitcoin.beans;
  */
 public class CoinConstant {
 
+    public static final String KEY_BUY = "key_buy";
+    public static final String KEY_SALE = "key_sale";
+
     public static final String USDT = "USDT";
     public static final String BTC = "BTC";
     public static final String ETH = "ETH";
