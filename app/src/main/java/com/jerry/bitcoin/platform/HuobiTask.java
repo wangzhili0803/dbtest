@@ -55,13 +55,13 @@ public class HuobiTask extends BaseTask {
             if (rationed != null && priceStr != null) {
                 rationed = rationed.trim().replace(Key.SPACE, Key.NIL).replace(Key.COMMA, Key.NIL).replace("¥", Key.NIL);
                 String[] minMax = StringUtil.safeSplit(rationed, Key.LINE);
-                coinBean.setMin(ParseUtil.parse2Double(minMax[0]));
-                coinBean.setMax(ParseUtil.parse2Double(minMax[1]));
-                coinBean.setPrice(ParseUtil.parse2Double(priceStr));
-                coinBean.setCurrentTimeMs(System.currentTimeMillis());
+                mBuyCoin.setMin(ParseUtil.parse2Double(minMax[0]));
+                mBuyCoin.setMax(ParseUtil.parse2Double(minMax[1]));
+                mBuyCoin.setPrice(ParseUtil.parse2Double(priceStr));
+                mBuyCoin.setCurrentTimeMs(System.currentTimeMillis());
             }
         }
-        return coinBean;
+        return mBuyCoin;
     }
 
     @Override
@@ -73,13 +73,13 @@ public class HuobiTask extends BaseTask {
             if (rationed != null && priceStr != null) {
                 rationed = rationed.trim().replace(Key.SPACE, Key.NIL).replace(Key.COMMA, Key.NIL).replace("¥", Key.NIL);
                 String[] minMax = StringUtil.safeSplit(rationed, Key.LINE);
-                coinBean.setMin(ParseUtil.parse2Double(minMax[0]));
-                coinBean.setMax(ParseUtil.parse2Double(minMax[1]));
-                coinBean.setPrice(ParseUtil.parse2Double(priceStr));
-                coinBean.setCurrentTimeMs(System.currentTimeMillis());
+                mSaleCoin.setMin(ParseUtil.parse2Double(minMax[0]));
+                mSaleCoin.setMax(ParseUtil.parse2Double(minMax[1]));
+                mSaleCoin.setPrice(ParseUtil.parse2Double(priceStr));
+                mSaleCoin.setCurrentTimeMs(System.currentTimeMillis());
             }
         }
-        return coinBean;
+        return mSaleCoin;
     }
 
     @Override

@@ -26,7 +26,8 @@ import cn.leancloud.im.v2.callback.AVIMConversationCreatedCallback;
  */
 public abstract class BaseTask implements TaskCallback {
 
-    protected final CoinBean coinBean = new CoinBean();
+    protected final CoinBean mBuyCoin = new CoinBean();
+    protected final CoinBean mSaleCoin = new CoinBean();
 
     protected AVIMConversation mAvimConversation;
 
@@ -46,10 +47,6 @@ public abstract class BaseTask implements TaskCallback {
      * 错误次数
      */
     protected int errorCount;
-
-    public CoinBean getCoinBean() {
-        return coinBean;
-    }
 
     public String getCoinType() {
         return coinType;

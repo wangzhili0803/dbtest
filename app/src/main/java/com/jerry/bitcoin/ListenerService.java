@@ -254,6 +254,11 @@ public class ListenerService extends BaseListenerService {
                         CoinBean buyInfo = mBuyTask.getBuyCoinInfo(ListenerService.this);
                         if (buyInfo != null) {
                             mBuyCoinBean = buyInfo;
+                            if (mSaleCoinBean != null) {
+                                LogUtils
+                                    .d("mBuyCoinBean.getPrice()< mSaleCoinBean.getPrice():" + mBuyCoinBean.getPrice() + " < " + mSaleCoinBean
+                                        .getPrice());
+                            }
                             if (mSaleCoinBean != null && mBuyCoinBean.getPrice() < mSaleCoinBean.getPrice()) {
                                 // 执买入操作
                                 mBuyTask.buyOrder(ListenerService.this, result -> {

@@ -55,13 +55,13 @@ public class CoinColaTask extends BaseTask {
             if (rationed != null && priceStr != null) {
                 rationed = rationed.replace("限额", Key.NIL).replace(Key.COMMA, Key.NIL).replace("CNY", Key.NIL).trim();
                 String[] minMax = StringUtil.safeSplit(rationed, Key.LINE);
-                coinBean.setMin(ParseUtil.parse2Double(minMax[0]));
-                coinBean.setMax(ParseUtil.parse2Double(minMax[1]));
-                coinBean.setPrice(ParseUtil.parse2Double(priceStr.replace(Key.COMMA, Key.NIL).replace("CNY", Key.NIL).trim()));
-                coinBean.setCurrentTimeMs(System.currentTimeMillis());
+                mBuyCoin.setMin(ParseUtil.parse2Double(minMax[0]));
+                mBuyCoin.setMax(ParseUtil.parse2Double(minMax[1]));
+                mBuyCoin.setPrice(ParseUtil.parse2Double(priceStr.replace(Key.COMMA, Key.NIL).replace("CNY", Key.NIL).trim()));
+                mBuyCoin.setCurrentTimeMs(System.currentTimeMillis());
             }
         }
-        return coinBean;
+        return mBuyCoin;
     }
 
     @Override
@@ -73,13 +73,13 @@ public class CoinColaTask extends BaseTask {
             if (rationed != null && priceStr != null) {
                 rationed = rationed.replace("限额", Key.NIL).replace(Key.COMMA, Key.NIL).replace("CNY", Key.NIL).trim();
                 String[] minMax = StringUtil.safeSplit(rationed, Key.LINE);
-                coinBean.setMin(ParseUtil.parse2Double(minMax[0]));
-                coinBean.setMax(ParseUtil.parse2Double(minMax[1]));
-                coinBean.setPrice(ParseUtil.parse2Double(priceStr.replace(Key.COMMA, Key.NIL).replace("CNY", Key.NIL).trim()));
-                coinBean.setCurrentTimeMs(System.currentTimeMillis());
+                mSaleCoin.setMin(ParseUtil.parse2Double(minMax[0]));
+                mSaleCoin.setMax(ParseUtil.parse2Double(minMax[1]));
+                mSaleCoin.setPrice(ParseUtil.parse2Double(priceStr.replace(Key.COMMA, Key.NIL).replace("CNY", Key.NIL).trim()));
+                mSaleCoin.setCurrentTimeMs(System.currentTimeMillis());
             }
         }
-        return coinBean;
+        return mSaleCoin;
     }
 
     @Override
