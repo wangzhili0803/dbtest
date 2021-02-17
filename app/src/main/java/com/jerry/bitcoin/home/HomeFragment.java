@@ -6,10 +6,12 @@ import java.util.List;
 import android.view.View;
 import android.widget.TextView;
 
+import com.jerry.baselib.Key;
 import com.jerry.baselib.common.base.BaseFragment;
 import com.jerry.baselib.common.base.BaseRecyclerAdapter;
 import com.jerry.baselib.common.base.RecyclerViewHolder;
 import com.jerry.baselib.common.util.PreferenceHelp;
+import com.jerry.baselib.common.weidgt.MyTextWatcher;
 import com.jerry.bitcoin.ListenerService;
 import com.jerry.bitcoin.R;
 import com.jerry.bitcoin.beans.CoinConstant;
@@ -55,6 +57,14 @@ public class HomeFragment extends BaseFragment {
     protected void initView(final View view) {
         TextView tvTitle = view.findViewById(R.id.tv_title);
         tvTitle.setText(R.string.app_name);
+        TextView etPasswd = view.findViewById(R.id.et_passwd);
+        etPasswd.addTextChangedListener(new MyTextWatcher() {
+            @Override
+            public void onTextChanged(final CharSequence s, final int start, final int before, final int count) {
+                PreferenceHelp.putString(Key.PASSWORD, s.toString());
+            }
+        });
+        etPasswd.setText(PreferenceHelp.getString(Key.PASSWORD));
         GridLayoutManager platformLayoutManager = new GridLayoutManager(mActivity, SPAN_COUNT);
         platformLayoutManager.setSpanSizeLookup(new SpanSizeLookup() {
             @Override

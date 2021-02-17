@@ -153,6 +153,11 @@ public class HuobiTask extends BaseTask {
                 }
                 break;
             case 3:
+                if (service.input(getPackageName() + "pwd_edit_text", PreferenceHelp.getString(Key.PASSWORD, "123456"))) {
+                    errorCount = 0;
+                    taskStep++;
+                }
+                break;
             default:
                 endCallback.onEnd(true);
                 return;

@@ -297,6 +297,11 @@ public abstract class BaseListenerService extends AccessibilityService {
         this.mWeakHandler.postDelayed(() -> swipToLongClickText(texts, endCallback), TIME_SHORT);
     }
 
+    public void pullRefresh(EndCallback endCallback) {
+        exeSwip(mWidth >> 2, (int) (mHeight * 0.5), mWidth >> 2, (int) (mHeight * 0.8));
+        this.mWeakHandler.postDelayed(() -> endCallback.onEnd(true), TIME_LONG);
+    }
+
     public String getNodeText(AccessibilityNodeInfo root) {
         CharSequence txt = root.getText();
         if (txt == null) {

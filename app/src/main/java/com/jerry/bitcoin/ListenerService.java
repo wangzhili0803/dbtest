@@ -98,7 +98,6 @@ public class ListenerService extends BaseListenerService {
         mWeakHandler = new WeakHandler(msg -> {
             switch (msg.what) {
                 case MSG_DO_TASK:
-                    mWeakHandler.post(this::ptrRefresh);
                     mWeakHandler.post(this::doTask);
                     return true;
                 case MSG_PLATFORM_BUY:
@@ -243,54 +242,69 @@ public class ListenerService extends BaseListenerService {
         mWeakHandler.postDelayed(runnable, TIME_MIDDLE);
     }
 
-    private void ptrRefresh() {
-        if (!AppUtils.playing) {
-            return;
-        }
-        exeSwip(mWidth >> 1, mHeight >> 1, mWidth >> 1, (int) (mHeight * 0.9));
-        mWeakHandler.postDelayed(this::ptrRefresh, TIME_LONG);
-    }
-
     private void doTask() {
         if (!AppUtils.playing) {
             return;
         }
         switch (taskState) {
             case 0:
-                CoinBean buyInfo = mBuyTask.getCoinInfo(this);
-                if (buyInfo != null) {
-                    if (mSaleCoinBean != null && buyInfo.getPrice() <= mSaleCoinBean.getPrice()) {
-                        // 执买入操作
-                        mBuyTask.buyOrder(this, result -> {
-                            if (result) {
-                                LogUtils.d("购买下单成功！");
-                                giveNotice();
-                            } else {
-                                LogUtils.d("购买下单失败！");
+                if (exeClickText("我要买")) {
+                    mWeakHandler.postDelayed(() -> pullRefresh(t -> {
+                        CoinBean buyInfo = mBuyTask.getCoinInfo(ListenerService.this);
+                        if (buyInfo != null) {
+                            mBuyCoinBean = buyInfo;
+                            if (mSaleCoinBean != null && mBuyCoinBean.getPrice() < mSaleCoinBean.getPrice()) {
+                                // 执买入操作
+                                mBuyTask.buyOrder(ListenerService.this, result -> {
+                                    if (result) {
+                                        LogUtils.d("购买下单成功！");
+                                        taskState = 2;
+                                        back();
+                                    }
+                                    mWeakHandler.postDelayed(this::doTask, TIME_SHORT);
+                                });
+                                return;
                             }
-                        });
-                        return;
-                    }
-                    mBuyCoinBean = buyInfo;
+                            taskState = 1;
+                        }
+                        doTask();
+                    }), TIME_SHORT);
+                    return;
                 }
                 break;
             case 1:
+                if (exeClickText("我要卖")) {
+                    mWeakHandler.postDelayed(() -> pullRefresh(t -> {
+                        CoinBean saleInfo = mSaleTask.getCoinInfo(this);
+                        if (saleInfo != null) {
+                            mSaleCoinBean = saleInfo;
+                            taskState = 0;
+                        }
+                        doTask();
+                    }), TIME_SHORT);
+                    return;
+                }
+                break;
+            case 2:
             default:
-                CoinBean saleInfo = mBuyTask.getCoinInfo(this);
-                if (saleInfo != null) {
-                    if (mBuyCoinBean != null && mBuyCoinBean.getPrice() <= saleInfo.getPrice()) {
-                        // 执买入操作
-                        mBuyTask.buyOrder(this, result -> {
-                            if (result) {
-                                LogUtils.d("出售下单成功！");
-                                giveNotice();
-                            } else {
-                                LogUtils.d("出售下单失败！");
+                if (exeClickText("我要卖")) {
+                    mWeakHandler.postDelayed(() -> {
+                        CoinBean saleInfo = mSaleTask.getCoinInfo(this);
+                        if (saleInfo != null) {
+                            mSaleCoinBean = saleInfo;
+                            if (mBuyCoinBean != null && mBuyCoinBean.getPrice() < mSaleCoinBean.getPrice()) {
+                                // 执行出售操作
+                                mSaleTask.saleOrder(this, result -> {
+                                    if (result) {
+                                        LogUtils.d("出售下单成功！");
+                                        giveNotice();
+                                    }
+                                });
+                                return;
                             }
-                        });
-                        return;
-                    }
-                    mSaleCoinBean = saleInfo;
+                        }
+                        doTask();
+                    }, TIME_SHORT);
                 }
                 break;
         }
