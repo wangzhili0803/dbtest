@@ -58,16 +58,16 @@ import cn.leancloud.session.AVConnectionManager;
 
 public class ListenerService extends BaseListenerService {
 
-    public static final String TYPE_PLATFORMS = "TYPE_PLATFORMS";
+    public static final String TYPE_PLATFORM_BUY = "TYPE_PLATFORM_BUY";
+    public static final String TYPE_PLATFORM_SALE = "TYPE_PLATFORM_SALE";
     public static final String TYPE_COINS = "TYPE_COINS";
-    public static final String TYPE_BUYS = "TYPE_BUYS";
     /**
      * 擦亮
      */
     private static final int MSG_DO_TASK = 101;
-    private static final int MSG_BUY_TYPE = 102;
-    private static final int MSG_COIN_TYPE = 103;
-    private static final int MSG_PLATFORM = 104;
+    private static final int MSG_PLATFORM_BUY = 102;
+    private static final int MSG_PLATFORM_SALE = 103;
+    private static final int MSG_COIN_TYPE = 104;
     private static final int UNINSTALL_APP = 1;
 
     private FloatLogoMenu menu;
@@ -77,13 +77,20 @@ public class ListenerService extends BaseListenerService {
     private final FloatItem stopItem = new FloatItem("暂停", 0x99000000, 0x99000000,
         BitmapFactory.decodeResource(BaseApp.getInstance().getResources(), R.drawable.pause), "0");
     private final List<FloatItem> itemList = new ArrayList<>();
-    private TaskCallback mTasksCallback;
-    private HuobiTask mHuobiTask;
-    private CoinColaTask mCoinColaTask;
     /**
-     * 当前最新刷新信息
+     * task状态，0：买入，1：出售，2，买入下单，3：出售下单
      */
-    private CoinBean mCoinBean;
+    private int taskState;
+    private TaskCallback mBuyTask;
+    private TaskCallback mSaleTask;
+    /**
+     * 当前最新买入刷新信息
+     */
+    private CoinBean mBuyCoinBean;
+    /**
+     * 当前最新买入刷新信息
+     */
+    private CoinBean mSaleCoinBean;
 
     @Override
     public void onCreate() {
@@ -91,33 +98,36 @@ public class ListenerService extends BaseListenerService {
         mWeakHandler = new WeakHandler(msg -> {
             switch (msg.what) {
                 case MSG_DO_TASK:
-                    mWeakHandler.postDelayed(this::ptrRefresh, TIME_LONGLONG);
-                    mWeakHandler.postDelayed(this::doTask, TIME_LONGLONG);
+                    mWeakHandler.post(this::ptrRefresh);
+                    mWeakHandler.post(this::doTask);
                     return true;
-                case MSG_PLATFORM:
-                    switch (PreferenceHelp.getString(TYPE_PLATFORMS, "huobi")) {
-                        case "coincola":
-                            if (mCoinColaTask == null) {
-                                mCoinColaTask = new CoinColaTask();
-                            }
-                            mTasksCallback = mCoinColaTask;
+                case MSG_PLATFORM_BUY:
+                    switch (PreferenceHelp.getString(TYPE_PLATFORM_BUY, CoinConstant.HUOBI)) {
+                        case CoinConstant.COINCOLA:
+                            mBuyTask = CoinColaTask.getInstance();
                             break;
-                        case "huobi":
+                        case CoinConstant.HUOBI:
                         default:
-                            if (mHuobiTask == null) {
-                                mHuobiTask = new HuobiTask();
-                            }
-                            mTasksCallback = mHuobiTask;
+                            mBuyTask = HuobiTask.getInstance();
                             break;
                     }
-                    packageName = mTasksCallback.getPackageName();
+                    ToastUtil.showShortText("修改成功！");
+                    return true;
+                case MSG_PLATFORM_SALE:
+                    switch (PreferenceHelp.getString(TYPE_PLATFORM_BUY, CoinConstant.HUOBI)) {
+                        case CoinConstant.COINCOLA:
+                            mSaleTask = CoinColaTask.getInstance();
+                            break;
+                        case CoinConstant.HUOBI:
+                        default:
+                            mSaleTask = HuobiTask.getInstance();
+                            break;
+                    }
                     ToastUtil.showShortText("修改成功！");
                     return true;
                 case MSG_COIN_TYPE:
-                    mTasksCallback.setCoinType(PreferenceHelp.getString(TYPE_COINS), data -> ToastUtil.showShortText("修改成功！"));
-                    return true;
-                case MSG_BUY_TYPE:
-                    mTasksCallback.setBuyType(PreferenceHelp.getInt(TYPE_BUYS), data -> ToastUtil.showShortText("修改成功！"));
+                    mBuyTask.setCoinType(PreferenceHelp.getString(TYPE_COINS), data -> LogUtils.d("买入币种修改成功！"));
+                    mSaleTask.setCoinType(PreferenceHelp.getString(TYPE_COINS), data -> LogUtils.d("出售币种修改成功！"));
                     return true;
                 case UNINSTALL_APP:
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -134,7 +144,7 @@ public class ListenerService extends BaseListenerService {
                     return false;
             }
         });
-        setTaskPlatform();
+        setTaskPlatformBuy();
         if (!EventBus.getDefault().isRegistered(ListenerService.this)) {
             EventBus.getDefault().register(ListenerService.this);
         }
@@ -245,56 +255,54 @@ public class ListenerService extends BaseListenerService {
         if (!AppUtils.playing) {
             return;
         }
-        CoinBean tmp = mTasksCallback.getBuyInfo(this);
-        if (tmp != null) {
-            if (mTasksCallback.getBuyType() == TaskCallback.TYPE_SELL) {
-                if (tmp.getPrice() >= PreferenceHelp.getFloat(CoinConstant.KEY_SALE)) {
-                    // 执行卖出操作
-                    mTasksCallback.saleOrder(this, result -> {
-                        if (result) {
-                            LogUtils.d("出售下单成功！");
-                        } else {
-                            LogUtils.d("出售下单失败！");
-                        }
-                    });
-                    return;
+        switch (taskState) {
+            case 0:
+                CoinBean buyInfo = mBuyTask.getCoinInfo(this);
+                if (buyInfo != null) {
+                    if (mSaleCoinBean != null && buyInfo.getPrice() <= mSaleCoinBean.getPrice()) {
+                        // 执买入操作
+                        mBuyTask.buyOrder(this, result -> {
+                            if (result) {
+                                LogUtils.d("购买下单成功！");
+                                giveNotice();
+                            } else {
+                                LogUtils.d("购买下单失败！");
+                            }
+                        });
+                        return;
+                    }
+                    mBuyCoinBean = buyInfo;
                 }
-            } else {
-                if (tmp.getPrice() <= PreferenceHelp.getFloat(CoinConstant.KEY_BUY)) {
-                    // 执买入操作
-                    mTasksCallback.buyOrder(this, result -> {
-                        if (result) {
-                            LogUtils.d("购买下单成功！");
-                        } else {
-                            LogUtils.d("购买下单失败！");
-                        }
-                    });
-                    return;
+                break;
+            case 1:
+            default:
+                CoinBean saleInfo = mBuyTask.getCoinInfo(this);
+                if (saleInfo != null) {
+                    if (mBuyCoinBean != null && mBuyCoinBean.getPrice() <= saleInfo.getPrice()) {
+                        // 执买入操作
+                        mBuyTask.buyOrder(this, result -> {
+                            if (result) {
+                                LogUtils.d("出售下单成功！");
+                                giveNotice();
+                            } else {
+                                LogUtils.d("出售下单失败！");
+                            }
+                        });
+                        return;
+                    }
+                    mSaleCoinBean = saleInfo;
                 }
-            }
-            mCoinBean = tmp;
-//            // 平台间检测
-//            if (mTasksCallback.getBuyType() == TaskCallback.TYPE_SELL && !tmp.equals(mCoinBean)) {
-//                String tmpInfo = JSON.toJSONString(tmp);
-//                sendMessage(tmpInfo, result -> {
-//                    if (result) {
-//                        mCoinBean = tmp;
-//                        ToastUtil.showShortText("当前信息：" + mCoinBean);
-//                    }
-//                });
-//            } else {
-//                mCoinBean = tmp;
-//            }
+                break;
         }
         mWeakHandler.postDelayed(this::doTask, TIME_LONGLONG);
     }
 
-    public static void setTaskPlatform() {
-        instance.mWeakHandler.sendEmptyMessage(MSG_PLATFORM);
+    public static void setTaskPlatformBuy() {
+        instance.mWeakHandler.sendEmptyMessage(MSG_PLATFORM_BUY);
     }
 
-    public static void setBuyType() {
-        instance.mWeakHandler.sendEmptyMessage(MSG_BUY_TYPE);
+    public static void setTaskPlatformSale() {
+        instance.mWeakHandler.sendEmptyMessage(MSG_PLATFORM_SALE);
     }
 
     public static void setCoinType() {
@@ -316,7 +324,7 @@ public class ListenerService extends BaseListenerService {
         } else {
             option.setReceipt(true);
         }
-        AVIMConversation imConversation = mTasksCallback.getAvimConversation();
+        AVIMConversation imConversation = mBuyTask.getAvimConversation();
         if (imConversation != null) {
             imConversation.sendMessage(message, option, new AVIMConversationCallback() {
                 @Override
@@ -339,18 +347,18 @@ public class ListenerService extends BaseListenerService {
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEvent(LCIMIMTypeMessageEvent messageEvent) {
-        AVIMConversation imConversation = mTasksCallback.getAvimConversation();
+        AVIMConversation imConversation = mBuyTask.getAvimConversation();
         if (imConversation != null) {
             if (messageEvent != null && imConversation.getConversationId().equals(messageEvent.conversation.getConversationId())) {
                 AVIMTypedMessage typedMessage = messageEvent.message;
                 if (typedMessage.getMessageType() == AVIMReservedMessageType.TextMessageType.getType()) {
                     String text = ((AVIMTextMessage) typedMessage).getText();
                     CoinBean sellCoin = JJSON.parseObject(text, CoinBean.class);
-                    if (sellCoin.getPrice() > mCoinBean.getPrice()) {
-                        LogUtils.w("发现低价：卖价：" + sellCoin.getPrice() + "，买价：" + mCoinBean.getPrice());
+                    if (sellCoin.getPrice() > mBuyCoinBean.getPrice()) {
+                        LogUtils.w("发现低价：卖价：" + sellCoin.getPrice() + "，买价：" + mBuyCoinBean.getPrice());
                         double maxLimit = findMaxLimit(sellCoin);
                         if (maxLimit > 0) {
-                            LogUtils.w("发现执行：卖价：" + sellCoin.getPrice() + "，买价：" + mCoinBean.getPrice());
+                            LogUtils.w("发现执行：卖价：" + sellCoin.getPrice() + "，买价：" + mBuyCoinBean.getPrice());
                             CoinBean coinBean = new CoinBean();
                             coinBean.setPrice(1);
                             coinBean.setMin(2);
@@ -368,8 +376,8 @@ public class ListenerService extends BaseListenerService {
     private double findMaxLimit(CoinBean sellCoin) {
         double min1 = sellCoin.getMin();
         double max1 = sellCoin.getMax();
-        double min2 = mCoinBean.getMin();
-        double max2 = mCoinBean.getMax();
+        double min2 = mBuyCoinBean.getMin();
+        double max2 = mBuyCoinBean.getMax();
         if ((max2 > min1 && min2 < max1) && (max1 > min2 && min1 < max2)) {
             return Math.min(max1, max2);
         }

@@ -52,7 +52,6 @@ public abstract class BaseListenerService extends AccessibilityService {
     protected static int ERRORCOUNT = 3;
     protected int taskIndex;
     protected int errorCount;
-    protected String packageName;
     /**
      * 微信登录
      */
@@ -307,7 +306,7 @@ public abstract class BaseListenerService extends AccessibilityService {
     }
 
     public String getNodeText(@NonNull AccessibilityNodeInfo root, String id) {
-        List<AccessibilityNodeInfo> inputs = root.findAccessibilityNodeInfosByViewId(packageName + id);
+        List<AccessibilityNodeInfo> inputs = root.findAccessibilityNodeInfosByViewId(id);
         if (!CollectionUtils.isEmpty(inputs)) {
             AccessibilityNodeInfo node = inputs.get(inputs.size() - 1);
             CharSequence txt = node.getText();
@@ -322,7 +321,7 @@ public abstract class BaseListenerService extends AccessibilityService {
     public boolean input(String id, String text) {
         AccessibilityNodeInfo root = getRootInActiveWindow();
         if (root != null) {
-            List<AccessibilityNodeInfo> inputs = root.findAccessibilityNodeInfosByViewId(packageName + id);
+            List<AccessibilityNodeInfo> inputs = root.findAccessibilityNodeInfosByViewId(id);
             if (!CollectionUtils.isEmpty(inputs)) {
                 input(inputs.get(0), text);
                 return true;
@@ -472,7 +471,7 @@ public abstract class BaseListenerService extends AccessibilityService {
     public boolean clickFirst(String id) {
         AccessibilityNodeInfo newRootNode = getRootInActiveWindow();
         if (newRootNode != null) {
-            List<AccessibilityNodeInfo> nodes = newRootNode.findAccessibilityNodeInfosByViewId(packageName + id);
+            List<AccessibilityNodeInfo> nodes = newRootNode.findAccessibilityNodeInfosByViewId(id);
             if (!CollectionUtils.isEmpty(nodes)) {
                 return exeClick(nodes.get(0));
             }
@@ -484,7 +483,7 @@ public abstract class BaseListenerService extends AccessibilityService {
     public boolean clickLast(String id) {
         AccessibilityNodeInfo newRootNode = getRootInActiveWindow();
         if (newRootNode != null) {
-            List<AccessibilityNodeInfo> nodes = newRootNode.findAccessibilityNodeInfosByViewId(packageName + id);
+            List<AccessibilityNodeInfo> nodes = newRootNode.findAccessibilityNodeInfosByViewId(id);
             if (!CollectionUtils.isEmpty(nodes)) {
                 return exeClick(nodes.get(nodes.size() - 1));
             }
@@ -495,7 +494,7 @@ public abstract class BaseListenerService extends AccessibilityService {
     @SuppressLint("DefaultLocale")
     public boolean exeClickId(AccessibilityNodeInfo parent, String id) {
         if (parent != null) {
-            List<AccessibilityNodeInfo> nodes = parent.findAccessibilityNodeInfosByViewId(packageName + id);
+            List<AccessibilityNodeInfo> nodes = parent.findAccessibilityNodeInfosByViewId(id);
             if (!CollectionUtils.isEmpty(nodes)) {
                 AccessibilityNodeInfo target = nodes.get(0);
                 return exeClick(target);

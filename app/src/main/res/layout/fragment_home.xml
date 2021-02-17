@@ -6,39 +6,23 @@
 
     <include layout="@layout/layout_header"/>
 
-    <LinearLayout
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
-        <TextView
-            style="@style/menu_label"
-            android:text="买入价不大于：" />
-        <com.jerry.baselib.common.weidgt.MyEditText
-            android:id="@+id/et_price_buy"
-            style="@style/style_item"
-            android:inputType="numberDecimal" />
-    </LinearLayout>
+        android:text="买入平台" />
 
-    <LinearLayout
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_platform_buy"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-        <TextView
-            style="@style/menu_label"
-            android:text="卖出价不小于" />
-        <com.jerry.baselib.common.weidgt.MyEditText
-            android:id="@+id/et_price_sale"
-            style="@style/style_item"
-            android:inputType="numberDecimal" />
-    </LinearLayout>
+        android:layout_height="wrap_content" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="平台" />
+        android:text="出售平台" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_platform"
+        android:id="@+id/rv_platform_sale"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
@@ -49,16 +33,6 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_coins"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="买卖" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_buys"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 </LinearLayout>

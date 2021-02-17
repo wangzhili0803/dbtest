@@ -34,7 +34,7 @@ public interface TaskCallback {
     /**
      * 获取购买币的信息
      */
-    CoinBean getBuyInfo(ListenerService service);
+    CoinBean getCoinInfo(ListenerService service);
 
     /**
      * 获取消息管理器

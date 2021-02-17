@@ -10,9 +10,11 @@ import com.jerry.baselib.assibility.EndCallback;
 import com.jerry.baselib.common.util.CollectionUtils;
 import com.jerry.baselib.common.util.DisplayUtil;
 import com.jerry.baselib.common.util.ParseUtil;
+import com.jerry.baselib.common.util.PreferenceHelp;
 import com.jerry.baselib.common.util.StringUtil;
 import com.jerry.bitcoin.ListenerService;
 import com.jerry.bitcoin.beans.CoinBean;
+import com.jerry.bitcoin.beans.CoinConstant;
 
 /**
  * @author Jerry
@@ -21,17 +23,35 @@ import com.jerry.bitcoin.beans.CoinBean;
  */
 public class CoinColaTask extends BaseTask {
 
+    private static volatile CoinColaTask mInstance;
+
+    private CoinColaTask() {
+        coinType = PreferenceHelp.getString(ListenerService.TYPE_COINS, CoinConstant.USDT);
+        openConversation(null);
+    }
+
+    public static CoinColaTask getInstance() {
+        if (mInstance == null) {
+            synchronized (CoinColaTask.class) {
+                if (mInstance == null) {
+                    mInstance = new CoinColaTask();
+                }
+            }
+        }
+        return mInstance;
+    }
+
     @Override
     public String getPackageName() {
         return "com.newgo.coincola:id/";
     }
 
     @Override
-    public CoinBean getBuyInfo(final ListenerService service) {
+    public CoinBean getCoinInfo(final ListenerService service) {
         AccessibilityNodeInfo validNode = getValidNode(service);
         if (validNode != null) {
-            String rationed = service.getNodeText(validNode, "tv_limit");
-            String priceStr = service.getNodeText(validNode, "tv_price");
+            String rationed = service.getNodeText(validNode, getPackageName() + "tv_limit");
+            String priceStr = service.getNodeText(validNode, getPackageName() + "tv_price");
             if (rationed != null && priceStr != null) {
                 rationed = rationed.replace("限额", Key.NIL).replace(Key.COMMA, Key.NIL).replace("CNY", Key.NIL).trim();
                 String[] minMax = StringUtil.safeSplit(rationed, Key.LINE);
