@@ -47,8 +47,8 @@ public class CoinColaTask extends BaseTask {
     }
 
     @Override
-    public CoinBean getCoinInfo(final ListenerService service) {
-        AccessibilityNodeInfo validNode = getValidNode(service);
+    public CoinBean getBuyCoinInfo(final ListenerService service) {
+        AccessibilityNodeInfo validNode = this.getValidBuyNode(service);
         if (validNode != null) {
             String rationed = service.getNodeText(validNode, getPackageName() + "tv_limit");
             String priceStr = service.getNodeText(validNode, getPackageName() + "tv_price");
@@ -65,7 +65,45 @@ public class CoinColaTask extends BaseTask {
     }
 
     @Override
-    protected AccessibilityNodeInfo getValidNode(final ListenerService service) {
+    public CoinBean getSaleCoinInfo(final ListenerService service) {
+        AccessibilityNodeInfo validNode = this.getValidSaleNode(service);
+        if (validNode != null) {
+            String rationed = service.getNodeText(validNode, getPackageName() + "tv_limit");
+            String priceStr = service.getNodeText(validNode, getPackageName() + "tv_price");
+            if (rationed != null && priceStr != null) {
+                rationed = rationed.replace("限额", Key.NIL).replace(Key.COMMA, Key.NIL).replace("CNY", Key.NIL).trim();
+                String[] minMax = StringUtil.safeSplit(rationed, Key.LINE);
+                coinBean.setMin(ParseUtil.parse2Double(minMax[0]));
+                coinBean.setMax(ParseUtil.parse2Double(minMax[1]));
+                coinBean.setPrice(ParseUtil.parse2Double(priceStr.replace(Key.COMMA, Key.NIL).replace("CNY", Key.NIL).trim()));
+                coinBean.setCurrentTimeMs(System.currentTimeMillis());
+            }
+        }
+        return coinBean;
+    }
+
+    @Override
+    protected AccessibilityNodeInfo getValidBuyNode(final ListenerService service) {
+        List<AccessibilityNodeInfo> tvOperators = service.getRootInActiveWindow()
+            .findAccessibilityNodeInfosByViewId(getPackageName() + "tv_operator");
+        if (!CollectionUtils.isEmpty(tvOperators)) {
+            for (int i = 0; i < tvOperators.size(); i++) {
+                AccessibilityNodeInfo tvOperator = tvOperators.get(i);
+                // 购买类型一致
+                if (getBuyTypeStr().equals(tvOperator.getText().toString())) {
+                    Rect rect = new Rect();
+                    tvOperator.getBoundsInScreen(rect);
+                    if (rect.left > 0 && rect.right < DisplayUtil.getDisplayWidth()) {
+                        return tvOperator.getParent();
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    protected AccessibilityNodeInfo getValidSaleNode(final ListenerService service) {
         List<AccessibilityNodeInfo> tvOperators = service.getRootInActiveWindow()
             .findAccessibilityNodeInfosByViewId(getPackageName() + "tv_operator");
         if (!CollectionUtils.isEmpty(tvOperators)) {

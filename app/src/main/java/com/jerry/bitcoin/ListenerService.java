@@ -144,6 +144,7 @@ public class ListenerService extends BaseListenerService {
             }
         });
         setTaskPlatformBuy();
+        setTaskPlatformSale();
         if (!EventBus.getDefault().isRegistered(ListenerService.this)) {
             EventBus.getDefault().register(ListenerService.this);
         }
@@ -250,7 +251,7 @@ public class ListenerService extends BaseListenerService {
             case 0:
                 if (exeClickText("我要买")) {
                     mWeakHandler.postDelayed(() -> pullRefresh(t -> {
-                        CoinBean buyInfo = mBuyTask.getCoinInfo(ListenerService.this);
+                        CoinBean buyInfo = mBuyTask.getBuyCoinInfo(ListenerService.this);
                         if (buyInfo != null) {
                             mBuyCoinBean = buyInfo;
                             if (mSaleCoinBean != null && mBuyCoinBean.getPrice() < mSaleCoinBean.getPrice()) {
@@ -275,7 +276,7 @@ public class ListenerService extends BaseListenerService {
             case 1:
                 if (exeClickText("我要卖")) {
                     mWeakHandler.postDelayed(() -> pullRefresh(t -> {
-                        CoinBean saleInfo = mSaleTask.getCoinInfo(this);
+                        CoinBean saleInfo = mSaleTask.getSaleCoinInfo(this);
                         if (saleInfo != null) {
                             mSaleCoinBean = saleInfo;
                             taskState = 0;
@@ -289,7 +290,7 @@ public class ListenerService extends BaseListenerService {
             default:
                 if (exeClickText("我要卖")) {
                     mWeakHandler.postDelayed(() -> {
-                        CoinBean saleInfo = mSaleTask.getCoinInfo(this);
+                        CoinBean saleInfo = mSaleTask.getSaleCoinInfo(this);
                         if (saleInfo != null) {
                             mSaleCoinBean = saleInfo;
                             if (mBuyCoinBean != null && mBuyCoinBean.getPrice() < mSaleCoinBean.getPrice()) {

@@ -117,5 +117,7 @@ public abstract class BaseTask implements TaskCallback {
         });
     }
 
-    protected abstract AccessibilityNodeInfo getValidNode(ListenerService service);
+    protected abstract AccessibilityNodeInfo getValidBuyNode(ListenerService service);
+
+    protected abstract AccessibilityNodeInfo getValidSaleNode(ListenerService service);
 }
