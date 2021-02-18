@@ -36,9 +36,11 @@ public class HomeFragment extends BaseFragment {
     static {
         PLATFORM_BUY.add(CoinConstant.HUOBI);
         PLATFORM_BUY.add(CoinConstant.BINANCE);
+        PLATFORM_BUY.add(CoinConstant.OKEX);
 
         PLATFORM_SALE.add(CoinConstant.HUOBI);
         PLATFORM_SALE.add(CoinConstant.BINANCE);
+        PLATFORM_SALE.add(CoinConstant.OKEX);
 
         COINS.add(CoinConstant.USDT);
         COINS.add(CoinConstant.BTC);
