@@ -39,6 +39,7 @@ import com.jerry.bitcoin.interfaces.TaskCallback;
 import com.jerry.bitcoin.platform.BinanceTask;
 import com.jerry.bitcoin.platform.CoinColaTask;
 import com.jerry.bitcoin.platform.HuobiTask;
+import com.jerry.bitcoin.platform.OkexTask;
 
 import androidx.core.content.ContextCompat;
 import cn.leancloud.chatkit.event.LCIMIMTypeMessageEvent;
@@ -139,6 +140,8 @@ public class ListenerService extends BaseListenerService {
         switch (taskType) {
             case CoinConstant.COINCOLA:
                 return CoinColaTask.getInstance();
+            case CoinConstant.OKEX:
+                return OkexTask.getInstance();
             case CoinConstant.BINANCE:
                 return BinanceTask.getInstance();
             case CoinConstant.HUOBI:
