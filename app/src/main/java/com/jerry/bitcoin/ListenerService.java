@@ -36,6 +36,7 @@ import com.jerry.bitcoin.beans.CoinBean;
 import com.jerry.bitcoin.beans.CoinConstant;
 import com.jerry.bitcoin.home.MainActivity;
 import com.jerry.bitcoin.interfaces.TaskCallback;
+import com.jerry.bitcoin.platform.BinanceTask;
 import com.jerry.bitcoin.platform.CoinColaTask;
 import com.jerry.bitcoin.platform.HuobiTask;
 
@@ -101,27 +102,11 @@ public class ListenerService extends BaseListenerService {
                     mWeakHandler.post(this::doTask);
                     return true;
                 case MSG_PLATFORM_BUY:
-                    switch (PreferenceHelp.getString(TYPE_PLATFORM_BUY, CoinConstant.HUOBI)) {
-                        case CoinConstant.COINCOLA:
-                            mBuyTask = CoinColaTask.getInstance();
-                            break;
-                        case CoinConstant.HUOBI:
-                        default:
-                            mBuyTask = HuobiTask.getInstance();
-                            break;
-                    }
+                    mBuyTask = getCurrentTask(PreferenceHelp.getString(TYPE_PLATFORM_BUY, CoinConstant.HUOBI));
                     ToastUtil.showShortText("修改成功！");
                     return true;
                 case MSG_PLATFORM_SALE:
-                    switch (PreferenceHelp.getString(TYPE_PLATFORM_BUY, CoinConstant.HUOBI)) {
-                        case CoinConstant.COINCOLA:
-                            mSaleTask = CoinColaTask.getInstance();
-                            break;
-                        case CoinConstant.HUOBI:
-                        default:
-                            mSaleTask = HuobiTask.getInstance();
-                            break;
-                    }
+                    mSaleTask = getCurrentTask(PreferenceHelp.getString(TYPE_PLATFORM_SALE, CoinConstant.HUOBI));
                     ToastUtil.showShortText("修改成功！");
                     return true;
                 case MSG_COIN_TYPE:
@@ -147,6 +132,18 @@ public class ListenerService extends BaseListenerService {
         setTaskPlatformSale();
         if (!EventBus.getDefault().isRegistered(ListenerService.this)) {
             EventBus.getDefault().register(ListenerService.this);
+        }
+    }
+
+    private TaskCallback getCurrentTask(String taskType) {
+        switch (taskType) {
+            case CoinConstant.COINCOLA:
+                return CoinColaTask.getInstance();
+            case CoinConstant.BINANCE:
+                return BinanceTask.getInstance();
+            case CoinConstant.HUOBI:
+            default:
+                return HuobiTask.getInstance();
         }
     }
 

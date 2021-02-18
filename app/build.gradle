@@ -36,10 +36,10 @@ android {
         buildConfigField("String", "FILE_PROVIDER", packer.FILE_PROVIDER)
         buildConfigField("String", "SIGN", '"s1d8124ec4zm2s2c839saeu72g3d34c0"')
 
-        ndk {
-            // 设置支持的SO库架构
-            abiFilters 'armeabi'
-        }
+//        ndk {
+//            // 设置支持的SO库架构
+//            abiFilters 'armeabi'
+//        }
 
         packagingOptions {
             exclude 'META-INF/DEPENDENCIES'
@@ -118,7 +118,6 @@ android {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation project(path: ':baselib')
-    implementation project(path: ':antifake')
     implementation project(':lchat')
 }
 

@@ -7,8 +7,6 @@ import android.provider.Settings;
 import android.view.View;
 import android.widget.TextView;
 
-import androidx.fragment.app.Fragment;
-
 import org.greenrobot.eventbus.EventBus;
 import org.jetbrains.annotations.NotNull;
 
@@ -22,7 +20,8 @@ import com.jerry.bitcoin.ListenerService;
 import com.jerry.bitcoin.R;
 import com.jerry.bitcoin.interfaces.LoginActionListener;
 import com.jerry.bitcoin.setting.SettingActivity;
-import com.snail.antifake.jni.EmulatorDetectUtil;
+
+import androidx.fragment.app.Fragment;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -52,12 +51,7 @@ public class MineFragment extends BaseFragment {
         llLogin = view.findViewById(R.id.ll_login);
         view.findViewById(R.id.tv_setting).setOnClickListener(this);
         View btnDevice = view.findViewById(R.id.btn_device);
-        if (EmulatorDetectUtil.isEmulator()) {
-            btnDevice.setVisibility(View.GONE);
-        } else {
-            btnDevice.setOnClickListener(this);
-            btnDevice.setVisibility(View.VISIBLE);
-        }
+        btnDevice.setVisibility(View.GONE);
         view.findViewById(R.id.btn_wechat).setOnClickListener(this);
         updateUi();
     }

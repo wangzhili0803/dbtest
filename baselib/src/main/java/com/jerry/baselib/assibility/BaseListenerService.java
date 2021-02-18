@@ -298,7 +298,7 @@ public abstract class BaseListenerService extends AccessibilityService {
     }
 
     public void pullRefresh(EndCallback endCallback) {
-        exeSwip(mWidth >> 2, (int) (mHeight * 0.5), mWidth >> 2, (int) (mHeight * 0.8));
+        exeSwip(mWidth >> 2, (int) (mHeight * 0.45), mWidth >> 2, (int) (mHeight * 0.85));
         this.mWeakHandler.postDelayed(() -> endCallback.onEnd(true), TIME_LONG);
     }
 
