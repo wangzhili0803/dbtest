@@ -115,6 +115,7 @@ public class HuobiTask extends BaseTask {
     @Override
     public void buyOrder(final ListenerService service, final EndCallback endCallback) {
         if (errorCount >= 3) {
+            errorCount = 0;
             endCallback.onEnd(false);
             return;
         }
@@ -143,6 +144,7 @@ public class HuobiTask extends BaseTask {
                 break;
             case 3:
             default:
+                errorCount = 0;
                 endCallback.onEnd(true);
                 return;
         }
@@ -155,6 +157,7 @@ public class HuobiTask extends BaseTask {
     @Override
     public void saleOrder(final ListenerService service, final EndCallback endCallback) {
         if (errorCount >= 3) {
+            errorCount = 0;
             endCallback.onEnd(false);
             return;
         }
@@ -188,6 +191,7 @@ public class HuobiTask extends BaseTask {
                 }
                 break;
             default:
+                errorCount = 0;
                 endCallback.onEnd(true);
                 return;
         }
