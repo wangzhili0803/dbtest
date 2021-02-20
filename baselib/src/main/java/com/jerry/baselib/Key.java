@@ -22,6 +22,7 @@ public class Key {
     public static final String PASSWORD = "password";
     public static final String WXCODE = "wxCode";
     public static final String DEVICEID = "deviceId";
+    public static final String MONEY = "money";
     public static final String DATA = "data";
     public static final String NIL = "";
     public static final String TITLE = "title";

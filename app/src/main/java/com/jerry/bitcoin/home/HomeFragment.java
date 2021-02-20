@@ -10,7 +10,9 @@ import com.jerry.baselib.Key;
 import com.jerry.baselib.common.base.BaseFragment;
 import com.jerry.baselib.common.base.BaseRecyclerAdapter;
 import com.jerry.baselib.common.base.RecyclerViewHolder;
+import com.jerry.baselib.common.util.ParseUtil;
 import com.jerry.baselib.common.util.PreferenceHelp;
+import com.jerry.baselib.common.weidgt.MyEditText;
 import com.jerry.baselib.common.weidgt.MyTextWatcher;
 import com.jerry.bitcoin.ListenerService;
 import com.jerry.bitcoin.R;
@@ -59,7 +61,15 @@ public class HomeFragment extends BaseFragment {
     protected void initView(final View view) {
         TextView tvTitle = view.findViewById(R.id.tv_title);
         tvTitle.setText(R.string.app_name);
-        TextView etPasswd = view.findViewById(R.id.et_passwd);
+        MyEditText etMoney = view.findViewById(R.id.et_money);
+        etMoney.addTextChangedListener(new MyTextWatcher() {
+            @Override
+            public void onTextChanged(final CharSequence s, final int start, final int before, final int count) {
+                PreferenceHelp.putInt(Key.MONEY, ParseUtil.parseInt(s.toString()));
+            }
+        });
+        etMoney.setText(String.valueOf(PreferenceHelp.getInt(Key.MONEY, 0)));
+        MyEditText etPasswd = view.findViewById(R.id.et_passwd);
         etPasswd.addTextChangedListener(new MyTextWatcher() {
             @Override
             public void onTextChanged(final CharSequence s, final int start, final int before, final int count) {

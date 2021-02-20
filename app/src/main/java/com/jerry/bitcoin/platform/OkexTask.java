@@ -7,6 +7,7 @@ import android.view.accessibility.AccessibilityNodeInfo;
 import com.jerry.baselib.Key;
 import com.jerry.baselib.assibility.EndCallback;
 import com.jerry.baselib.common.util.CollectionUtils;
+import com.jerry.baselib.common.util.LogUtils;
 import com.jerry.baselib.common.util.ParseUtil;
 import com.jerry.baselib.common.util.PreferenceHelp;
 import com.jerry.baselib.common.util.StringUtil;
@@ -55,8 +56,12 @@ public class OkexTask extends BaseTask {
             if (rationed != null && priceStr != null) {
                 rationed = rationed.trim().replace(Key.SPACE, Key.NIL).replace(Key.COMMA, Key.NIL).replace("¥", Key.NIL);
                 String[] minMax = StringUtil.safeSplit(rationed, Key.LINE);
-                mBuyCoin.setMin(ParseUtil.parse2Double(minMax[0]));
-                mBuyCoin.setMax(ParseUtil.parse2Double(minMax[1]));
+                if (minMax.length == 2) {
+                    mBuyCoin.setMin(ParseUtil.parse2Double(minMax[0]));
+                    mBuyCoin.setMax(ParseUtil.parse2Double(minMax[1]));
+                } else {
+                    LogUtils.e("minMax is error :" + rationed);
+                }
                 mBuyCoin.setPrice(ParseUtil.parse2Double(priceStr));
                 mBuyCoin.setCurrentTimeMs(System.currentTimeMillis());
             }
@@ -73,8 +78,12 @@ public class OkexTask extends BaseTask {
             if (rationed != null && priceStr != null) {
                 rationed = rationed.trim().replace(Key.SPACE, Key.NIL).replace(Key.COMMA, Key.NIL).replace("¥", Key.NIL);
                 String[] minMax = StringUtil.safeSplit(rationed, Key.LINE);
-                mSaleCoin.setMin(ParseUtil.parse2Double(minMax[0]));
-                mSaleCoin.setMax(ParseUtil.parse2Double(minMax[1]));
+                if (minMax.length == 2) {
+                    mSaleCoin.setMin(ParseUtil.parse2Double(minMax[0]));
+                    mSaleCoin.setMax(ParseUtil.parse2Double(minMax[1]));
+                } else {
+                    LogUtils.e("minMax is error :" + rationed);
+                }
                 mSaleCoin.setPrice(ParseUtil.parse2Double(priceStr));
                 mSaleCoin.setCurrentTimeMs(System.currentTimeMillis());
             }
@@ -99,9 +108,9 @@ public class OkexTask extends BaseTask {
             int targetIndex = 0;
             for (int i = 0; i < listViews.size(); i++) {
                 AccessibilityNodeInfo listView = listViews.get(i);
-                String typeStr = service.getNodeText(listView, getPackageName() + "tv_num");
+                String coinType = service.getNodeText(listView, getPackageName() + "tv_num");
                 String buyStr = service.getNodeText(listView, getPackageName() + "tv_to_trade");
-                if (coinType.equals(typeStr) && nodeStr.equals(buyStr)) {
+                if (coinType.contains(this.coinType) && nodeStr.equals(buyStr)) {
                     targetIndex = i;
                     break;
                 }
