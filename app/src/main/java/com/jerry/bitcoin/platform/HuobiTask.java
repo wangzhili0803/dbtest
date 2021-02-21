@@ -93,21 +93,23 @@ public class HuobiTask extends BaseTask {
     }
 
     private AccessibilityNodeInfo getValidNode(final ListenerService service, @NonNull String nodeStr) {
-        List<AccessibilityNodeInfo> listViews = service.getRootInActiveWindow()
-            .findAccessibilityNodeInfosByViewId(getPackageName() + "list_view");
-        if (!CollectionUtils.isEmpty(listViews)) {
-            int targetIndex = 0;
-            for (int i = 0; i < listViews.size(); i++) {
-                AccessibilityNodeInfo listView = listViews.get(i);
-                String typeStr = service.getNodeText(listView, getPackageName() + "coinUnit");
-                String buyStr = service.getNodeText(listView, getPackageName() + "buy_or_sell_btn");
-                if (coinType.equals(typeStr) && nodeStr.equals(buyStr)) {
-                    targetIndex = i;
-                    break;
+        AccessibilityNodeInfo rootNode = service.getRootInActiveWindow();
+        if (rootNode != null) {
+            List<AccessibilityNodeInfo> listViews = rootNode.findAccessibilityNodeInfosByViewId(getPackageName() + "list_view");
+            if (!CollectionUtils.isEmpty(listViews)) {
+                int targetIndex = 0;
+                for (int i = 0; i < listViews.size(); i++) {
+                    AccessibilityNodeInfo listView = listViews.get(i);
+                    String typeStr = service.getNodeText(listView, getPackageName() + "coinUnit");
+                    String buyStr = service.getNodeText(listView, getPackageName() + "buy_or_sell_btn");
+                    if (coinType.equals(typeStr) && nodeStr.equals(buyStr)) {
+                        targetIndex = i;
+                        break;
+                    }
                 }
+                AccessibilityNodeInfo list = listViews.get(targetIndex);
+                return list.getChild(0);
             }
-            AccessibilityNodeInfo list = listViews.get(targetIndex);
-            return list.getChild(0);
         }
         return null;
     }
@@ -115,7 +117,7 @@ public class HuobiTask extends BaseTask {
     @Override
     public void buyOrder(final ListenerService service, final EndCallback endCallback) {
         if (errorCount >= 3) {
-            taskStep= 0;
+            taskStep = 0;
             errorCount = 0;
             endCallback.onEnd(false);
             return;
@@ -132,7 +134,7 @@ public class HuobiTask extends BaseTask {
                 }
                 break;
             case 1:
-                if (service.input(getPackageName() + "order_edit_text", "5000")) {
+                if (service.input(getPackageName() + "order_edit_text", String.valueOf(PreferenceHelp.getInt(Key.MONEY, 20000)))) {
                     errorCount = 0;
                     taskStep++;
                 }
@@ -145,7 +147,7 @@ public class HuobiTask extends BaseTask {
                 break;
             case 3:
             default:
-                taskStep= 0;
+                taskStep = 0;
                 errorCount = 0;
                 endCallback.onEnd(true);
                 return;
@@ -160,7 +162,7 @@ public class HuobiTask extends BaseTask {
     public void saleOrder(final ListenerService service, final EndCallback endCallback) {
         if (errorCount >= 3) {
             errorCount = 0;
-            taskStep= 0;
+            taskStep = 0;
             endCallback.onEnd(false);
             return;
         }
@@ -176,7 +178,7 @@ public class HuobiTask extends BaseTask {
                 }
                 break;
             case 1:
-                if (service.input(getPackageName() + "order_edit_text", "5000")) {
+                if (service.input(getPackageName() + "order_edit_text", String.valueOf(PreferenceHelp.getInt(Key.MONEY, 20000)))) {
                     errorCount = 0;
                     taskStep++;
                 }
@@ -194,7 +196,7 @@ public class HuobiTask extends BaseTask {
                 }
                 break;
             default:
-                taskStep= 0;
+                taskStep = 0;
                 errorCount = 0;
                 endCallback.onEnd(true);
                 return;

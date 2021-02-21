@@ -102,21 +102,24 @@ public class BinanceTask extends BaseTask {
     }
 
     private AccessibilityNodeInfo getValidNode(final ListenerService service, @NonNull String nodeStr) {
-        List<AccessibilityNodeInfo> listViews = service.getRootInActiveWindow()
-            .findAccessibilityNodeInfosByViewId(getPackageName() + "rv_ads");
-        if (!CollectionUtils.isEmpty(listViews)) {
-            int targetIndex = 0;
-            for (int i = 0; i < listViews.size(); i++) {
-                AccessibilityNodeInfo listView = listViews.get(i);
-                String coinType = service.getNodeText(listView, getPackageName() + "tv_asset_value");
-                String buyStr = service.getNodeText(listView, getPackageName() + "tv_option");
-                if (coinType.contains(this.coinType) && nodeStr.equals(buyStr)) {
-                    targetIndex = i;
-                    break;
+        AccessibilityNodeInfo rootNode = service.getRootInActiveWindow();
+        if (rootNode != null) {
+            List<AccessibilityNodeInfo> listViews = rootNode
+                .findAccessibilityNodeInfosByViewId(getPackageName() + "rv_ads");
+            if (!CollectionUtils.isEmpty(listViews)) {
+                int targetIndex = 0;
+                for (int i = 0; i < listViews.size(); i++) {
+                    AccessibilityNodeInfo listView = listViews.get(i);
+                    String coinType = service.getNodeText(listView, getPackageName() + "tv_asset_value");
+                    String buyStr = service.getNodeText(listView, getPackageName() + "tv_option");
+                    if (coinType.contains(this.coinType) && nodeStr.equals(buyStr)) {
+                        targetIndex = i;
+                        break;
+                    }
                 }
+                AccessibilityNodeInfo list = listViews.get(targetIndex);
+                return list.getChild(0);
             }
-            AccessibilityNodeInfo list = listViews.get(targetIndex);
-            return list.getChild(0);
         }
         return null;
     }
@@ -141,7 +144,7 @@ public class BinanceTask extends BaseTask {
                 }
                 break;
             case 1:
-                if (service.input(getPackageName() + "inputEdit", "5000")) {
+                if (service.input(getPackageName() + "inputEdit", String.valueOf(PreferenceHelp.getInt(Key.MONEY, 20000)))) {
                     errorCount = 0;
                     taskStep++;
                 }
@@ -185,7 +188,7 @@ public class BinanceTask extends BaseTask {
                 }
                 break;
             case 1:
-                if (service.input(getPackageName() + "inputEdit", "5000")) {
+                if (service.input(getPackageName() + "inputEdit", String.valueOf(PreferenceHelp.getInt(Key.MONEY, 20000)))) {
                     errorCount = 0;
                     taskStep++;
                 }

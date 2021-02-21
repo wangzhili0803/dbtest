@@ -68,7 +68,7 @@ public class HomeFragment extends BaseFragment {
                 PreferenceHelp.putInt(Key.MONEY, ParseUtil.parseInt(s.toString()));
             }
         });
-        etMoney.setText(String.valueOf(PreferenceHelp.getInt(Key.MONEY, 0)));
+        etMoney.setText(String.valueOf(PreferenceHelp.getInt(Key.MONEY, 20000)));
         MyEditText etPasswd = view.findViewById(R.id.et_passwd);
         etPasswd.addTextChangedListener(new MyTextWatcher() {
             @Override
