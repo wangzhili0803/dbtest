@@ -27,6 +27,12 @@
             app:drawableTopCompat="@drawable/selector_home" />
 
         <TextView
+            android:id="@+id/tv_analyze"
+            style="@style/tab_bar_text_style"
+            android:text="@string/home"
+            app:drawableTopCompat="@drawable/selector_home" />
+
+        <TextView
             android:id="@+id/tv_me"
             style="@style/tab_bar_text_style"
             android:text="@string/mine"

@@ -5,7 +5,8 @@ package com.jerry.baselib;
  */
 public class Key {
 
-    private Key() {}
+    private Key() {
+    }
 
     public static final long TIME_SECOND = 1000;
     public static final long TIME_MINUTE = TIME_SECOND * 60;
@@ -18,6 +19,7 @@ public class Key {
     public static final String USER_ID = "userId";
     public static final String NAME = "name";
     public static final String CODE = "code";
+    public static final String OK = "ok";
 
     public static final String PASSWORD = "password";
     public static final String WXCODE = "wxCode";
