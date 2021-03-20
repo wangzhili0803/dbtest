@@ -8,8 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
-import android.net.Uri;
-import android.os.Build;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.WindowManager;
@@ -18,6 +16,9 @@ import android.view.accessibility.AccessibilityEvent;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 
 import com.jerry.baselib.BaseApp;
 import com.jerry.baselib.assibility.BaseListenerService;
@@ -29,9 +30,12 @@ import com.jerry.baselib.common.util.AppUtils;
 import com.jerry.baselib.common.util.DisplayUtil;
 import com.jerry.baselib.common.util.JJSON;
 import com.jerry.baselib.common.util.LogUtils;
+import com.jerry.baselib.common.util.MathUtil;
+import com.jerry.baselib.common.util.ParseUtil;
 import com.jerry.baselib.common.util.PreferenceHelp;
 import com.jerry.baselib.common.util.ToastUtil;
 import com.jerry.baselib.common.util.WeakHandler;
+import com.jerry.baselib.parsehelper.WebLoader;
 import com.jerry.bitcoin.beans.CoinBean;
 import com.jerry.bitcoin.beans.CoinConstant;
 import com.jerry.bitcoin.home.MainActivity;
@@ -63,6 +67,9 @@ public class ListenerService extends BaseListenerService {
     public static final String TYPE_PLATFORM_BUY = "TYPE_PLATFORM_BUY";
     public static final String TYPE_PLATFORM_SALE = "TYPE_PLATFORM_SALE";
     public static final String TYPE_COINS = "TYPE_COINS";
+
+    private static final String URL_HUOBI = "https://c2c.huobi.be/zh-cn/trade/buy-usdt/";
+    private static final String URL_GWEB = "https://www.gateio.pro/cn/c2c/usdt_cny";
     /**
      * 擦亮
      */
@@ -70,9 +77,11 @@ public class ListenerService extends BaseListenerService {
     private static final int MSG_PLATFORM_BUY = 102;
     private static final int MSG_PLATFORM_SALE = 103;
     private static final int MSG_COIN_TYPE = 104;
-    private static final int UNINSTALL_APP = 1;
+    private static final int USDT_DATA = 1;
 
     private FloatLogoMenu menu;
+    private WebLoader webLoader;
+    private double shouleBuy;
 
     private final FloatItem startItem = new FloatItem("开始", 0x99000000, 0x99000000,
         BitmapFactory.decodeResource(BaseApp.getInstance().getResources(), R.drawable.play), "0");
@@ -101,6 +110,7 @@ public class ListenerService extends BaseListenerService {
             switch (msg.what) {
                 case MSG_DO_TASK:
                     mWeakHandler.post(this::doTask);
+                    getUsdtData();
                     return true;
                 case MSG_PLATFORM_BUY:
                     mBuyTask = getCurrentTask(PreferenceHelp.getString(TYPE_PLATFORM_BUY, CoinConstant.HUOBI));
@@ -114,16 +124,8 @@ public class ListenerService extends BaseListenerService {
                     mBuyTask.setCoinType(PreferenceHelp.getString(TYPE_COINS), data -> LogUtils.d("买入币种修改成功！"));
                     mSaleTask.setCoinType(PreferenceHelp.getString(TYPE_COINS), data -> LogUtils.d("出售币种修改成功！"));
                     return true;
-                case UNINSTALL_APP:
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        if (getApplicationInfo() != null) {
-                            Uri uri = Uri.fromParts("package", BuildConfig.APPLICATION_ID, null);
-                            Intent it = new Intent(Intent.ACTION_DELETE, uri);
-                            it.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            MyApplication.getInstance().startActivity(it);
-                            mWeakHandler.postDelayed(() -> exeClickText(msg.obj.toString()), TIME_MIDDLE);
-                        }
-                    }
+                case USDT_DATA:
+                    getUsdtData();
                     return true;
                 default:
                     return false;
@@ -131,6 +133,7 @@ public class ListenerService extends BaseListenerService {
         });
         setTaskPlatformBuy();
         setTaskPlatformSale();
+        webLoader = new WebLoader(this);
         if (!EventBus.getDefault().isRegistered(ListenerService.this)) {
             EventBus.getDefault().register(ListenerService.this);
         }
@@ -243,6 +246,23 @@ public class ListenerService extends BaseListenerService {
         mWeakHandler.postDelayed(runnable, TIME_MIDDLE);
     }
 
+    public void getUsdtData() {
+        if (!AppUtils.playing) {
+            return;
+        }
+        webLoader.load(URL_GWEB, data -> {
+            LogUtils.d(data);
+            Document doc = Jsoup.parse(data);
+            Elements allElements = doc.getAllElements();
+            Elements buyRate = allElements.select("#buy_rate");
+            Elements sellRate = allElements.select("#sell_rate");
+            double usdtBuy = ParseUtil.parseDouble(buyRate.attr("value"));
+            double usdtSell = ParseUtil.parseDouble(sellRate.attr("value"));
+            shouleBuy = MathUtil.halfEven(Math.min(usdtBuy, usdtSell)) - 0.01;
+            mWeakHandler.sendEmptyMessageDelayed(USDT_DATA, TIME_LONGLONG);
+        });
+    }
+
     private void doTask() {
         if (!AppUtils.playing) {
             return;
@@ -254,12 +274,7 @@ public class ListenerService extends BaseListenerService {
                         CoinBean buyInfo = mBuyTask.getBuyCoinInfo(ListenerService.this);
                         if (buyInfo != null) {
                             mBuyCoinBean = buyInfo;
-                            if (mSaleCoinBean != null) {
-                                LogUtils
-                                    .d("mBuyCoinBean.getPrice()< mSaleCoinBean.getPrice():" + mBuyCoinBean.getPrice() + " < " + mSaleCoinBean
-                                        .getPrice());
-                            }
-                            if (mSaleCoinBean != null && mBuyCoinBean.getPrice() < mSaleCoinBean.getPrice()) {
+                            if (mSaleCoinBean != null && mBuyCoinBean.getPrice() < shouleBuy) {
                                 // 执买入操作
                                 mBuyTask.buyOrder(ListenerService.this, result -> {
                                     if (result) {
