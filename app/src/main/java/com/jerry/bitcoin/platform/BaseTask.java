@@ -6,11 +6,12 @@ import java.util.Collections;
 import android.view.accessibility.AccessibilityNodeInfo;
 
 import com.jerry.baselib.common.util.OnDataChangedListener;
+import com.jerry.baselib.common.util.PreferenceHelp;
 import com.jerry.baselib.common.util.ToastUtil;
 import com.jerry.bitcoin.ListenerService;
-import com.jerry.bitcoin.beans.CoinBean;
 import com.jerry.bitcoin.interfaces.TaskCallback;
 
+import androidx.annotation.NonNull;
 import cn.leancloud.chatkit.LCChatKit;
 import cn.leancloud.chatkit.cache.LCIMConversationItemCache;
 import cn.leancloud.im.v2.AVIMClient;
@@ -26,8 +27,7 @@ import cn.leancloud.im.v2.callback.AVIMConversationCreatedCallback;
  */
 public abstract class BaseTask implements TaskCallback {
 
-    protected final CoinBean mBuyCoin = new CoinBean();
-    protected final CoinBean mSaleCoin = new CoinBean();
+    public static final float MONEY_POOL_MAX = 30000;
 
     protected AVIMConversation mAvimConversation;
 
@@ -114,7 +114,13 @@ public abstract class BaseTask implements TaskCallback {
         });
     }
 
-    protected abstract AccessibilityNodeInfo getValidBuyNode(ListenerService service);
+    protected abstract AccessibilityNodeInfo getValidNode(ListenerService service, @NonNull String nodeStr);
 
-    protected abstract AccessibilityNodeInfo getValidSaleNode(ListenerService service);
+    public static double getMoneyPool() {
+        return PreferenceHelp.getFloat("moneypool");
+    }
+
+    public static void getMoneyPool(float money) {
+        PreferenceHelp.putFloat("moneypool", money);
+    }
 }

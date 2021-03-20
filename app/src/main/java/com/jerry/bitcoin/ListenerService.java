@@ -81,7 +81,7 @@ public class ListenerService extends BaseListenerService {
 
     private FloatLogoMenu menu;
     private WebLoader webLoader;
-    private double shouleBuy;
+    public static double shouleBuy;
 
     private final FloatItem startItem = new FloatItem("开始", 0x99000000, 0x99000000,
         BitmapFactory.decodeResource(BaseApp.getInstance().getResources(), R.drawable.play), "0");
@@ -274,19 +274,17 @@ public class ListenerService extends BaseListenerService {
                         CoinBean buyInfo = mBuyTask.getBuyCoinInfo(ListenerService.this);
                         if (buyInfo != null) {
                             mBuyCoinBean = buyInfo;
-                            if (mSaleCoinBean != null && mBuyCoinBean.getPrice() < shouleBuy) {
-                                // 执买入操作
-                                mBuyTask.buyOrder(ListenerService.this, result -> {
-                                    if (result) {
-                                        LogUtils.d("购买下单成功！");
-                                        taskState = 2;
-                                        back();
-                                    }
-                                    mWeakHandler.postDelayed(this::doTask, TIME_SHORT);
-                                });
-                                return;
-                            }
-                            taskState = 1;
+                            // 执买入操作
+                            mBuyTask.buyOrder(ListenerService.this, result -> {
+                                if (result) {
+                                    LogUtils.d("购买下单成功！");
+                                    taskState = 2;
+                                    back();
+                                }
+                                mWeakHandler.postDelayed(this::doTask, TIME_SHORT);
+                            });
+                        } else {
+//                            taskState = 1;
                         }
                         doTask();
                     }), TIME_SHORT);

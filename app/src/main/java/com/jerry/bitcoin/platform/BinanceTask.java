@@ -49,59 +49,54 @@ public class BinanceTask extends BaseTask {
 
     @Override
     public CoinBean getBuyCoinInfo(final ListenerService service) {
-        AccessibilityNodeInfo validNode = this.getValidBuyNode(service);
+        AccessibilityNodeInfo validNode = getValidNode(service, "购买");
         if (validNode != null) {
             String rationed = service.getNodeText(validNode, getPackageName() + "tv_limit_range");
             String priceStr = service.getNodeText(validNode, getPackageName() + "tv_unit_price_value");
             if (rationed != null && priceStr != null) {
                 rationed = rationed.trim().replace(Key.SPACE, Key.NIL).replace(Key.COMMA, Key.NIL).replace("¥", Key.NIL).replace("￥", Key.NIL);
                 String[] minMax = StringUtil.safeSplit(rationed, Key.LINE);
+                CoinBean buyCoin = new CoinBean();
                 if (minMax.length == 2) {
-                    mBuyCoin.setMin(ParseUtil.parse2Double(minMax[0]));
-                    mBuyCoin.setMax(ParseUtil.parse2Double(minMax[1]));
+                    buyCoin.setMin(ParseUtil.parse2Double(minMax[0]));
+                    buyCoin.setMax(ParseUtil.parse2Double(minMax[1]));
                 } else {
                     LogUtils.e("minMax is error :" + rationed);
                 }
-                mBuyCoin.setPrice(ParseUtil.parse2Double(priceStr));
-                mBuyCoin.setCurrentTimeMs(System.currentTimeMillis());
+                buyCoin.setPrice(ParseUtil.parse2Double(priceStr));
+                buyCoin.setCurrentTimeMs(System.currentTimeMillis());
+                return buyCoin;
             }
         }
-        return mBuyCoin;
+        return null;
     }
 
     @Override
     public CoinBean getSaleCoinInfo(final ListenerService service) {
-        AccessibilityNodeInfo validNode = this.getValidSaleNode(service);
+        AccessibilityNodeInfo validNode = getValidNode(service, "出售");
         if (validNode != null) {
             String rationed = service.getNodeText(validNode, getPackageName() + "tv_limit_range");
             String priceStr = service.getNodeText(validNode, getPackageName() + "tv_unit_price_value");
             if (rationed != null && priceStr != null) {
                 rationed = rationed.trim().replace(Key.SPACE, Key.NIL).replace(Key.COMMA, Key.NIL).replace("¥", Key.NIL).replace("￥", Key.NIL);
                 String[] minMax = StringUtil.safeSplit(rationed, Key.LINE);
+                CoinBean saleCoin = new CoinBean();
                 if (minMax.length == 2) {
-                    mSaleCoin.setMin(ParseUtil.parse2Double(minMax[0]));
-                    mSaleCoin.setMax(ParseUtil.parse2Double(minMax[1]));
+                    saleCoin.setMin(ParseUtil.parse2Double(minMax[0]));
+                    saleCoin.setMax(ParseUtil.parse2Double(minMax[1]));
                 } else {
                     LogUtils.e("minMax is error :" + rationed);
                 }
-                mSaleCoin.setPrice(ParseUtil.parse2Double(priceStr));
-                mSaleCoin.setCurrentTimeMs(System.currentTimeMillis());
+                saleCoin.setPrice(ParseUtil.parse2Double(priceStr));
+                saleCoin.setCurrentTimeMs(System.currentTimeMillis());
+                return saleCoin;
             }
         }
-        return mSaleCoin;
+        return null;
     }
 
     @Override
-    protected AccessibilityNodeInfo getValidBuyNode(ListenerService service) {
-        return getValidNode(service, "购买");
-    }
-
-    @Override
-    protected AccessibilityNodeInfo getValidSaleNode(final ListenerService service) {
-        return getValidNode(service, "出售");
-    }
-
-    private AccessibilityNodeInfo getValidNode(final ListenerService service, @NonNull String nodeStr) {
+    protected AccessibilityNodeInfo getValidNode(final ListenerService service, @NonNull String nodeStr) {
         AccessibilityNodeInfo rootNode = service.getRootInActiveWindow();
         if (rootNode != null) {
             List<AccessibilityNodeInfo> listViews = rootNode
@@ -135,7 +130,7 @@ public class BinanceTask extends BaseTask {
         int tempStep = taskStep;
         switch (taskStep) {
             case 0:
-                AccessibilityNodeInfo validNode = this.getValidBuyNode(service);
+                AccessibilityNodeInfo validNode = getValidNode(service, "购买");
                 if (validNode != null) {
                     if (service.exeClickId(validNode, getPackageName() + "tv_option")) {
                         errorCount = 0;
@@ -179,7 +174,7 @@ public class BinanceTask extends BaseTask {
         int tempStep = taskStep;
         switch (taskStep) {
             case 0:
-                AccessibilityNodeInfo validNode = this.getValidSaleNode(service);
+                AccessibilityNodeInfo validNode = getValidNode(service, "出售");
                 if (validNode != null) {
                     if (service.exeClickId(validNode, getPackageName() + "tv_option")) {
                         errorCount = 0;

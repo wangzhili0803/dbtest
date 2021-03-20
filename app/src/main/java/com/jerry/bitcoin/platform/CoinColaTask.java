@@ -16,6 +16,8 @@ import com.jerry.bitcoin.ListenerService;
 import com.jerry.bitcoin.beans.CoinBean;
 import com.jerry.bitcoin.beans.CoinConstant;
 
+import androidx.annotation.NonNull;
+
 /**
  * @author Jerry
  * @createDate 1/11/21
@@ -48,69 +50,53 @@ public class CoinColaTask extends BaseTask {
 
     @Override
     public CoinBean getBuyCoinInfo(final ListenerService service) {
-        AccessibilityNodeInfo validNode = this.getValidBuyNode(service);
+        AccessibilityNodeInfo validNode = this.getValidNode(service, "购买");
         if (validNode != null) {
             String rationed = service.getNodeText(validNode, getPackageName() + "tv_limit");
             String priceStr = service.getNodeText(validNode, getPackageName() + "tv_price");
             if (rationed != null && priceStr != null) {
+                CoinBean buyCoin = new CoinBean();
                 rationed = rationed.replace("限额", Key.NIL).replace(Key.COMMA, Key.NIL).replace("CNY", Key.NIL).trim();
                 String[] minMax = StringUtil.safeSplit(rationed, Key.LINE);
-                mBuyCoin.setMin(ParseUtil.parse2Double(minMax[0]));
-                mBuyCoin.setMax(ParseUtil.parse2Double(minMax[1]));
-                mBuyCoin.setPrice(ParseUtil.parse2Double(priceStr.replace(Key.COMMA, Key.NIL).replace("CNY", Key.NIL).trim()));
-                mBuyCoin.setCurrentTimeMs(System.currentTimeMillis());
-            }
-        }
-        return mBuyCoin;
-    }
-
-    @Override
-    public CoinBean getSaleCoinInfo(final ListenerService service) {
-        AccessibilityNodeInfo validNode = this.getValidSaleNode(service);
-        if (validNode != null) {
-            String rationed = service.getNodeText(validNode, getPackageName() + "tv_limit");
-            String priceStr = service.getNodeText(validNode, getPackageName() + "tv_price");
-            if (rationed != null && priceStr != null) {
-                rationed = rationed.replace("限额", Key.NIL).replace(Key.COMMA, Key.NIL).replace("CNY", Key.NIL).trim();
-                String[] minMax = StringUtil.safeSplit(rationed, Key.LINE);
-                mSaleCoin.setMin(ParseUtil.parse2Double(minMax[0]));
-                mSaleCoin.setMax(ParseUtil.parse2Double(minMax[1]));
-                mSaleCoin.setPrice(ParseUtil.parse2Double(priceStr.replace(Key.COMMA, Key.NIL).replace("CNY", Key.NIL).trim()));
-                mSaleCoin.setCurrentTimeMs(System.currentTimeMillis());
-            }
-        }
-        return mSaleCoin;
-    }
-
-    @Override
-    protected AccessibilityNodeInfo getValidBuyNode(final ListenerService service) {
-        List<AccessibilityNodeInfo> tvOperators = service.getRootInActiveWindow()
-            .findAccessibilityNodeInfosByViewId(getPackageName() + "tv_operator");
-        if (!CollectionUtils.isEmpty(tvOperators)) {
-            for (int i = 0; i < tvOperators.size(); i++) {
-                AccessibilityNodeInfo tvOperator = tvOperators.get(i);
-                // 购买类型一致
-                if (getBuyTypeStr().equals(tvOperator.getText().toString())) {
-                    Rect rect = new Rect();
-                    tvOperator.getBoundsInScreen(rect);
-                    if (rect.left > 0 && rect.right < DisplayUtil.getDisplayWidth()) {
-                        return tvOperator.getParent();
-                    }
-                }
+                buyCoin.setMin(ParseUtil.parse2Double(minMax[0]));
+                buyCoin.setMax(ParseUtil.parse2Double(minMax[1]));
+                buyCoin.setPrice(ParseUtil.parse2Double(priceStr.replace(Key.COMMA, Key.NIL).replace("CNY", Key.NIL).trim()));
+                buyCoin.setCurrentTimeMs(System.currentTimeMillis());
+                return buyCoin;
             }
         }
         return null;
     }
 
     @Override
-    protected AccessibilityNodeInfo getValidSaleNode(final ListenerService service) {
+    public CoinBean getSaleCoinInfo(final ListenerService service) {
+        AccessibilityNodeInfo validNode = this.getValidNode(service, "出售");
+        if (validNode != null) {
+            String rationed = service.getNodeText(validNode, getPackageName() + "tv_limit");
+            String priceStr = service.getNodeText(validNode, getPackageName() + "tv_price");
+            if (rationed != null && priceStr != null) {
+                rationed = rationed.replace("限额", Key.NIL).replace(Key.COMMA, Key.NIL).replace("CNY", Key.NIL).trim();
+                String[] minMax = StringUtil.safeSplit(rationed, Key.LINE);
+                CoinBean saleCoin = new CoinBean();
+                saleCoin.setMin(ParseUtil.parse2Double(minMax[0]));
+                saleCoin.setMax(ParseUtil.parse2Double(minMax[1]));
+                saleCoin.setPrice(ParseUtil.parse2Double(priceStr.replace(Key.COMMA, Key.NIL).replace("CNY", Key.NIL).trim()));
+                saleCoin.setCurrentTimeMs(System.currentTimeMillis());
+                return saleCoin;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    protected AccessibilityNodeInfo getValidNode(final ListenerService service, @NonNull String nodeStr) {
         List<AccessibilityNodeInfo> tvOperators = service.getRootInActiveWindow()
             .findAccessibilityNodeInfosByViewId(getPackageName() + "tv_operator");
         if (!CollectionUtils.isEmpty(tvOperators)) {
             for (int i = 0; i < tvOperators.size(); i++) {
                 AccessibilityNodeInfo tvOperator = tvOperators.get(i);
                 // 购买类型一致
-                if (getBuyTypeStr().equals(tvOperator.getText().toString())) {
+                if (nodeStr.equals(tvOperator.getText().toString())) {
                     Rect rect = new Rect();
                     tvOperator.getBoundsInScreen(rect);
                     if (rect.left > 0 && rect.right < DisplayUtil.getDisplayWidth()) {

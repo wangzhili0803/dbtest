@@ -48,51 +48,102 @@ public class HuobiTask extends BaseTask {
 
     @Override
     public CoinBean getBuyCoinInfo(final ListenerService service) {
-        AccessibilityNodeInfo validNode = this.getValidBuyNode(service);
-        if (validNode != null) {
-            String rationed = service.getNodeText(validNode, getPackageName() + "rationedExchangeVol");
-            String priceStr = service.getNodeText(validNode, getPackageName() + "unitPriceValue");
-            if (rationed != null && priceStr != null) {
-                rationed = rationed.trim().replace(Key.SPACE, Key.NIL).replace(Key.COMMA, Key.NIL).replace("¥", Key.NIL);
-                String[] minMax = StringUtil.safeSplit(rationed, Key.LINE);
-                mBuyCoin.setMin(ParseUtil.parse2Double(minMax[0]));
-                mBuyCoin.setMax(ParseUtil.parse2Double(minMax[1]));
-                mBuyCoin.setPrice(ParseUtil.parse2Double(priceStr));
-                mBuyCoin.setCurrentTimeMs(System.currentTimeMillis());
+        AccessibilityNodeInfo rootNode = service.getRootInActiveWindow();
+        if (rootNode != null) {
+            List<AccessibilityNodeInfo> listViews = rootNode.findAccessibilityNodeInfosByViewId(getPackageName() + "list_view");
+            if (!CollectionUtils.isEmpty(listViews)) {
+                int targetIndex = 0;
+                for (int i = 0; i < listViews.size(); i++) {
+                    AccessibilityNodeInfo listView = listViews.get(i);
+                    String typeStr = service.getNodeText(listView, getPackageName() + "coinUnit");
+                    String buyStr = service.getNodeText(listView, getPackageName() + "buy_or_sell_btn");
+                    if (coinType.equals(typeStr) && "购买".equals(buyStr)) {
+                        targetIndex = i;
+                        break;
+                    }
+                }
+                AccessibilityNodeInfo list = listViews.get(targetIndex);
+                for (int i = 0; i < list.getChildCount(); i++) {
+                    AccessibilityNodeInfo validNode = list.getChild(i);
+                    String priceStr = service.getNodeText(validNode, getPackageName() + "unitPriceValue");
+                    double price = ParseUtil.parse2Double(priceStr);
+                    if (price <= ListenerService.shouleBuy) {
+                        // 成交量大于1000
+                        String dealNum = service.getNodeText(validNode, getPackageName() + "merchantDealNum");
+                        if (ParseUtil.parseInt(dealNum) > 1000) {
+                            String rationed = service.getNodeText(validNode, getPackageName() + "rationedExchangeVol");
+                            if (rationed != null && priceStr != null) {
+                                rationed = rationed.trim().replace(Key.SPACE, Key.NIL).replace(Key.COMMA, Key.NIL).replace("¥", Key.NIL);
+                                String[] minMax = StringUtil.safeSplit(rationed, Key.LINE);
+                                double min = ParseUtil.parse2Double(minMax[0]);
+                                double max = ParseUtil.parse2Double(minMax[1]);
+                                if (MONEY_POOL_MAX - getMoneyPool() > min && min >= 4000) {
+                                    CoinBean buyCoin = new CoinBean();
+                                    buyCoin.setMin(min);
+                                    buyCoin.setMax(max);
+                                    buyCoin.setPrice(price);
+                                    buyCoin.setCurrentTimeMs(System.currentTimeMillis());
+                                    return buyCoin;
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
-        return mBuyCoin;
+        return null;
     }
 
     @Override
     public CoinBean getSaleCoinInfo(final ListenerService service) {
-        AccessibilityNodeInfo validNode = this.getValidSaleNode(service);
-        if (validNode != null) {
-            String rationed = service.getNodeText(validNode, getPackageName() + "rationedExchangeVol");
-            String priceStr = service.getNodeText(validNode, getPackageName() + "unitPriceValue");
-            if (rationed != null && priceStr != null) {
-                rationed = rationed.trim().replace(Key.SPACE, Key.NIL).replace(Key.COMMA, Key.NIL).replace("¥", Key.NIL);
-                String[] minMax = StringUtil.safeSplit(rationed, Key.LINE);
-                mSaleCoin.setMin(ParseUtil.parse2Double(minMax[0]));
-                mSaleCoin.setMax(ParseUtil.parse2Double(minMax[1]));
-                mSaleCoin.setPrice(ParseUtil.parse2Double(priceStr));
-                mSaleCoin.setCurrentTimeMs(System.currentTimeMillis());
+        AccessibilityNodeInfo rootNode = service.getRootInActiveWindow();
+        if (rootNode != null) {
+            List<AccessibilityNodeInfo> listViews = rootNode.findAccessibilityNodeInfosByViewId(getPackageName() + "list_view");
+            if (!CollectionUtils.isEmpty(listViews)) {
+                int targetIndex = 0;
+                for (int i = 0; i < listViews.size(); i++) {
+                    AccessibilityNodeInfo listView = listViews.get(i);
+                    String typeStr = service.getNodeText(listView, getPackageName() + "coinUnit");
+                    String buyStr = service.getNodeText(listView, getPackageName() + "buy_or_sell_btn");
+                    if (coinType.equals(typeStr) && "出售".equals(buyStr)) {
+                        targetIndex = i;
+                        break;
+                    }
+                }
+                AccessibilityNodeInfo list = listViews.get(targetIndex);
+                for (int i = 0; i < list.getChildCount(); i++) {
+                    AccessibilityNodeInfo validNode = list.getChild(i);
+                    String priceStr = service.getNodeText(validNode, getPackageName() + "unitPriceValue");
+                    double price = ParseUtil.parse2Double(priceStr);
+                    if (price > ListenerService.shouleBuy) {
+                        // 成交量大于1000
+                        String dealNum = service.getNodeText(validNode, getPackageName() + "merchantDealNum");
+                        if (ParseUtil.parseInt(dealNum) > 1000) {
+                            String rationed = service.getNodeText(validNode, getPackageName() + "rationedExchangeVol");
+                            if (rationed != null && priceStr != null) {
+                                rationed = rationed.trim().replace(Key.SPACE, Key.NIL).replace(Key.COMMA, Key.NIL).replace("¥", Key.NIL);
+                                String[] minMax = StringUtil.safeSplit(rationed, Key.LINE);
+                                double min = ParseUtil.parse2Double(minMax[0]);
+                                double max = ParseUtil.parse2Double(minMax[1]);
+                                if (MONEY_POOL_MAX - getMoneyPool() > min) {
+                                    CoinBean saleCoin = new CoinBean();
+                                    saleCoin.setMin(min);
+                                    saleCoin.setMax(max);
+                                    saleCoin.setPrice(price);
+                                    saleCoin.setCurrentTimeMs(System.currentTimeMillis());
+                                    return saleCoin;
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
-        return mSaleCoin;
+        return null;
     }
 
     @Override
-    protected AccessibilityNodeInfo getValidBuyNode(ListenerService service) {
-        return getValidNode(service, "购买");
-    }
-
-    @Override
-    protected AccessibilityNodeInfo getValidSaleNode(final ListenerService service) {
-        return getValidNode(service, "出售");
-    }
-
-    private AccessibilityNodeInfo getValidNode(final ListenerService service, @NonNull String nodeStr) {
+    protected AccessibilityNodeInfo getValidNode(final ListenerService service, @NonNull String nodeStr) {
         AccessibilityNodeInfo rootNode = service.getRootInActiveWindow();
         if (rootNode != null) {
             List<AccessibilityNodeInfo> listViews = rootNode.findAccessibilityNodeInfosByViewId(getPackageName() + "list_view");
@@ -108,7 +159,14 @@ public class HuobiTask extends BaseTask {
                     }
                 }
                 AccessibilityNodeInfo list = listViews.get(targetIndex);
-                return list.getChild(0);
+                for (int i = 0; i < list.getChildCount(); i++) {
+                    AccessibilityNodeInfo accessibilityNodeInfo = list.getChild(i);
+                    // 成交量大于1000
+                    String dealNum = service.getNodeText(accessibilityNodeInfo, getPackageName() + "merchantDealNum");
+                    if (ParseUtil.parseInt(dealNum) > 1000) {
+
+                    }
+                }
             }
         }
         return null;
@@ -125,7 +183,7 @@ public class HuobiTask extends BaseTask {
         int tempStep = taskStep;
         switch (taskStep) {
             case 0:
-                AccessibilityNodeInfo validNode = this.getValidBuyNode(service);
+                AccessibilityNodeInfo validNode = getValidNode(service, "购买");
                 if (validNode != null) {
                     if (service.exeClickId(validNode, getPackageName() + "buy_or_sell_btn")) {
                         errorCount = 0;
@@ -169,7 +227,7 @@ public class HuobiTask extends BaseTask {
         int tempStep = taskStep;
         switch (taskStep) {
             case 0:
-                AccessibilityNodeInfo validNode = this.getValidSaleNode(service);
+                AccessibilityNodeInfo validNode = getValidNode(service, "出售");
                 if (validNode != null) {
                     if (service.exeClickId(validNode, getPackageName() + "buy_or_sell_btn")) {
                         errorCount = 0;
