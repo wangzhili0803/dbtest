@@ -275,17 +275,18 @@ public class ListenerService extends BaseListenerService {
                         if (buyInfo != null) {
                             mBuyCoinBean = buyInfo;
                             // 执买入操作
-                            mBuyTask.buyOrder(ListenerService.this, result -> {
+                            mBuyTask.buyOrder(ListenerService.this, mBuyCoinBean, result -> {
                                 if (result) {
                                     LogUtils.d("购买下单成功！");
-                                    taskState = 2;
+//                                    taskState = 2;
                                     back();
+                                    return;
                                 }
                                 mWeakHandler.postDelayed(this::doTask, TIME_SHORT);
                             });
-                        } else {
-//                            taskState = 1;
+                            return;
                         }
+//                        taskState = 1;
                         doTask();
                     }), TIME_SHORT);
                     return;
@@ -313,7 +314,7 @@ public class ListenerService extends BaseListenerService {
                             mSaleCoinBean = saleInfo;
                             if (mBuyCoinBean != null && mBuyCoinBean.getPrice() < mSaleCoinBean.getPrice()) {
                                 // 执行出售操作
-                                mSaleTask.saleOrder(this, result -> {
+                                mSaleTask.saleOrder(this, mSaleCoinBean, result -> {
                                     if (result) {
                                         LogUtils.d("出售下单成功！");
                                         giveNotice();

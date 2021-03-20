@@ -109,12 +109,12 @@ public class CoinColaTask extends BaseTask {
     }
 
     @Override
-    public void buyOrder(final ListenerService service, final EndCallback endCallback) {
+    public void buyOrder(final ListenerService service, CoinBean coinBean, final EndCallback endCallback) {
 
     }
 
     @Override
-    public void saleOrder(final ListenerService service, final EndCallback endCallback) {
+    public void saleOrder(final ListenerService service, CoinBean coinBean, final EndCallback endCallback) {
 
     }
 }

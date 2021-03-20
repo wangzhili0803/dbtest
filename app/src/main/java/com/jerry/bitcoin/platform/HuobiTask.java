@@ -67,7 +67,7 @@ public class HuobiTask extends BaseTask {
                     AccessibilityNodeInfo validNode = list.getChild(i);
                     String priceStr = service.getNodeText(validNode, getPackageName() + "unitPriceValue");
                     double price = ParseUtil.parse2Double(priceStr);
-                    if (price <= ListenerService.shouleBuy) {
+                    if (price <= 6.54) {
                         // 成交量大于1000
                         String dealNum = service.getNodeText(validNode, getPackageName() + "merchantDealNum");
                         if (ParseUtil.parseInt(dealNum) > 1000) {
@@ -77,12 +77,14 @@ public class HuobiTask extends BaseTask {
                                 String[] minMax = StringUtil.safeSplit(rationed, Key.LINE);
                                 double min = ParseUtil.parse2Double(minMax[0]);
                                 double max = ParseUtil.parse2Double(minMax[1]);
-                                if (MONEY_POOL_MAX - getMoneyPool() > min && min >= 4000) {
+                                if (MONEY_POOL_MAX - getMoneyPool() > min) {
                                     CoinBean buyCoin = new CoinBean();
                                     buyCoin.setMin(min);
                                     buyCoin.setMax(max);
                                     buyCoin.setPrice(price);
                                     buyCoin.setCurrentTimeMs(System.currentTimeMillis());
+                                    buyCoin.setShouldTrade(Math.min(MONEY_POOL_MAX - getMoneyPool(), max));
+                                    buyCoin.setTag(validNode);
                                     return buyCoin;
                                 }
                             }
@@ -173,7 +175,7 @@ public class HuobiTask extends BaseTask {
     }
 
     @Override
-    public void buyOrder(final ListenerService service, final EndCallback endCallback) {
+    public void buyOrder(final ListenerService service, CoinBean coinBean, final EndCallback endCallback) {
         if (errorCount >= 3) {
             taskStep = 0;
             errorCount = 0;
@@ -183,7 +185,7 @@ public class HuobiTask extends BaseTask {
         int tempStep = taskStep;
         switch (taskStep) {
             case 0:
-                AccessibilityNodeInfo validNode = getValidNode(service, "购买");
+                AccessibilityNodeInfo validNode = (AccessibilityNodeInfo) coinBean.getTag();
                 if (validNode != null) {
                     if (service.exeClickId(validNode, getPackageName() + "buy_or_sell_btn")) {
                         errorCount = 0;
@@ -192,7 +194,7 @@ public class HuobiTask extends BaseTask {
                 }
                 break;
             case 1:
-                if (service.input(getPackageName() + "order_edit_text", String.valueOf(PreferenceHelp.getInt(Key.MONEY, 20000)))) {
+                if (service.input(getPackageName() + "order_edit_text", String.valueOf(coinBean.getShouldTrade()))) {
                     errorCount = 0;
                     taskStep++;
                 }
@@ -213,11 +215,11 @@ public class HuobiTask extends BaseTask {
         if (tempStep == taskStep) {
             errorCount++;
         }
-        service.postDelayed(() -> buyOrder(service, endCallback));
+        service.postDelayed(() -> buyOrder(service, coinBean, endCallback));
     }
 
     @Override
-    public void saleOrder(final ListenerService service, final EndCallback endCallback) {
+    public void saleOrder(final ListenerService service, CoinBean coinBean, final EndCallback endCallback) {
         if (errorCount >= 3) {
             errorCount = 0;
             taskStep = 0;
@@ -262,6 +264,6 @@ public class HuobiTask extends BaseTask {
         if (tempStep == taskStep) {
             errorCount++;
         }
-        service.postDelayed(() -> saleOrder(service, endCallback));
+        service.postDelayed(() -> saleOrder(service, coinBean, endCallback));
     }
 }

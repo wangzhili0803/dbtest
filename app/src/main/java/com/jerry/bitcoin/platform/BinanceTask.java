@@ -120,7 +120,7 @@ public class BinanceTask extends BaseTask {
     }
 
     @Override
-    public void buyOrder(final ListenerService service, final EndCallback endCallback) {
+    public void buyOrder(final ListenerService service, CoinBean coinBean, final EndCallback endCallback) {
         if (errorCount >= 3) {
             taskStep = 0;
             errorCount = 0;
@@ -160,11 +160,11 @@ public class BinanceTask extends BaseTask {
         if (tempStep == taskStep) {
             errorCount++;
         }
-        service.postDelayed(() -> buyOrder(service, endCallback));
+        service.postDelayed(() -> buyOrder(service, coinBean, endCallback));
     }
 
     @Override
-    public void saleOrder(final ListenerService service, final EndCallback endCallback) {
+    public void saleOrder(final ListenerService service, CoinBean coinBean, final EndCallback endCallback) {
         if (errorCount >= 3) {
             errorCount = 0;
             taskStep = 0;
@@ -209,6 +209,6 @@ public class BinanceTask extends BaseTask {
         if (tempStep == taskStep) {
             errorCount++;
         }
-        service.postDelayed(() -> saleOrder(service, endCallback));
+        service.postDelayed(() -> saleOrder(service, coinBean, endCallback));
     }
 }

@@ -49,10 +49,10 @@ public interface TaskCallback {
     /**
      * 购买下单
      */
-    void buyOrder(ListenerService service, EndCallback endCallback);
+    void buyOrder(ListenerService service, CoinBean coinBean, EndCallback endCallback);
 
     /**
      * 出售下单
      */
-    void saleOrder(ListenerService service, EndCallback endCallback);
+    void saleOrder(ListenerService service, CoinBean coinBean, EndCallback endCallback);
 }
