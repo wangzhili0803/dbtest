@@ -91,7 +91,7 @@ public class ListenerService extends BaseListenerService {
     /**
      * task状态，0：买入，1：出售，2，买入下单，3：出售下单
      */
-    private int taskState;
+    private int taskState = 2;
     private TaskCallback mBuyTask;
     private TaskCallback mSaleTask;
     /**
@@ -229,8 +229,8 @@ public class ListenerService extends BaseListenerService {
     }
 
     @Override
-    protected boolean isHomePage() {
-        return true;
+    public boolean isHomePage() {
+        return hasText("首页", "行情", "交易", "合约", "资产");
     }
 
     /**
@@ -306,6 +306,26 @@ public class ListenerService extends BaseListenerService {
                 }
                 break;
             case 2:
+                mBuyTask.toHuazhuan(this, result -> {
+                    if (result) {
+                        taskState = 3;
+                    } else {
+                        taskState = 0;
+                    }
+                    mWeakHandler.postDelayed(this::doTask, TIME_LONGLONG);
+                });
+                return;
+            case 3:
+                mBuyTask.zhuanzhang(this, result -> {
+                    taskState = 0;
+                    if (result) {
+                        ToastUtil.showShortText("提币成功！");
+                    } else {
+                        ToastUtil.showShortText("有手续费");
+                    }
+                    mWeakHandler.postDelayed(this::doTask, TIME_LONG);
+                });
+                return;
             default:
                 if (exeClickText("我要卖")) {
                     mWeakHandler.postDelayed(() -> {

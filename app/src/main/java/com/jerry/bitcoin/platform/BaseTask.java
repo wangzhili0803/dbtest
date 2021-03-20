@@ -27,6 +27,8 @@ import cn.leancloud.im.v2.callback.AVIMConversationCreatedCallback;
  */
 public abstract class BaseTask implements TaskCallback {
 
+    protected static final String TARGET_ADDRESS = "TRe1xeKfrkTHXAKdJg4nzE6FunJ9k1DWVa";
+
     public static final float MONEY_POOL_MAX = 30000;
 
     protected AVIMConversation mAvimConversation;

@@ -117,4 +117,14 @@ public class CoinColaTask extends BaseTask {
     public void saleOrder(final ListenerService service, CoinBean coinBean, final EndCallback endCallback) {
 
     }
+
+    @Override
+    public void toHuazhuan(final ListenerService service, final EndCallback endCallback) {
+
+    }
+
+    @Override
+    public void zhuanzhang(final ListenerService service, final EndCallback endCallback) {
+
+    }
 }

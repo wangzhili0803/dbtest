@@ -210,4 +210,14 @@ public class OkexTask extends BaseTask {
         }
         service.postDelayed(() -> saleOrder(service, coinBean, endCallback));
     }
+
+    @Override
+    public void toHuazhuan(final ListenerService service, final EndCallback endCallback) {
+
+    }
+
+    @Override
+    public void zhuanzhang(final ListenerService service, final EndCallback endCallback) {
+
+    }
 }

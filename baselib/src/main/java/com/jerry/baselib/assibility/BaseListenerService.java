@@ -302,12 +302,8 @@ public abstract class BaseListenerService extends AccessibilityService {
         this.mWeakHandler.postDelayed(() -> endCallback.onEnd(true), TIME_LONG);
     }
 
-    public String getNodeText(AccessibilityNodeInfo root) {
-        CharSequence txt = root.getText();
-        if (txt == null) {
-            txt = Key.NIL;
-        }
-        return txt.toString();
+    public String getNodeText(String id) {
+        return getNodeText(getRootInActiveWindow(), id);
     }
 
     public String getNodeText(@NonNull AccessibilityNodeInfo root, String id) {

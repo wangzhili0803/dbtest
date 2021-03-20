@@ -2,6 +2,7 @@ package com.jerry.bitcoin.platform;
 
 import java.util.List;
 
+import android.text.TextUtils;
 import android.view.accessibility.AccessibilityNodeInfo;
 
 import com.jerry.baselib.Key;
@@ -265,5 +266,136 @@ public class HuobiTask extends BaseTask {
             errorCount++;
         }
         service.postDelayed(() -> saleOrder(service, coinBean, endCallback));
+    }
+
+    @Override
+    public void toHuazhuan(final ListenerService service, final EndCallback endCallback) {
+        if (errorCount >= 3) {
+            taskStep = 0;
+            errorCount = 0;
+            endCallback.onEnd(false);
+            return;
+        }
+        int tempStep = taskStep;
+        switch (taskStep) {
+            case 0:
+                if (service.isHomePage()) {
+                    if (service.exeClickText("资产")) {
+                        taskStep++;
+                    }
+                } else {
+                    service.back();
+                }
+                break;
+            case 1:
+                if (service.exeClickText("划转")) {
+                    taskStep++;
+                }
+                break;
+            case 2:
+                if (service.clickFirst(getPackageName() + "currency_title")) {
+                    taskStep++;
+                }
+                break;
+            case 3:
+                if (service.exeClickText("USDT")) {
+                    taskStep++;
+                }
+                break;
+            case 4:
+                if (service.clickFirst(getPackageName() + "tv_all")) {
+                    taskStep++;
+                }
+                break;
+            case 5:
+                if (service.clickFirst(getPackageName() + "btn_action")) {
+                    taskStep++;
+                }
+                break;
+            case 6:
+                if (service.clickFirst(getPackageName() + "dialog_confirm_btn")) {
+                    taskStep++;
+                }
+                break;
+            default:
+                taskStep = 0;
+                errorCount = 0;
+                endCallback.onEnd(true);
+                return;
+        }
+        if (tempStep == taskStep) {
+            errorCount++;
+        }
+        service.postDelayed(() -> toHuazhuan(service, endCallback));
+    }
+
+    @Override
+    public void zhuanzhang(final ListenerService service, final EndCallback endCallback) {
+        if (errorCount >= 3) {
+            taskStep = 0;
+            errorCount = 0;
+            endCallback.onEnd(false);
+            return;
+        }
+        int tempStep = taskStep;
+        switch (taskStep) {
+            case 0:
+                if (service.isHomePage()) {
+                    if (service.exeClickText("资产")) {
+                        taskStep++;
+                    }
+                } else {
+                    service.back();
+                }
+                break;
+            case 1:
+                if (service.exeClickText("USDT")) {
+                    taskStep++;
+                }
+                break;
+            case 2:
+                if (service.exeClickText("提币")) {
+                    taskStep++;
+                }
+                break;
+            case 3:
+                if (service.exeClickText("TRC20")) {
+                    taskStep++;
+                }
+                break;
+            case 4:
+                if (service.input(getPackageName() + "withdraw_address_edit_amount", TARGET_ADDRESS)) {
+                    taskStep++;
+                }
+                break;
+            case 5:
+                if (service.clickFirst(getPackageName() + "tv_all")) {
+                    taskStep++;
+                }
+                break;
+            case 6:
+                String withdraw = service.getNodeText(getPackageName() + "withdraw_edit_amount");
+                String receive = service.getNodeText(getPackageName() + "tv_receive_amount");
+                if (!TextUtils.isEmpty(withdraw) && withdraw.equals(receive)) {
+                    taskStep++;
+                } else {
+                    errorCount = 3;
+                }
+                break;
+            case 7:
+                if (service.clickFirst(getPackageName() + "btn_action")) {
+                    taskStep++;
+                }
+                break;
+            default:
+                taskStep = 0;
+                errorCount = 0;
+                endCallback.onEnd(true);
+                return;
+        }
+        if (tempStep == taskStep) {
+            errorCount++;
+        }
+        service.postDelayed(() -> zhuanzhang(service, endCallback));
     }
 }
