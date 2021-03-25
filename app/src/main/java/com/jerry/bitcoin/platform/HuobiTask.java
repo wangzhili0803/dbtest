@@ -8,6 +8,8 @@ import android.view.accessibility.AccessibilityNodeInfo;
 import com.jerry.baselib.Key;
 import com.jerry.baselib.assibility.EndCallback;
 import com.jerry.baselib.common.util.CollectionUtils;
+import com.jerry.baselib.common.util.JJSON;
+import com.jerry.baselib.common.util.ListCacheUtil;
 import com.jerry.baselib.common.util.ParseUtil;
 import com.jerry.baselib.common.util.PreferenceHelp;
 import com.jerry.baselib.common.util.StringUtil;
@@ -16,6 +18,7 @@ import com.jerry.bitcoin.beans.CoinBean;
 import com.jerry.bitcoin.beans.CoinConstant;
 
 import androidx.annotation.NonNull;
+import cn.leancloud.json.JSON;
 
 /**
  * @author Jerry
@@ -25,8 +28,10 @@ import androidx.annotation.NonNull;
 public class HuobiTask extends BaseTask {
 
     private static volatile HuobiTask mInstance;
+    protected static String BLACK_LIST = "black_list";
 
     private HuobiTask() {
+        blackList = JJSON.parseArray(ListCacheUtil.getValueFromJsonFile(BLACK_LIST));
         coinType = PreferenceHelp.getString(ListenerService.TYPE_COINS, CoinConstant.USDT);
         openConversation(null);
     }
@@ -68,25 +73,28 @@ public class HuobiTask extends BaseTask {
                     AccessibilityNodeInfo validNode = list.getChild(i);
                     String priceStr = service.getNodeText(validNode, getPackageName() + "unitPriceValue");
                     double price = ParseUtil.parse2Double(priceStr);
-                    if (price <= 6.54) {
+                    if (price <= ListenerService.shouleBuy) {
                         // 成交量大于1000
-                        String dealNum = service.getNodeText(validNode, getPackageName() + "merchantDealNum");
-                        if (ParseUtil.parseInt(dealNum) > 1000) {
-                            String rationed = service.getNodeText(validNode, getPackageName() + "rationedExchangeVol");
-                            if (rationed != null && priceStr != null) {
-                                rationed = rationed.trim().replace(Key.SPACE, Key.NIL).replace(Key.COMMA, Key.NIL).replace("¥", Key.NIL);
-                                String[] minMax = StringUtil.safeSplit(rationed, Key.LINE);
-                                double min = ParseUtil.parse2Double(minMax[0]);
-                                double max = ParseUtil.parse2Double(minMax[1]);
-                                if (MONEY_POOL_MAX - getMoneyPool() > min) {
-                                    CoinBean buyCoin = new CoinBean();
-                                    buyCoin.setMin(min);
-                                    buyCoin.setMax(max);
-                                    buyCoin.setPrice(price);
-                                    buyCoin.setCurrentTimeMs(System.currentTimeMillis());
-                                    buyCoin.setShouldTrade(Math.min(MONEY_POOL_MAX - getMoneyPool(), max));
-                                    buyCoin.setTag(validNode);
-                                    return buyCoin;
+                        String merchant = service.getNodeText(validNode, getPackageName() + "merchantName");
+                        if (blackList == null || !blackList.contains(merchant)) {
+                            String dealNum = service.getNodeText(validNode, getPackageName() + "merchantDealNum");
+                            if (ParseUtil.parseInt(dealNum) > 1000) {
+                                String rationed = service.getNodeText(validNode, getPackageName() + "rationedExchangeVol");
+                                if (rationed != null && priceStr != null) {
+                                    rationed = rationed.trim().replace(Key.SPACE, Key.NIL).replace(Key.COMMA, Key.NIL).replace("¥", Key.NIL);
+                                    String[] minMax = StringUtil.safeSplit(rationed, Key.LINE);
+                                    double min = ParseUtil.parse2Double(minMax[0]);
+                                    double max = ParseUtil.parse2Double(minMax[1]);
+                                    if (MONEY_POOL_MAX - getMoneyPool() > min) {
+                                        CoinBean buyCoin = new CoinBean();
+                                        buyCoin.setMin(min);
+                                        buyCoin.setMax(max);
+                                        buyCoin.setPrice(price);
+                                        buyCoin.setCurrentTimeMs(System.currentTimeMillis());
+                                        buyCoin.setShouldTrade(Math.min(MONEY_POOL_MAX - getMoneyPool(), max));
+                                        buyCoin.setTag(validNode);
+                                        return buyCoin;
+                                    }
                                 }
                             }
                         }
@@ -195,18 +203,32 @@ public class HuobiTask extends BaseTask {
                 }
                 break;
             case 1:
+                String desc = service.getNodeText(getPackageName() + "id_desc_content_tv");
+                if (desc.contains("流水") || desc.contains("明细")) {
+                    errorCount = 3;
+                    String name = service.getNodeText(getPackageName() + "id_desc_title_tv");
+                    int spaceIndex = name.indexOf(Key.SPACE);
+                    if (spaceIndex > 0) {
+                        blackList.add(name.substring(0, spaceIndex));
+                    } else {
+                        blackList.add(name);
+                    }
+                    ListCacheUtil.saveValueToJsonFile(BLACK_LIST, JSON.toJSONString(blackList));
+                }
+                break;
+            case 2:
                 if (service.input(getPackageName() + "order_edit_text", String.valueOf(coinBean.getShouldTrade()))) {
                     errorCount = 0;
                     taskStep++;
                 }
                 break;
-            case 2:
+            case 3:
                 if (service.clickFirst(getPackageName() + "place_order")) {
                     errorCount = 0;
                     taskStep++;
                 }
                 break;
-            case 3:
+            case 4:
             default:
                 taskStep = 0;
                 errorCount = 0;
@@ -269,7 +291,7 @@ public class HuobiTask extends BaseTask {
     }
 
     @Override
-    public void toHuazhuan(final ListenerService service, final EndCallback endCallback) {
+    public void charge(final ListenerService service, final EndCallback endCallback) {
         if (errorCount >= 3) {
             taskStep = 0;
             errorCount = 0;
@@ -326,11 +348,11 @@ public class HuobiTask extends BaseTask {
         if (tempStep == taskStep) {
             errorCount++;
         }
-        service.postDelayed(() -> toHuazhuan(service, endCallback));
+        service.postDelayed(() -> charge(service, endCallback));
     }
 
     @Override
-    public void zhuanzhang(final ListenerService service, final EndCallback endCallback) {
+    public void transfer(final ListenerService service, final EndCallback endCallback) {
         if (errorCount >= 3) {
             taskStep = 0;
             errorCount = 0;
@@ -396,6 +418,33 @@ public class HuobiTask extends BaseTask {
         if (tempStep == taskStep) {
             errorCount++;
         }
-        service.postDelayed(() -> zhuanzhang(service, endCallback));
+        service.postDelayed(() -> transfer(service, endCallback));
+    }
+
+    @Override
+    public void pay(final ListenerService service, final EndCallback endCallback) {
+        if (errorCount >= 3) {
+            taskStep = 0;
+            errorCount = 0;
+            endCallback.onEnd(false);
+            return;
+        }
+        int tempStep = taskStep;
+        switch (taskStep) {
+            case 0:
+                if (service.exeClickText("去付款")) {
+                    taskStep++;
+                }
+                break;
+            default:
+                taskStep = 0;
+                errorCount = 0;
+                endCallback.onEnd(true);
+                return;
+        }
+        if (tempStep == taskStep) {
+            errorCount++;
+        }
+        service.postDelayed(() -> transfer(service, endCallback));
     }
 }

@@ -30,7 +30,6 @@ import com.jerry.baselib.common.util.AppUtils;
 import com.jerry.baselib.common.util.DisplayUtil;
 import com.jerry.baselib.common.util.JJSON;
 import com.jerry.baselib.common.util.LogUtils;
-import com.jerry.baselib.common.util.MathUtil;
 import com.jerry.baselib.common.util.ParseUtil;
 import com.jerry.baselib.common.util.PreferenceHelp;
 import com.jerry.baselib.common.util.ToastUtil;
@@ -91,7 +90,7 @@ public class ListenerService extends BaseListenerService {
     /**
      * task状态，0：买入，1：出售，2，买入下单，3：出售下单
      */
-    private int taskState = 2;
+    private int taskState;
     private TaskCallback mBuyTask;
     private TaskCallback mSaleTask;
     /**
@@ -254,11 +253,10 @@ public class ListenerService extends BaseListenerService {
             LogUtils.d(data);
             Document doc = Jsoup.parse(data);
             Elements allElements = doc.getAllElements();
-            Elements buyRate = allElements.select("#buy_rate");
             Elements sellRate = allElements.select("#sell_rate");
-            double usdtBuy = ParseUtil.parseDouble(buyRate.attr("value"));
             double usdtSell = ParseUtil.parseDouble(sellRate.attr("value"));
-            shouleBuy = MathUtil.halfEven(Math.min(usdtBuy, usdtSell)) - 0.01;
+            shouleBuy = usdtSell - 0.02;
+            ToastUtil.showShortText("gate sell is " + usdtSell);
             mWeakHandler.sendEmptyMessageDelayed(USDT_DATA, TIME_LONGLONG);
         });
     }
@@ -278,8 +276,11 @@ public class ListenerService extends BaseListenerService {
                             mBuyTask.buyOrder(ListenerService.this, mBuyCoinBean, result -> {
                                 if (result) {
                                     LogUtils.d("购买下单成功！");
-//                                    taskState = 2;
-                                    back();
+                                    giveNotice();
+                                    mBuyTask.pay(ListenerService.this, result1 -> {
+                                        taskState = 2;
+                                        mWeakHandler.postDelayed(this::doTask, TIME_LONGLONG * 60);
+                                    });
                                     return;
                                 }
                                 mWeakHandler.postDelayed(this::doTask, TIME_SHORT);
@@ -306,7 +307,7 @@ public class ListenerService extends BaseListenerService {
                 }
                 break;
             case 2:
-                mBuyTask.toHuazhuan(this, result -> {
+                mBuyTask.charge(this, result -> {
                     if (result) {
                         taskState = 3;
                     } else {
@@ -316,7 +317,7 @@ public class ListenerService extends BaseListenerService {
                 });
                 return;
             case 3:
-                mBuyTask.zhuanzhang(this, result -> {
+                mBuyTask.transfer(this, result -> {
                     taskState = 0;
                     if (result) {
                         ToastUtil.showShortText("提币成功！");

@@ -2,6 +2,7 @@
 package com.jerry.bitcoin.platform;
 
 import java.util.Collections;
+import java.util.List;
 
 import android.view.accessibility.AccessibilityNodeInfo;
 
@@ -32,6 +33,8 @@ public abstract class BaseTask implements TaskCallback {
     public static final float MONEY_POOL_MAX = 30000;
 
     protected AVIMConversation mAvimConversation;
+
+    protected List<String> blackList;
 
     /**
      * 币种

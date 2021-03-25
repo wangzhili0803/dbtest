@@ -212,12 +212,17 @@ public class OkexTask extends BaseTask {
     }
 
     @Override
-    public void toHuazhuan(final ListenerService service, final EndCallback endCallback) {
+    public void charge(final ListenerService service, final EndCallback endCallback) {
 
     }
 
     @Override
-    public void zhuanzhang(final ListenerService service, final EndCallback endCallback) {
+    public void transfer(final ListenerService service, final EndCallback endCallback) {
+
+    }
+
+    @Override
+    public void pay(final ListenerService listenerService, final EndCallback endCallback) {
 
     }
 }

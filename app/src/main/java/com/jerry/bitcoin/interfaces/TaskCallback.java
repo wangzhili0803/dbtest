@@ -59,10 +59,15 @@ public interface TaskCallback {
     /**
      * 划转
      */
-    void toHuazhuan(ListenerService service, EndCallback endCallback);
+    void charge(ListenerService service, EndCallback endCallback);
 
     /**
      * 转账
      */
-    void zhuanzhang(ListenerService service, EndCallback endCallback);
+    void transfer(ListenerService service, EndCallback endCallback);
+
+    /**
+     * 支付
+     */
+    void pay(ListenerService listenerService, EndCallback endCallback);
 }
