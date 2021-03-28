@@ -70,4 +70,14 @@ public interface TaskCallback {
      * 支付
      */
     void pay(ListenerService listenerService, EndCallback endCallback);
+
+    /**
+     * 添加并获取弹框
+     */
+    void tryBuy(ListenerService listenerService, EndCallback endCallback);
+
+    /**
+     * 检查是否可以继续交易
+     */
+    void checkContinuePay(ListenerService listenerService, EndCallback endCallback);
 }

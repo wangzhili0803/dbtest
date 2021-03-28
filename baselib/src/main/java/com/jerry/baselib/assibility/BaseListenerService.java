@@ -221,7 +221,7 @@ public abstract class BaseListenerService extends AccessibilityService {
     /**
      * 判断是否含有文案
      */
-    protected boolean hasText(String... texts) {
+    public boolean hasText(String... texts) {
         AccessibilityNodeInfo rootNode = getRootInActiveWindow();
         if (rootNode == null) {
             return false;

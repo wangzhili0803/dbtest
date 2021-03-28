@@ -226,4 +226,14 @@ public class BinanceTask extends BaseTask {
     public void pay(final ListenerService listenerService, final EndCallback endCallback) {
 
     }
+
+    @Override
+    public void tryBuy(final ListenerService listenerService, final EndCallback endCallback) {
+
+    }
+
+    @Override
+    public void checkContinuePay(final ListenerService listenerService, final EndCallback endCallback) {
+
+    }
 }

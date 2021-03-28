@@ -1,12 +1,10 @@
 package com.jerry.baselib.parsehelper;
 
-import java.util.ArrayList;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import android.content.Context;
 import android.text.TextUtils;
-import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.URLUtil;
 import android.webkit.WebChromeClient;
@@ -16,7 +14,6 @@ import android.webkit.WebViewClient;
 
 import com.jerry.baselib.common.util.LogUtils;
 import com.jerry.baselib.common.util.OnDataChangedListener;
-import com.jerry.baselib.common.util.PreferenceHelp;
 import com.jerry.baselib.common.util.WeakHandler;
 
 /**
@@ -30,7 +27,6 @@ public class WebLoader {
     private String currentUrl;
     private WeakHandler mHandler = new WeakHandler();
     private ConcurrentHashMap<String, OnDataChangedListener<String>> mArrayMap = new ConcurrentHashMap<>();
-    private ArrayList<String> hasComplete = new ArrayList<>();
 
     public WebLoader(final Context context) {
         webview = new WebView(context);
@@ -71,15 +67,6 @@ public class WebLoader {
                     }
                     return true;
                 }
-
-                @Override
-                public void onPageFinished(final WebView view, final String url) {
-                    CookieManager cookieManager = CookieManager.getInstance();
-                    String cookieStr = cookieManager.getCookie(url);
-                    if (!TextUtils.isEmpty(cookieStr) && cookieStr.contains("pdd_user_id")) {
-                        PreferenceHelp.putString(PreferenceHelp.PDD_COOKIE, cookieStr);
-                    }
-                }
             });
             webview.addJavascriptInterface(this, "java_obj");
             webview.setWebChromeClient(new WebChromeClient() {
@@ -87,11 +74,7 @@ public class WebLoader {
                 public void onProgressChanged(final WebView view, final int newProgress) {
                     super.onProgressChanged(view, newProgress);
                     if (newProgress == 100) {
-                        String current = view.getUrl();
-                        if (!hasComplete.contains(current)) {
-                            hasComplete.add(current);
-                            view.loadUrl("javascript:window.java_obj.getSource(document.documentElement.outerHTML);void(0)");
-                        }
+                        view.loadUrl("javascript:window.java_obj.getSource(document.documentElement.outerHTML);void(0)");
                     }
                 }
             });
@@ -101,16 +84,13 @@ public class WebLoader {
     }
 
     public synchronized void load(String url, OnDataChangedListener<String> onDataChangedListener) {
-        if (currentUrl == null) {
-            currentUrl = url;
-            webview.loadUrl(url);
-        }
+        currentUrl = url;
+        webview.loadUrl(url);
         mArrayMap.put(url, onDataChangedListener);
     }
 
     public void reset() {
         currentUrl = null;
-        hasComplete.clear();
         mArrayMap.clear();
     }
 

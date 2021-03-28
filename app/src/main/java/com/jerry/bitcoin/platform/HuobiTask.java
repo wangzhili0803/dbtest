@@ -445,6 +445,99 @@ public class HuobiTask extends BaseTask {
         if (tempStep == taskStep) {
             errorCount++;
         }
-        service.postDelayed(() -> transfer(service, endCallback));
+        service.postDelayed(() -> pay(service, endCallback));
+    }
+
+    @Override
+    public void tryBuy(final ListenerService service, final EndCallback endCallback) {
+        if (errorCount >= 3) {
+            taskStep = 0;
+            errorCount = 0;
+            endCallback.onEnd(false);
+            return;
+        }
+        int tempStep = taskStep;
+        switch (taskStep) {
+            case 0:
+                if (service.hasText("0手续费购买")) {
+                    if (service.input(getPackageName() + "otc_fast_trade_input_edit", "7000")) {
+                        taskStep++;
+                    }
+                }
+                break;
+            case 1:
+                AccessibilityNodeInfo rootNode = service.getRootInActiveWindow();
+                if (rootNode != null) {
+                    List<AccessibilityNodeInfo> accessibilityNodeInfos = rootNode
+                        .findAccessibilityNodeInfosByViewId(getPackageName() + "otc_fast_trade_coin_unit_txt");
+                    AccessibilityNodeInfo gp = null;
+                    for (int i = 0; i < accessibilityNodeInfos.size(); i++) {
+                        AccessibilityNodeInfo info = accessibilityNodeInfos.get(i);
+                        CharSequence coinType = info.getText();
+                        if (coinType != null && CoinConstant.USDT.equals(coinType.toString())) {
+                            gp = info.getParent().getParent();
+                            break;
+                        }
+                    }
+                    if (service.exeClickId(gp, getPackageName() + "otc_fast_trade_submit_txt")) {
+                        taskStep++;
+                    }
+                }
+                break;
+            case 2:
+                String priceStr = service.getNodeText(getPackageName() + "per_price");
+                int spaceIndex = priceStr.indexOf(Key.SPACE);
+                if (spaceIndex > 0) {
+                    double price = ParseUtil.parseDouble(priceStr.substring(0, spaceIndex));
+                    if (price > 0 && price < ListenerService.shouleBuy) {
+                        if (service.clickLast(getPackageName() + "buy_rl")) {
+                            taskStep++;
+                        }
+                    } else {
+                        service.back();
+                        taskStep = 0;
+                        errorCount = 0;
+                    }
+                }
+                break;
+            default:
+                taskStep = 0;
+                errorCount = 0;
+                endCallback.onEnd(true);
+                return;
+        }
+        if (tempStep == taskStep) {
+            errorCount++;
+        }
+        service.postDelayed(() -> tryBuy(service, endCallback));
+    }
+
+    @Override
+    public void checkContinuePay(final ListenerService service, final EndCallback endCallback) {
+        if (errorCount >= 3) {
+            taskStep = 0;
+            errorCount = 0;
+            endCallback.onEnd(false);
+            return;
+        }
+        int tempStep = taskStep;
+        switch (taskStep) {
+            case 0:
+                if (service.clickLast(getPackageName() + "id_contact_iv")) {
+
+                }
+                break;
+            case 1:
+                break;
+            default:
+                taskStep = 0;
+                errorCount = 0;
+                endCallback.onEnd(true);
+                return;
+        }
+        if (tempStep == taskStep) {
+            errorCount++;
+        }
+        service.postDelayed(() -> checkContinuePay(service, endCallback));
     }
 }

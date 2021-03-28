@@ -30,6 +30,7 @@ import com.jerry.baselib.common.util.AppUtils;
 import com.jerry.baselib.common.util.DisplayUtil;
 import com.jerry.baselib.common.util.JJSON;
 import com.jerry.baselib.common.util.LogUtils;
+import com.jerry.baselib.common.util.MathUtil;
 import com.jerry.baselib.common.util.ParseUtil;
 import com.jerry.baselib.common.util.PreferenceHelp;
 import com.jerry.baselib.common.util.ToastUtil;
@@ -68,7 +69,7 @@ public class ListenerService extends BaseListenerService {
     public static final String TYPE_COINS = "TYPE_COINS";
 
     private static final String URL_HUOBI = "https://c2c.huobi.be/zh-cn/trade/buy-usdt/";
-    private static final String URL_GWEB = "https://www.gateio.pro/cn/c2c/usdt_cny";
+    private static final String URL_GWEB = "https://www.gateio.ch/cn/c2c/usdt_cny";
     /**
      * 擦亮
      */
@@ -108,7 +109,7 @@ public class ListenerService extends BaseListenerService {
         mWeakHandler = new WeakHandler(msg -> {
             switch (msg.what) {
                 case MSG_DO_TASK:
-                    mWeakHandler.post(this::doTask);
+                    mWeakHandler.post(this::listenUsdt);
                     getUsdtData();
                     return true;
                 case MSG_PLATFORM_BUY:
@@ -255,101 +256,90 @@ public class ListenerService extends BaseListenerService {
             Elements allElements = doc.getAllElements();
             Elements sellRate = allElements.select("#sell_rate");
             double usdtSell = ParseUtil.parseDouble(sellRate.attr("value"));
-            shouleBuy = usdtSell - 0.02;
+            shouleBuy = MathUtil.halfEven(usdtSell - 0.02);
             ToastUtil.showShortText("gate sell is " + usdtSell);
             mWeakHandler.sendEmptyMessageDelayed(USDT_DATA, TIME_LONGLONG);
         });
     }
 
-    private void doTask() {
+    private void listenUsdt() {
         if (!AppUtils.playing) {
             return;
         }
-        switch (taskState) {
-            case 0:
-                if (exeClickText("我要买")) {
-                    mWeakHandler.postDelayed(() -> pullRefresh(t -> {
-                        CoinBean buyInfo = mBuyTask.getBuyCoinInfo(ListenerService.this);
-                        if (buyInfo != null) {
-                            mBuyCoinBean = buyInfo;
-                            // 执买入操作
-                            mBuyTask.buyOrder(ListenerService.this, mBuyCoinBean, result -> {
-                                if (result) {
-                                    LogUtils.d("购买下单成功！");
-                                    giveNotice();
-                                    mBuyTask.pay(ListenerService.this, result1 -> {
-                                        taskState = 2;
-                                        mWeakHandler.postDelayed(this::doTask, TIME_LONGLONG * 60);
-                                    });
-                                    return;
-                                }
-                                mWeakHandler.postDelayed(this::doTask, TIME_SHORT);
-                            });
-                            return;
-                        }
-//                        taskState = 1;
-                        doTask();
-                    }), TIME_SHORT);
-                    return;
-                }
-                break;
-            case 1:
-                if (exeClickText("我要卖")) {
-                    mWeakHandler.postDelayed(() -> pullRefresh(t -> {
-                        CoinBean saleInfo = mSaleTask.getSaleCoinInfo(this);
-                        if (saleInfo != null) {
-                            mSaleCoinBean = saleInfo;
-                            taskState = 0;
-                        }
-                        doTask();
-                    }), TIME_SHORT);
-                    return;
-                }
-                break;
-            case 2:
-                mBuyTask.charge(this, result -> {
-                    if (result) {
-                        taskState = 3;
+        mBuyTask.tryBuy(this, result -> {
+            mBuyTask.checkContinuePay(this, result1 -> {
+
+            });
+        });
+    }
+
+    /**
+     * 划转
+     */
+    private void charge() {
+        mBuyTask.charge(this, result -> mWeakHandler.postDelayed(() -> {
+            if (result) {
+                mBuyTask.transfer(this, result1 -> {
+                    if (result1) {
+                        // 监听卖币
+                        mWeakHandler.postDelayed(this::listenISell, TIME_LONG);
                     } else {
-                        taskState = 0;
+                        LogUtils.e("提币出错");
+                        ToastUtil.showShortText("提币出错");
                     }
-                    mWeakHandler.postDelayed(this::doTask, TIME_LONGLONG);
                 });
-                return;
-            case 3:
-                mBuyTask.transfer(this, result -> {
-                    taskState = 0;
-                    if (result) {
-                        ToastUtil.showShortText("提币成功！");
-                    } else {
-                        ToastUtil.showShortText("有手续费");
-                    }
-                    mWeakHandler.postDelayed(this::doTask, TIME_LONG);
-                });
-                return;
-            default:
-                if (exeClickText("我要卖")) {
-                    mWeakHandler.postDelayed(() -> {
-                        CoinBean saleInfo = mSaleTask.getSaleCoinInfo(this);
-                        if (saleInfo != null) {
-                            mSaleCoinBean = saleInfo;
-                            if (mBuyCoinBean != null && mBuyCoinBean.getPrice() < mSaleCoinBean.getPrice()) {
-                                // 执行出售操作
-                                mSaleTask.saleOrder(this, mSaleCoinBean, result -> {
-                                    if (result) {
-                                        LogUtils.d("出售下单成功！");
-                                        giveNotice();
-                                    }
-                                });
-                                return;
-                            }
+            } else {
+                LogUtils.e("划转出错");
+                ToastUtil.showShortText("划转出错");
+            }
+        }, TIME_LONG));
+    }
+
+    private void listenIBuy() {
+        if (exeClickText("我要买")) {
+            mWeakHandler.postDelayed(() -> pullRefresh(t -> {
+                CoinBean buyInfo = mBuyTask.getBuyCoinInfo(ListenerService.this);
+                if (buyInfo != null) {
+                    mBuyCoinBean = buyInfo;
+                    // 执买入操作
+                    mBuyTask.buyOrder(ListenerService.this, mBuyCoinBean, result -> {
+                        if (result) {
+                            LogUtils.d("购买下单成功！");
+                            giveNotice();
+                            mBuyTask.pay(ListenerService.this, result1 -> mWeakHandler.postDelayed(this::listenISell, TIME_LONGLONG * 60));
+                        } else {
+                            mWeakHandler.postDelayed(this::listenIBuy, TIME_SHORT);
                         }
-                        doTask();
-                    }, TIME_SHORT);
+                    });
                 }
-                break;
+            }), TIME_SHORT);
+        } else {
+            mWeakHandler.postDelayed(this::listenIBuy, TIME_SHORT);
         }
-        mWeakHandler.postDelayed(this::doTask, TIME_LONGLONG);
+    }
+
+    private void listenISell() {
+        if (exeClickText("我要卖")) {
+            mWeakHandler.postDelayed(() -> {
+                CoinBean saleInfo = mSaleTask.getSaleCoinInfo(this);
+                if (saleInfo != null) {
+                    mSaleCoinBean = saleInfo;
+                    if (mBuyCoinBean != null && mBuyCoinBean.getPrice() < mSaleCoinBean.getPrice()) {
+                        // 执行出售操作
+                        mSaleTask.saleOrder(this, mSaleCoinBean, result -> {
+                            if (result) {
+                                LogUtils.d("出售下单成功！");
+                                giveNotice();
+                            }
+                        });
+                        return;
+                    }
+                }
+                mWeakHandler.postDelayed(this::listenISell, TIME_SHORT);
+            }, TIME_SHORT);
+        } else {
+            mWeakHandler.postDelayed(this::listenISell, TIME_SHORT);
+        }
     }
 
     public static void setTaskPlatformBuy() {
