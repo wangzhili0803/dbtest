@@ -4,12 +4,17 @@ package com.jerry.bitcoin.platform;
 import java.util.Collections;
 import java.util.List;
 
+import android.text.TextUtils;
 import android.view.accessibility.AccessibilityNodeInfo;
 
+import com.jerry.baselib.Key;
 import com.jerry.baselib.common.util.OnDataChangedListener;
+import com.jerry.baselib.common.util.Patterns;
 import com.jerry.baselib.common.util.PreferenceHelp;
+import com.jerry.baselib.common.util.StringUtil;
 import com.jerry.baselib.common.util.ToastUtil;
 import com.jerry.bitcoin.ListenerService;
+import com.jerry.bitcoin.beans.TransformInfo;
 import com.jerry.bitcoin.interfaces.TaskCallback;
 
 import androidx.annotation.NonNull;
@@ -127,5 +132,87 @@ public abstract class BaseTask implements TaskCallback {
 
     public static void getMoneyPool(float money) {
         PreferenceHelp.putFloat("moneypool", money);
+    }
+
+    protected TransformInfo parseTransformInfo(final String infoStr) {
+        int preCardIndex = -1;
+        int nextCardIndex = -1;
+        String name = null;
+        String bank = null;
+        StringBuilder numberSb = new StringBuilder();
+        String[] splits = StringUtil.safeSplit(infoStr, Key.SPACE);
+        for (int i = 0; i < splits.length; i++) {
+            String split = splits[i];
+            if (Patterns.isNumber(split)) {
+                if (preCardIndex == -1 && i > 0) {
+                    preCardIndex = i - 1;
+                }
+                nextCardIndex = i + 1;
+                numberSb.append(split);
+            } else {
+                if (split.contains("姓名")) {
+                    int index = split.indexOf(Key.COLON);
+                    if (index > -1) {
+                        name = split.substring(index);
+                    } else {
+                        index = split.indexOf("：");
+                        if (index > -1) {
+                            name = split.substring(index);
+                        }
+                    }
+                } else if (split.contains("银行")) {
+                    int index = split.indexOf(Key.COLON);
+                    if (index > -1) {
+                        bank = split.substring(index);
+                    } else {
+                        index = split.indexOf("：");
+                        if (index > -1) {
+                            bank = split.substring(index);
+                        }
+                    }
+                }
+            }
+        }
+        if (TextUtils.isEmpty(name)) {
+            boolean likePre = false;
+            if (preCardIndex >= 0 && preCardIndex < splits.length) {
+                if (splits[preCardIndex].length() == 2 || splits[preCardIndex].length() == 3) {
+                    if (!splits[preCardIndex].endsWith("行")) {
+                        likePre = true;
+                    }
+                }
+            }
+            boolean likeNext = false;
+            if (nextCardIndex >= 0 && nextCardIndex < splits.length) {
+                if (splits[nextCardIndex].length() == 2 || splits[nextCardIndex].length() == 3) {
+                    if (!splits[nextCardIndex].endsWith("行")) {
+                        likeNext = true;
+                    }
+                }
+            }
+            if (likePre && !likeNext) {
+                name = splits[preCardIndex];
+            } else if (!likePre && likeNext) {
+                name = splits[nextCardIndex];
+            }
+        }
+        if (TextUtils.isEmpty(bank)) {
+            if (splits[preCardIndex].endsWith("行")) {
+                bank = splits[preCardIndex];
+            } else if (splits[nextCardIndex].endsWith("行")) {
+                bank = splits[nextCardIndex];
+            }
+        }
+        String number = numberSb.toString();
+        if (number.startsWith("62") && number.length() == 19) {
+            if (name != null && (name.length() == 2 || name.length() == 3)) {
+                TransformInfo transformInfo = new TransformInfo();
+                transformInfo.setNumber(number);
+                transformInfo.setName(name);
+                transformInfo.setBank(bank);
+                return transformInfo;
+            }
+        }
+        return null;
     }
 }

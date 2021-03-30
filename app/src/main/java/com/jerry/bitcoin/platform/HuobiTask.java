@@ -10,12 +10,14 @@ import com.jerry.baselib.assibility.EndCallback;
 import com.jerry.baselib.common.util.CollectionUtils;
 import com.jerry.baselib.common.util.JJSON;
 import com.jerry.baselib.common.util.ListCacheUtil;
+import com.jerry.baselib.common.util.OnDataChangedListener;
 import com.jerry.baselib.common.util.ParseUtil;
 import com.jerry.baselib.common.util.PreferenceHelp;
 import com.jerry.baselib.common.util.StringUtil;
 import com.jerry.bitcoin.ListenerService;
 import com.jerry.bitcoin.beans.CoinBean;
 import com.jerry.bitcoin.beans.CoinConstant;
+import com.jerry.bitcoin.beans.TransformInfo;
 
 import androidx.annotation.NonNull;
 import cn.leancloud.json.JSON;
@@ -513,26 +515,72 @@ public class HuobiTask extends BaseTask {
     }
 
     @Override
-    public void checkContinuePay(final ListenerService service, final EndCallback endCallback) {
+    public void checkContinuePay(final ListenerService service, final OnDataChangedListener<TransformInfo> endCallback) {
         if (errorCount >= 3) {
             taskStep = 0;
             errorCount = 0;
-            endCallback.onEnd(false);
+            endCallback.onDataChanged(null);
             return;
         }
         int tempStep = taskStep;
         switch (taskStep) {
             case 0:
                 if (service.clickLast(getPackageName() + "id_contact_iv")) {
-
+                    taskStep++;
                 }
                 break;
             case 1:
+                String infoStr = service.getNodeText(getPackageName() + "otc_chat_otherside_content");
+                if (infoStr.contains("明细") || infoStr.contains("流水")) {
+                    errorCount = 3;
+                }
+                break;
+            case 2:
+                if (service.input(getPackageName() + "otc_chat_input", "您好老板，给下您的支付信息")) {
+                    taskStep++;
+                }
+                break;
+            case 3:
+                if (service.clickLast(getPackageName() + "send_txt")) {
+                    taskStep++;
+                }
+                break;
+            case 4:
+                TransformInfo transformInfo = parseTransformInfo(service.getNodeText(getPackageName() + "otc_chat_otherside_content"));
+                if (transformInfo == null) {
+                    errorCount--;
+                } else {
+                    String orderStatus = service.getNodeText(getPackageName() + "otc_chat_order_status");
+                    if ("待接单".equals(orderStatus)) {
+                        taskStep++;
+                    } else {
+                        taskStep = taskStep + 3;
+                    }
+                }
+                break;
+            case 5:
+                if (service.input(getPackageName() + "otc_chat_input", "OK，请接单")) {
+                    taskStep++;
+                }
+                break;
+            case 6:
+                if (service.clickLast(getPackageName() + "send_txt")) {
+                    taskStep++;
+                }
+                break;
+            case 7:
+                String orderStatus = service.getNodeText(getPackageName() + "otc_chat_order_status");
+                if ("待接单".equals(orderStatus)) {
+                    errorCount--;
+                } else {
+                    taskStep++;
+                }
                 break;
             default:
                 taskStep = 0;
                 errorCount = 0;
-                endCallback.onEnd(true);
+                TransformInfo parseTransformInfo = parseTransformInfo(service.getNodeText(getPackageName() + "otc_chat_otherside_content"));
+                endCallback.onDataChanged(parseTransformInfo);
                 return;
         }
         if (tempStep == taskStep) {

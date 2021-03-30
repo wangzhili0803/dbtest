@@ -8,12 +8,14 @@ import com.jerry.baselib.Key;
 import com.jerry.baselib.assibility.EndCallback;
 import com.jerry.baselib.common.util.CollectionUtils;
 import com.jerry.baselib.common.util.LogUtils;
+import com.jerry.baselib.common.util.OnDataChangedListener;
 import com.jerry.baselib.common.util.ParseUtil;
 import com.jerry.baselib.common.util.PreferenceHelp;
 import com.jerry.baselib.common.util.StringUtil;
 import com.jerry.bitcoin.ListenerService;
 import com.jerry.bitcoin.beans.CoinBean;
 import com.jerry.bitcoin.beans.CoinConstant;
+import com.jerry.bitcoin.beans.TransformInfo;
 
 import androidx.annotation.NonNull;
 
@@ -233,7 +235,7 @@ public class BinanceTask extends BaseTask {
     }
 
     @Override
-    public void checkContinuePay(final ListenerService listenerService, final EndCallback endCallback) {
+    public void checkContinuePay(final ListenerService listenerService, final OnDataChangedListener<TransformInfo> endCallback) {
 
     }
 }

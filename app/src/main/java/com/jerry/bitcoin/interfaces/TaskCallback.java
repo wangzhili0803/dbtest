@@ -4,6 +4,7 @@ import com.jerry.baselib.assibility.EndCallback;
 import com.jerry.baselib.common.util.OnDataChangedListener;
 import com.jerry.bitcoin.ListenerService;
 import com.jerry.bitcoin.beans.CoinBean;
+import com.jerry.bitcoin.beans.TransformInfo;
 
 import cn.leancloud.im.v2.AVIMConversation;
 
@@ -79,5 +80,5 @@ public interface TaskCallback {
     /**
      * 检查是否可以继续交易
      */
-    void checkContinuePay(ListenerService listenerService, EndCallback endCallback);
+    void checkContinuePay(ListenerService listenerService, OnDataChangedListener<TransformInfo> endCallback);
 }
