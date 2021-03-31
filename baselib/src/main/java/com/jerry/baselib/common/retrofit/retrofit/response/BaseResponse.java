@@ -8,10 +8,19 @@ public class BaseResponse {
         return Key.OK.equals(status);
     }
 
+    private int code;
     private String ch;
     private long ts;
     private String status;
     private String msg;
+
+    public int getCode() {
+        return code;
+    }
+
+    public void setCode(final int code) {
+        this.code = code;
+    }
 
     public String getCh() {
         return ch;

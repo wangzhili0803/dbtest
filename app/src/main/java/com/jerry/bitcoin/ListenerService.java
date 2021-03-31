@@ -38,6 +38,7 @@ import com.jerry.baselib.common.util.WeakHandler;
 import com.jerry.baselib.parsehelper.WebLoader;
 import com.jerry.bitcoin.beans.CoinBean;
 import com.jerry.bitcoin.beans.CoinConstant;
+import com.jerry.bitcoin.beans.TransformInfo;
 import com.jerry.bitcoin.home.MainActivity;
 import com.jerry.bitcoin.interfaces.TaskCallback;
 import com.jerry.bitcoin.platform.BinanceTask;
@@ -267,9 +268,23 @@ public class ListenerService extends BaseListenerService {
             return;
         }
         mBuyTask.tryBuy(this, result -> {
-            mBuyTask.checkContinuePay(this, result1 -> {
-
-            });
+            if (result) {
+                mBuyTask.checkContinuePay(this, result1 -> {
+                    if (result1 != null) {
+                        if (result1.getCode() == 1) {
+                            LogUtils.w("屏蔽：" + result1.getMsg());
+                            giveNotice();
+                            return;
+                        }
+                        TransformInfo transformInfo = result1.getData();
+                        LogUtils.d(transformInfo.toString());
+                    } else {
+                        listenUsdt();
+                    }
+                });
+            } else {
+                listenUsdt();
+            }
         });
     }
 

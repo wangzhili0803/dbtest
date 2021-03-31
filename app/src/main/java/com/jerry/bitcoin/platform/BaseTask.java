@@ -57,6 +57,10 @@ public abstract class BaseTask implements TaskCallback {
      * 错误次数
      */
     protected int errorCount;
+    /**
+     * 转账信息
+     */
+    protected TransformInfo mTransformInfo;
 
     public String getCoinType() {
         return coinType;

@@ -6,6 +6,7 @@ import android.view.accessibility.AccessibilityNodeInfo;
 
 import com.jerry.baselib.Key;
 import com.jerry.baselib.assibility.EndCallback;
+import com.jerry.baselib.common.retrofit.retrofit.response.Response4Data;
 import com.jerry.baselib.common.util.CollectionUtils;
 import com.jerry.baselib.common.util.LogUtils;
 import com.jerry.baselib.common.util.OnDataChangedListener;
@@ -235,7 +236,7 @@ public class BinanceTask extends BaseTask {
     }
 
     @Override
-    public void checkContinuePay(final ListenerService listenerService, final OnDataChangedListener<TransformInfo> endCallback) {
+    public void checkContinuePay(final ListenerService listenerService, final OnDataChangedListener<Response4Data<TransformInfo>> endCallback) {
 
     }
 }

@@ -35,4 +35,13 @@ public class TransformInfo {
     public void setBank(final String bank) {
         this.bank = bank;
     }
+
+    @Override
+    public String toString() {
+        return "TransformInfo{" +
+            "name='" + name + '\'' +
+            ", number='" + number + '\'' +
+            ", bank='" + bank + '\'' +
+            '}';
+    }
 }
