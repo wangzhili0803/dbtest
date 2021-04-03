@@ -37,12 +37,8 @@ public class HomeFragment extends BaseFragment {
 
     static {
         PLATFORM_BUY.add(CoinConstant.HUOBI);
-        PLATFORM_BUY.add(CoinConstant.BINANCE);
-        PLATFORM_BUY.add(CoinConstant.OKEX);
 
         PLATFORM_SALE.add(CoinConstant.HUOBI);
-        PLATFORM_SALE.add(CoinConstant.BINANCE);
-        PLATFORM_SALE.add(CoinConstant.OKEX);
 
         COINS.add(CoinConstant.USDT);
         COINS.add(CoinConstant.BTC);
@@ -102,7 +98,6 @@ public class HomeFragment extends BaseFragment {
         platformsAdapter.setOnItemClickListener((itemView, position) -> {
             String coinType = PLATFORM_BUY.get(position);
             PreferenceHelp.putString(ListenerService.TYPE_PLATFORM_BUY, coinType);
-            ListenerService.setTaskPlatformBuy();
             platformsAdapter.notifyDataSetChanged();
         });
         rvPlatformBuy.setAdapter(platformsAdapter);
@@ -132,7 +127,6 @@ public class HomeFragment extends BaseFragment {
         platformSaleAdapter.setOnItemClickListener((itemView, position) -> {
             String coinType = PLATFORM_SALE.get(position);
             PreferenceHelp.putString(ListenerService.TYPE_PLATFORM_SALE, coinType);
-            ListenerService.setTaskPlatformSale();
             platformSaleAdapter.notifyDataSetChanged();
         });
         rvPlatformSale.setAdapter(platformSaleAdapter);
@@ -162,7 +156,6 @@ public class HomeFragment extends BaseFragment {
         coinsAdapter.setOnItemClickListener((itemView, position) -> {
             String coinType = COINS.get(position);
             PreferenceHelp.putString(ListenerService.TYPE_COINS, coinType);
-            ListenerService.setCoinType();
             coinsAdapter.notifyDataSetChanged();
         });
         rvCoins.setAdapter(coinsAdapter);

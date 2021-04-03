@@ -7,6 +7,8 @@ import android.view.accessibility.AccessibilityNodeInfo;
 
 import com.jerry.baselib.Key;
 import com.jerry.baselib.assibility.EndCallback;
+import com.jerry.baselib.common.bean.CoinOrder;
+import com.jerry.baselib.common.dbhelper.ProManager;
 import com.jerry.baselib.common.retrofit.retrofit.response.Response4Data;
 import com.jerry.baselib.common.util.CollectionUtils;
 import com.jerry.baselib.common.util.DisplayUtil;
@@ -14,6 +16,7 @@ import com.jerry.baselib.common.util.OnDataChangedListener;
 import com.jerry.baselib.common.util.ParseUtil;
 import com.jerry.baselib.common.util.PreferenceHelp;
 import com.jerry.baselib.common.util.StringUtil;
+import com.jerry.baselib.greendao.CoinOrderDao.Properties;
 import com.jerry.bitcoin.ListenerService;
 import com.jerry.bitcoin.beans.CoinBean;
 import com.jerry.bitcoin.beans.CoinConstant;
@@ -144,5 +147,120 @@ public class CoinColaTask extends BaseTask {
     @Override
     public void checkContinuePay(final ListenerService listenerService, final OnDataChangedListener<Response4Data<TransformInfo>> endCallback) {
 
+    }
+
+    public void listenOrder(final ListenerService service, final EndCallback endCallback) {
+        AccessibilityNodeInfo accessibilityNodeInfo = service.getRootInActiveWindow();
+        if (accessibilityNodeInfo != null) {
+//            List<AccessibilityNodeInfo> recyclerViews = accessibilityNodeInfo.findAccessibilityNodeInfosByViewId(getPackageName() + "recycler_view");
+//            if (!CollectionUtils.isEmpty(recyclerViews)) {
+//                AccessibilityNodeInfo recyclerView = recyclerViews.get(0);
+//                for (int i = 0, count = recyclerView.getChildCount(); i < count; i++) {
+//                    AccessibilityNodeInfo child = recyclerView.getChild(i);
+//                    String orderId = service.getNodeText(child, getPackageName() + "tv_order_id");
+//                    String name = service.getNodeText(child, getPackageName() + "tv_nick_name");
+//                    String type = service.getNodeText(child, getPackageName() + "tv_crypto_currency");
+//                    String amount = service.getNodeText(child, getPackageName() + "tv_order_amount");
+//                    if (TextUtils.isEmpty(orderId)) {
+//
+//                    } else {
+//                        CoinOrder order = ProManager.getInstance().queryObj(CoinOrder.class, Properties.OrderId.like(orderId));
+//                        if (order == null) {
+//                            order = new CoinOrder();
+//                        }
+//                    }
+//                }
+//            }
+            List<AccessibilityNodeInfo> ivDots = accessibilityNodeInfo.findAccessibilityNodeInfosByViewId(getPackageName() + "iv_dot");
+            if (!CollectionUtils.isEmpty(ivDots)) {
+                service.exeClick(ivDots.get(0));
+                endCallback.onEnd(true);
+                return;
+            }
+        }
+        endCallback.onEnd(false);
+    }
+
+    /**
+     * 处理消息
+     */
+    public void handleMsg(final ListenerService service, final OnDataChangedListener<CoinOrder> onDataChangedListener) {
+        String orderStatus = service.getNodeText(getPackageName() + "tv_order_status");
+        switch (orderStatus) {
+            case "待下单":
+                String name = service.getNodeText(getPackageName() + "tv_opposite_name");
+                CoinOrder coinOrder = ProManager.getInstance().queryObj(CoinOrder.class, Properties.Name.eq(name), Properties.Status.eq(1));
+                if (coinOrder == null) {
+                    coinOrder = new CoinOrder();
+                    coinOrder.setName(name);
+                    coinOrder.setStatus(1);
+                    if (ProManager.getInstance().insertObject(coinOrder)) {
+                        sendMsgToBuyer(service, "在的，提供下您的银行卡信息", result -> onDataChangedListener.onDataChanged(null));
+                        return;
+                    }
+                }
+                break;
+            case "待付款":
+                String nickname = service.getNodeText(getPackageName() + "tv_opposite_name");
+                double amount = getNumberFromStr(service.getNodeText(getPackageName() + "tv_trade_amount"));
+                double qty = getNumberFromStr(service.getNodeText(getPackageName() + "tv_trade_qty"));
+                String orderId = service.getNodeText(getPackageName() + "tv_trade_no");
+                double price = getNumberFromStr(service.getNodeText(getPackageName() + "tv_trade_price"));
+                double fee = getNumberFromStr(service.getNodeText(getPackageName() + "tv_trade_fee"));
+                CoinOrder cOrder = ProManager.getInstance().queryObj(CoinOrder.class, Properties.Name.eq(nickname));
+                if (cOrder == null) {
+                    cOrder = new CoinOrder();
+                    cOrder.setOrderId(orderId);
+                    cOrder.setName(nickname);
+                    cOrder.setStatus(2);
+                    cOrder.setAmount(amount);
+                    cOrder.setQuantity(qty);
+                    cOrder.setPrice(price);
+                    cOrder.setFee(fee);
+                    if (ProManager.getInstance().insertObject(cOrder)) {
+                        sendMsgToBuyer(service, "OK", result -> onDataChangedListener.onDataChanged(null));
+                        return;
+                    }
+                } else {
+                    if (cOrder.getStatus() == 1) {
+                        cOrder.setOrderId(orderId);
+                        cOrder.setName(nickname);
+                        cOrder.setAmount(amount);
+                        cOrder.setQuantity(qty);
+                        cOrder.setPrice(price);
+                        cOrder.setFee(fee);
+                        cOrder.setStatus(2);
+                        cOrder.setTransInfo(service.getNodeText(getPackageName() + "tv_message_text"));
+                        if (ProManager.getInstance().update(cOrder)) {
+                            onDataChangedListener.onDataChanged(cOrder);
+                        }
+                        return;
+                    }
+                }
+                break;
+            case "已放行":
+            default:
+                break;
+        }
+        service.back();
+        onDataChangedListener.onDataChanged(null);
+    }
+
+    private double getNumberFromStr(final String text) {
+        int i1 = text.indexOf(Key.SPACE);
+        if (i1 > -1) {
+            return ParseUtil.parse2Double(text.substring(0, i1).replace(Key.COMMA, ""));
+        }
+        return 0;
+    }
+
+    private void sendMsgToBuyer(final ListenerService service, final String message, EndCallback callback) {
+        if (service.input(getPackageName() + "et_message_input", message)) {
+            service.postDelayed(() -> {
+                if (service.clickLast(getPackageName() + "tv_send_text")) {
+                    callback.onEnd(true);
+                }
+            });
+        }
     }
 }

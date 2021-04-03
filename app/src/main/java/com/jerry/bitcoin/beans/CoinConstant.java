@@ -8,8 +8,6 @@ package com.jerry.bitcoin.beans;
 public class CoinConstant {
 
     public static final String HUOBI = "huobi";
-    public static final String BINANCE = "binance";
-    public static final String OKEX = "okex";
     public static final String COINCOLA = "coincola";
 
     public static final String USDT = "USDT";

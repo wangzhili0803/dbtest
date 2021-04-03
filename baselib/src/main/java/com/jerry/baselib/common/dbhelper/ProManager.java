@@ -146,10 +146,10 @@ public class ProManager {
     /**
      * 查询所有对象
      */
-    public <T> T queryObj(Class<T> object, WhereCondition cond) {
+    public <T> T queryObj(Class<T> object, WhereCondition... conds) {
         try {
             QueryBuilder queryBuilder = mDaoSession.getDao(object).queryBuilder();
-            if (cond != null) {
+            for (WhereCondition cond : conds) {
                 queryBuilder.where(cond);
             }
             return (T) queryBuilder.list().get(0);

@@ -32,7 +32,7 @@ android {
     }
 
     greendao {
-        schemaVersion 1//指定数据库版本号，更新操作会用到;
+        schemaVersion 2//指定数据库版本号，更新操作会用到;
         daoPackage 'com.jerry.baselib.greendao'//自动生成的dao的包名，包名默认是entity所在的包；
         targetGenDir 'src/main/java'//生成数据库文件的目录
     }
