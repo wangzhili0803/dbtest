@@ -195,7 +195,10 @@ public class CoinColaTask extends BaseTask {
                     coinOrder.setName(name);
                     coinOrder.setStatus(1);
                     if (ProManager.getInstance().insertObject(coinOrder)) {
-                        sendMsgToBuyer(service, "在的，提供下您的银行卡信息", result -> onDataChangedListener.onDataChanged(null));
+                        sendMsgToBuyer(service, "在的，提供下您的银行卡信息", result -> {
+                            service.back();
+                            onDataChangedListener.onDataChanged(null);
+                        });
                         return;
                     }
                 }
@@ -218,7 +221,10 @@ public class CoinColaTask extends BaseTask {
                     cOrder.setPrice(price);
                     cOrder.setFee(fee);
                     if (ProManager.getInstance().insertObject(cOrder)) {
-                        sendMsgToBuyer(service, "OK", result -> onDataChangedListener.onDataChanged(null));
+                        sendMsgToBuyer(service, "OK", result -> {
+                            service.back();
+                            onDataChangedListener.onDataChanged(null);
+                        });
                         return;
                     }
                 } else {
@@ -232,6 +238,7 @@ public class CoinColaTask extends BaseTask {
                         cOrder.setStatus(2);
                         cOrder.setTransInfo(service.getNodeText(getPackageName() + "tv_message_text"));
                         if (ProManager.getInstance().update(cOrder)) {
+                            service.back();
                             onDataChangedListener.onDataChanged(cOrder);
                         }
                         return;
