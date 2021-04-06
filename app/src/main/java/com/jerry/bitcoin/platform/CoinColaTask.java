@@ -12,6 +12,7 @@ import com.jerry.baselib.common.dbhelper.ProManager;
 import com.jerry.baselib.common.retrofit.retrofit.response.Response4Data;
 import com.jerry.baselib.common.util.CollectionUtils;
 import com.jerry.baselib.common.util.DisplayUtil;
+import com.jerry.baselib.common.util.MathUtil;
 import com.jerry.baselib.common.util.OnDataChangedListener;
 import com.jerry.baselib.common.util.ParseUtil;
 import com.jerry.baselib.common.util.PreferenceHelp;
@@ -152,9 +153,9 @@ public class CoinColaTask extends BaseTask {
     public void listenOrder(final ListenerService service, final EndCallback endCallback) {
         AccessibilityNodeInfo accessibilityNodeInfo = service.getRootInActiveWindow();
         if (accessibilityNodeInfo != null) {
-//            List<AccessibilityNodeInfo> recyclerViews = accessibilityNodeInfo.findAccessibilityNodeInfosByViewId(getPackageName() + "recycler_view");
-//            if (!CollectionUtils.isEmpty(recyclerViews)) {
-//                AccessibilityNodeInfo recyclerView = recyclerViews.get(0);
+            List<AccessibilityNodeInfo> recyclerViews = accessibilityNodeInfo.findAccessibilityNodeInfosByViewId(getPackageName() + "recycler_view");
+            if (!CollectionUtils.isEmpty(recyclerViews)) {
+                AccessibilityNodeInfo recyclerView = recyclerViews.get(0);
 //                for (int i = 0, count = recyclerView.getChildCount(); i < count; i++) {
 //                    AccessibilityNodeInfo child = recyclerView.getChild(i);
 //                    String orderId = service.getNodeText(child, getPackageName() + "tv_order_id");
@@ -170,12 +171,12 @@ public class CoinColaTask extends BaseTask {
 //                        }
 //                    }
 //                }
-//            }
-            List<AccessibilityNodeInfo> ivDots = accessibilityNodeInfo.findAccessibilityNodeInfosByViewId(getPackageName() + "iv_dot");
-            if (!CollectionUtils.isEmpty(ivDots)) {
-                service.exeClick(ivDots.get(0));
-                endCallback.onEnd(true);
-                return;
+                List<AccessibilityNodeInfo> ivDots = recyclerView.findAccessibilityNodeInfosByViewId(getPackageName() + "iv_dot");
+                if (!CollectionUtils.isEmpty(ivDots)) {
+                    service.exeClick(ivDots.get(0));
+                    endCallback.onEnd(true);
+                    return;
+                }
             }
         }
         endCallback.onEnd(false);
@@ -195,11 +196,17 @@ public class CoinColaTask extends BaseTask {
                     coinOrder.setName(name);
                     coinOrder.setStatus(1);
                     if (ProManager.getInstance().insertObject(coinOrder)) {
-                        sendMsgToBuyer(service, "在的，提供下您的银行卡信息", result -> {
-                            service.back();
-                            onDataChangedListener.onDataChanged(null);
-                        });
-                        return;
+                        AccessibilityNodeInfo root = service.getRootInActiveWindow();
+                        List<AccessibilityNodeInfo> chats = root.findAccessibilityNodeInfosByViewId(getPackageName() + "lv_chat_before_order");
+                        if (!CollectionUtils.isEmpty(chats)) {
+                            if (service.exeClick(chats.get(MathUtil.random(0, 2)))) {
+                                service.postDelayed(() -> {
+                                    service.back();
+                                    onDataChangedListener.onDataChanged(null);
+                                });
+                                return;
+                            }
+                        }
                     }
                 }
                 break;
@@ -221,14 +228,15 @@ public class CoinColaTask extends BaseTask {
                     cOrder.setPrice(price);
                     cOrder.setFee(fee);
                     if (ProManager.getInstance().insertObject(cOrder)) {
-                        sendMsgToBuyer(service, "OK", result -> {
+                        sendMsgToBuyer(service, "您好，请提供一下您的支付信息：姓名+银行卡号+银行名称", result -> {
                             service.back();
                             onDataChangedListener.onDataChanged(null);
                         });
                         return;
                     }
                 } else {
-                    if (cOrder.getStatus() == 1) {
+                    String transInfo = service.getAllNodeText(getPackageName() + "tv_message_text");
+                    if (StringUtil.numericInStr(transInfo) >= 16) {
                         cOrder.setOrderId(orderId);
                         cOrder.setName(nickname);
                         cOrder.setAmount(amount);
@@ -236,12 +244,15 @@ public class CoinColaTask extends BaseTask {
                         cOrder.setPrice(price);
                         cOrder.setFee(fee);
                         cOrder.setStatus(2);
-                        cOrder.setTransInfo(service.getNodeText(getPackageName() + "tv_message_text"));
+                        cOrder.setTransInfo(transInfo);
                         if (ProManager.getInstance().update(cOrder)) {
-                            service.back();
-                            onDataChangedListener.onDataChanged(cOrder);
+                            CoinOrder finalOrder = cOrder;
+                            sendMsgToBuyer(service, "OK", result -> {
+                                service.back();
+                                onDataChangedListener.onDataChanged(finalOrder);
+                            });
+                            return;
                         }
-                        return;
                     }
                 }
                 break;

@@ -194,20 +194,20 @@ public class ListenerService extends BaseListenerService {
         if (!AppUtils.playing) {
             return;
         }
-        mWeakHandler.postDelayed(() -> pullRefresh(t -> {
-            mCoinColaTask.listenOrder(this, result -> {
-                if (result) {
-                    // 进入聊天界面
-                    mCoinColaTask.handleMsg(this, coinOrder -> {
+        mWeakHandler.postDelayed(() -> pullRefresh(t -> mCoinColaTask.listenOrder(this, result -> {
+            if (result) {
+                // 进入聊天界面
+                mCoinColaTask.handleMsg(this, coinOrder -> {
+                    if (coinOrder != null) {
                         LogUtils.d(coinOrder.toString());
                         giveNotice();
-                    });
-                } else {
-                    ToastUtil.showShortText("暂无消息");
-                    mWeakHandler.postDelayed(this::listenOrder, TIME_LONGLONG);
-                }
-            });
-        }), TIME_SHORT);
+                    }
+                });
+            } else {
+                ToastUtil.showShortText("暂无消息");
+                mWeakHandler.postDelayed(this::listenOrder, TIME_LONGLONG);
+            }
+        })), TIME_SHORT);
     }
 
     /**

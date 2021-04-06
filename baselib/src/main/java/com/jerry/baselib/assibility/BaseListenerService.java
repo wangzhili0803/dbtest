@@ -319,6 +319,24 @@ public abstract class BaseListenerService extends AccessibilityService {
         return Key.NIL;
     }
 
+    public String getAllNodeText(String id) {
+        AccessibilityNodeInfo root = getRootInActiveWindow();
+        if (root != null) {
+            List<AccessibilityNodeInfo> nodes = root.findAccessibilityNodeInfosByViewId(id);
+            if (!CollectionUtils.isEmpty(nodes)) {
+                StringBuilder sb = new StringBuilder();
+                for (AccessibilityNodeInfo node : nodes) {
+                    CharSequence txt = node.getText();
+                    if (txt != null) {
+                        sb.append(txt);
+                    }
+                }
+                return sb.toString();
+            }
+        }
+        return Key.NIL;
+    }
+
     public boolean input(String id, String text) {
         AccessibilityNodeInfo root = getRootInActiveWindow();
         if (root != null) {

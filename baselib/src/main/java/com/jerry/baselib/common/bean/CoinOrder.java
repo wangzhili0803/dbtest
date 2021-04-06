@@ -43,7 +43,7 @@ public class CoinOrder implements Parcelable {
      */
     private double fee;
     /**
-     * 1：待下单，2：待付款，3：付款完成，4：待放币，5：去评价，0：完成
+     * 1：待付款，2：付款完成，3：待放币，4：去评价，0：完成
      */
     private int status;
     /**
@@ -69,8 +69,8 @@ public class CoinOrder implements Parcelable {
 
     @Generated(hash = 1706391502)
     public CoinOrder(String orderId, String coinType, String name, double amount,
-            double quantity, double price, double fee, int status,
-            String transInfo) {
+        double quantity, double price, double fee, int status,
+        String transInfo) {
         this.orderId = orderId;
         this.coinType = coinType;
         this.name = name;
