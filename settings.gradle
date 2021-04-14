@@ -1,2 +1,3 @@
 include ':app', ':baselib', ':lchat'
 rootProject.name = "jerryPro"
+include ':huobi'

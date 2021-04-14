@@ -150,6 +150,32 @@ public class CoinColaTask extends BaseTask {
 
     }
 
+    public double getLowestPrice(final ListenerService service) {
+        AccessibilityNodeInfo accessibilityNodeInfo = service.getRootInActiveWindow();
+        if (accessibilityNodeInfo != null) {
+            List<AccessibilityNodeInfo> recyclerViews = accessibilityNodeInfo
+                .findAccessibilityNodeInfosByViewId(getPackageName() + "recycler_view_ad");
+            if (!CollectionUtils.isEmpty(recyclerViews)) {
+                for (AccessibilityNodeInfo recyclerView : recyclerViews) {
+                    if (recyclerView.isFocused()) {
+                        for (int i = 0; i < recyclerView.getChildCount(); i++) {
+                            AccessibilityNodeInfo subNode = recyclerView.getChild(i);
+                            List<AccessibilityNodeInfo> tvPrices = subNode.findAccessibilityNodeInfosByViewId(getPackageName() + "tv_price");
+                            if (!CollectionUtils.isEmpty(tvPrices)) {
+                                String priceStr = tvPrices.get(0).getText().toString();
+                                int spaceIndex = priceStr.indexOf(Key.SPACE);
+                                if (spaceIndex > -1) {
+                                    return ParseUtil.parseDouble(priceStr.substring(0, spaceIndex));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return 0;
+    }
+
     public void listenOrder(final ListenerService service, final EndCallback endCallback) {
         AccessibilityNodeInfo accessibilityNodeInfo = service.getRootInActiveWindow();
         if (accessibilityNodeInfo != null) {

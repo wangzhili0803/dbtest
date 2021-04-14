@@ -16,7 +16,14 @@ import android.view.accessibility.AccessibilityEvent;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 
+import com.huobi.client.MarketClient;
+import com.huobi.client.req.market.ReqCandlestickRequest;
+import com.huobi.constant.HuobiOptions;
+import com.huobi.constant.enums.CandlestickIntervalEnum;
 import com.jerry.baselib.BaseApp;
 import com.jerry.baselib.assibility.BaseListenerService;
 import com.jerry.baselib.assibility.EndCallback;
@@ -26,12 +33,16 @@ import com.jerry.baselib.common.flow.FloatMenuView;
 import com.jerry.baselib.common.util.AppUtils;
 import com.jerry.baselib.common.util.DisplayUtil;
 import com.jerry.baselib.common.util.LogUtils;
+import com.jerry.baselib.common.util.MathUtil;
+import com.jerry.baselib.common.util.ParseUtil;
 import com.jerry.baselib.common.util.ToastUtil;
 import com.jerry.baselib.common.util.WeakHandler;
 import com.jerry.baselib.parsehelper.WebLoader;
+import com.jerry.bitcoin.beans.CoinConstant;
 import com.jerry.bitcoin.home.MainActivity;
 import com.jerry.bitcoin.platform.CoinColaTask;
 import com.jerry.bitcoin.platform.HuobiTask;
+import com.jerry.bitcoin.trade.HuobiTradeHelper;
 
 import androidx.core.content.ContextCompat;
 import cn.leancloud.chatkit.event.LCIMIMTypeMessageEvent;
@@ -62,12 +73,23 @@ public class ListenerService extends BaseListenerService {
      * 擦亮
      */
     private static final int MSG_DO_TASK = 101;
+    private static final int MSG_CACUL = 102;
+    private double lastPrice;
+
+    private static final ReqCandlestickRequest CANDLESTICK_RESQUEST = new ReqCandlestickRequest();
+
+    static {
+        CANDLESTICK_RESQUEST.setSymbol(CoinConstant.XRP_USDT);
+        CANDLESTICK_RESQUEST.setInterval(CandlestickIntervalEnum.MIN1);
+    }
 
     private FloatLogoMenu menu;
     private WebLoader webLoader;
     public static double shouleBuy;
 
     private final FloatItem startItem = new FloatItem("开始", 0x99000000, 0x99000000,
+        BitmapFactory.decodeResource(BaseApp.getInstance().getResources(), R.drawable.play), "0");
+    private final FloatItem caculItem = new FloatItem("计算", 0x99000000, 0x99000000,
         BitmapFactory.decodeResource(BaseApp.getInstance().getResources(), R.drawable.play), "0");
     private final FloatItem stopItem = new FloatItem("暂停", 0x99000000, 0x99000000,
         BitmapFactory.decodeResource(BaseApp.getInstance().getResources(), R.drawable.pause), "0");
@@ -85,6 +107,8 @@ public class ListenerService extends BaseListenerService {
         mWeakHandler = new WeakHandler(msg -> {
             switch (msg.what) {
                 case MSG_DO_TASK:
+                    getUsdtData();
+                    requestTickers();
                     listenOrder();
                     return true;
                 default:
@@ -122,6 +146,7 @@ public class ListenerService extends BaseListenerService {
         ToastUtil.showShortText("服务已开启\n屏幕宽：" + ListenerService.mWidth + "\n屏幕高：" + ListenerService.mHeight);
         itemList.clear();
         itemList.add(startItem);
+        itemList.add(caculItem);
 
         if (menu == null) {
             menu = new FloatLogoMenu.Builder()
@@ -142,6 +167,7 @@ public class ListenerService extends BaseListenerService {
                             stopScript();
                             itemList.clear();
                             itemList.add(startItem);
+                            itemList.add(caculItem);
                             menu.updateFloatItemList(itemList);
                             menu.hide();
                             return;
@@ -153,14 +179,22 @@ public class ListenerService extends BaseListenerService {
                             return;
                         }
                         AppUtils.playing = true;
-                        if (position != 0) {
-                            return;
+                        switch (position) {
+                            case 0:
+                                start(MSG_DO_TASK);
+                                itemList.clear();
+                                itemList.add(stopItem);
+                                menu.updateFloatItemList(itemList);
+                                menu.hide();
+                                break;
+                            case 1:
+                                AppUtils.playing = false;
+                                cacul(null);
+                                break;
+                            default:
+                                break;
                         }
-                        start(MSG_DO_TASK);
-                        itemList.clear();
-                        itemList.add(stopItem);
-                        menu.updateFloatItemList(itemList);
-                        menu.hide();
+
                     }
                 });
             menu.show();
@@ -190,6 +224,62 @@ public class ListenerService extends BaseListenerService {
         mWeakHandler.postDelayed(runnable, TIME_MIDDLE);
     }
 
+    public void getUsdtData() {
+        if (!AppUtils.playing) {
+            return;
+        }
+        webLoader.load(URL_GWEB, data -> {
+            LogUtils.d(data);
+            Document doc = Jsoup.parse(data);
+            Elements allElements = doc.getAllElements();
+            Elements sellRate = allElements.select("#sell_rate");
+            double usdtSell = ParseUtil.parseDouble(sellRate.attr("value"));
+            shouleBuy = MathUtil.halfEven(usdtSell - 0.02);
+            mWeakHandler.postDelayed(ListenerService.this::getUsdtData, 60000);
+        });
+    }
+
+    private void requestTickers() {
+        if (!AppUtils.playing) {
+            return;
+        }
+        MarketClient marketClient = MarketClient.create(new HuobiOptions());
+        long now = System.currentTimeMillis() / 1000;
+        CANDLESTICK_RESQUEST.setFrom(now - 60);
+        CANDLESTICK_RESQUEST.setTo(now);
+        marketClient.reqCandlestick(CANDLESTICK_RESQUEST, response -> {
+            lastPrice = response.getCandlestickList().get(0).getClose().doubleValue();
+            mWeakHandler.postDelayed(ListenerService.this::requestTickers, TIME_SSHORT);
+        });
+    }
+
+    private void cacul(EndCallback endCallback) {
+        webLoader.load(URL_GWEB, data -> {
+            LogUtils.d(data);
+            Document doc = Jsoup.parse(data);
+            Elements allElements = doc.getAllElements();
+            Elements sellRate = allElements.select("#sell_rate");
+            double usdtSell = ParseUtil.parseDouble(sellRate.attr("value"));
+            shouleBuy = MathUtil.halfEven(usdtSell - 0.02);
+            MarketClient marketClient = MarketClient.create(new HuobiOptions());
+            long now = System.currentTimeMillis() / 1000;
+            CANDLESTICK_RESQUEST.setFrom(now - 60);
+            CANDLESTICK_RESQUEST.setTo(now);
+            marketClient.reqCandlestick(CANDLESTICK_RESQUEST, response -> {
+                lastPrice = response.getCandlestickList().get(0).getClose().doubleValue();
+                pullRefresh(t -> {
+                    double dd = mCoinColaTask.getLowestPrice(this);
+                    double c1 = 10000d / dd * 0.993 - 0.25;
+                    double sdd = c1 * lastPrice * 0.998 * shouleBuy;
+                    ToastUtil.showShortText("ddd:" + (sdd - 10000d));
+                    if (endCallback != null) {
+                        endCallback.onEnd(sdd > 10000);
+                    }
+                });
+            });
+        });
+    }
+
     private void listenOrder() {
         if (!AppUtils.playing) {
             return;
@@ -201,6 +291,12 @@ public class ListenerService extends BaseListenerService {
                     if (coinOrder != null) {
                         LogUtils.d(coinOrder.toString());
                         giveNotice();
+                        cacul(result1 -> {
+                            if (result1) {
+                                HuobiTradeHelper.getInstance()
+                                    .createOrder(CoinConstant.XRP_USDT, lastPrice, coinOrder.getQuantity() - coinOrder.getFee());
+                            }
+                        });
                     }
                 });
             } else {
