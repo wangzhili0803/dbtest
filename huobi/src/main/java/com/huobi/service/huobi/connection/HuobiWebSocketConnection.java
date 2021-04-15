@@ -269,10 +269,10 @@ public class HuobiWebSocketConnection extends WebSocketListener implements WebSo
                 } else if (op.equals("auth")) {
                     send(commandList);
                 } else if (op.equals("req")) {
-                    onReceiveAndClose(jsonObject);
+                    onReceive(jsonObject);
                 }
             } else if (jsonObject.containsKey("ch") || jsonObject.containsKey("rep")) {
-                onReceiveAndClose(jsonObject);
+                onReceive(jsonObject);
             } else if (jsonObject.containsKey("ping")) {
                 processPingOnMarketLine(jsonObject, webSocket);
             } else if (jsonObject.containsKey("subbed")) {
@@ -333,6 +333,7 @@ public class HuobiWebSocketConnection extends WebSocketListener implements WebSo
         return this.getId();
     }
 
+    @Override
     public void close() {
         log.error("[Connection close][" + this.getId() + "] Closing normally");
         webSocket.cancel();

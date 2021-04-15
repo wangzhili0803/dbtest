@@ -4,15 +4,17 @@ import com.huobi.constant.enums.ConnectionStateEnum;
 
 public interface WebSocketConnection {
 
-  ConnectionStateEnum getState();
+    ConnectionStateEnum getState();
 
-  Long getConnectionId();
+    Long getConnectionId();
 
-  void reConnect();
+    void reConnect();
 
-  void reConnect(int delayInSecond);
+    void reConnect(int delayInSecond);
 
-  long getLastReceivedTime();
+    void close();
 
-  void send(String str);
+    long getLastReceivedTime();
+
+    void send(String str);
 }

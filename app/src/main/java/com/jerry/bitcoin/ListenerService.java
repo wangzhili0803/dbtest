@@ -1,5 +1,6 @@
 package com.jerry.bitcoin;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,6 +11,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.provider.Settings;
 import android.text.TextUtils;
+import android.util.ArrayMap;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 
@@ -21,9 +23,12 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
 import com.huobi.client.MarketClient;
-import com.huobi.client.req.market.ReqCandlestickRequest;
+import com.huobi.client.req.market.SubCandlestickRequest;
 import com.huobi.constant.HuobiOptions;
 import com.huobi.constant.enums.CandlestickIntervalEnum;
+import com.huobi.constant.enums.ConnectionStateEnum;
+import com.huobi.model.market.Candlestick;
+import com.huobi.service.huobi.connection.HuobiWebSocketConnection;
 import com.jerry.baselib.BaseApp;
 import com.jerry.baselib.assibility.BaseListenerService;
 import com.jerry.baselib.assibility.EndCallback;
@@ -74,12 +79,13 @@ public class ListenerService extends BaseListenerService {
      */
     private static final int MSG_DO_TASK = 101;
     private static final int MSG_CACUL = 102;
-    private double lastPrice;
+    private ArrayMap<String, BigDecimal> priceMap = new ArrayMap<>();
 
-    private static final ReqCandlestickRequest CANDLESTICK_RESQUEST = new ReqCandlestickRequest();
+    private static final SubCandlestickRequest CANDLESTICK_RESQUEST = new SubCandlestickRequest();
+    private HuobiWebSocketConnection mHuobiWebSocketConnection;
 
     static {
-        CANDLESTICK_RESQUEST.setSymbol(CoinConstant.XRP_USDT);
+        CANDLESTICK_RESQUEST.setSymbol(CoinConstant.SUB_CANDLE);
         CANDLESTICK_RESQUEST.setInterval(CandlestickIntervalEnum.MIN1);
     }
 
@@ -189,7 +195,7 @@ public class ListenerService extends BaseListenerService {
                                 break;
                             case 1:
                                 AppUtils.playing = false;
-                                cacul(null);
+                                cacul("bchusdt", null);
                                 break;
                             default:
                                 break;
@@ -243,40 +249,65 @@ public class ListenerService extends BaseListenerService {
         if (!AppUtils.playing) {
             return;
         }
-        MarketClient marketClient = MarketClient.create(new HuobiOptions());
-        long now = System.currentTimeMillis() / 1000;
-        CANDLESTICK_RESQUEST.setFrom(now - 60);
-        CANDLESTICK_RESQUEST.setTo(now);
-        marketClient.reqCandlestick(CANDLESTICK_RESQUEST, response -> {
-            lastPrice = response.getCandlestickList().get(0).getClose().doubleValue();
-            mWeakHandler.postDelayed(ListenerService.this::requestTickers, TIME_SSHORT);
-        });
+        if (mHuobiWebSocketConnection == null) {
+            MarketClient marketClient = MarketClient.create(new HuobiOptions());
+            mHuobiWebSocketConnection = marketClient.subCandlestick(CANDLESTICK_RESQUEST, response -> {
+                Candlestick candlestick = response.getCandlestick();
+                if (response.getCh().contains(CoinConstant.BCH_USDT)) {
+                    priceMap.put(CoinConstant.BCH_USDT, candlestick.getClose());
+                } else if (response.getCh().contains(CoinConstant.XRP_USDT)) {
+                    priceMap.put(CoinConstant.XRP_USDT, candlestick.getClose());
+                }
+            });
+        } else if (mHuobiWebSocketConnection.getState() != ConnectionStateEnum.CONNECTED) {
+            mHuobiWebSocketConnection.reConnect();
+        }
     }
 
-    private void cacul(EndCallback endCallback) {
+    private void cacul(String symbol, EndCallback endCallback) {
         webLoader.load(URL_GWEB, data -> {
             LogUtils.d(data);
             Document doc = Jsoup.parse(data);
             Elements allElements = doc.getAllElements();
             Elements sellRate = allElements.select("#sell_rate");
             double usdtSell = ParseUtil.parseDouble(sellRate.attr("value"));
-            shouleBuy = MathUtil.halfEven(usdtSell - 0.02);
-            MarketClient marketClient = MarketClient.create(new HuobiOptions());
-            long now = System.currentTimeMillis() / 1000;
-            CANDLESTICK_RESQUEST.setFrom(now - 60);
-            CANDLESTICK_RESQUEST.setTo(now);
-            marketClient.reqCandlestick(CANDLESTICK_RESQUEST, response -> {
-                lastPrice = response.getCandlestickList().get(0).getClose().doubleValue();
+            shouleBuy = MathUtil.halfEven(usdtSell - 0.01);
+            if (mHuobiWebSocketConnection == null) {
+                MarketClient marketClient = MarketClient.create(new HuobiOptions());
+                mHuobiWebSocketConnection = marketClient.subCandlestick(CANDLESTICK_RESQUEST, response -> {
+                    Candlestick candlestick = response.getCandlestick();
+                    if (response.getCh().contains(CoinConstant.BCH_USDT)) {
+                        priceMap.put(CoinConstant.BCH_USDT, candlestick.getClose());
+                    } else if (response.getCh().contains(CoinConstant.XRP_USDT)) {
+                        priceMap.put(CoinConstant.XRP_USDT, candlestick.getClose());
+                    }
+                    if (response.getCh().contains(symbol)) {
+                        mHuobiWebSocketConnection.close();
+                        pullRefresh(t -> {
+                            double dd = mCoinColaTask.getLowestPrice(this);
+                            double c1 = 10000d / dd * 0.993 - CoinConstant.FEEMAP.get(symbol);
+                            double sdd = c1 * priceMap.get(symbol).doubleValue() * 0.998 * shouleBuy;
+                            ToastUtil.showShortText("ddd:" + (sdd - 10000d));
+                            if (endCallback != null) {
+                                endCallback.onEnd(sdd > 10000);
+                            }
+                        });
+                    }
+                });
+            } else if (mHuobiWebSocketConnection.getState() != ConnectionStateEnum.CONNECTED) {
+                mHuobiWebSocketConnection.reConnect();
+            } else {
                 pullRefresh(t -> {
+                    BigDecimal close = priceMap.get(symbol);
                     double dd = mCoinColaTask.getLowestPrice(this);
-                    double c1 = 10000d / dd * 0.993 - 0.25;
-                    double sdd = c1 * lastPrice * 0.998 * shouleBuy;
+                    double c1 = 10000d / dd * 0.993 - CoinConstant.FEEMAP.get(symbol);
+                    double sdd = c1 * close.doubleValue() * 0.998 * shouleBuy;
                     ToastUtil.showShortText("ddd:" + (sdd - 10000d));
                     if (endCallback != null) {
                         endCallback.onEnd(sdd > 10000);
                     }
                 });
-            });
+            }
         });
     }
 
@@ -291,10 +322,14 @@ public class ListenerService extends BaseListenerService {
                     if (coinOrder != null) {
                         LogUtils.d(coinOrder.toString());
                         giveNotice();
-                        cacul(result1 -> {
+                        cacul(coinOrder.getCoinType(), result1 -> {
                             if (result1) {
-                                HuobiTradeHelper.getInstance()
-                                    .createOrder(CoinConstant.XRP_USDT, lastPrice, coinOrder.getQuantity() - coinOrder.getFee());
+                                BigDecimal priceNum = priceMap.get(coinOrder.getCoinType());
+                                if (priceNum != null) {
+                                    String symbol = coinOrder.getCoinType();
+                                    double amount = coinOrder.getQuantity() - coinOrder.getFee();
+                                    HuobiTradeHelper.getInstance().createOrder(symbol, priceNum.doubleValue(), amount);
+                                }
                             }
                         });
                     }

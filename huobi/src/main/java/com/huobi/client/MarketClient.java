@@ -40,6 +40,7 @@ import com.huobi.model.market.MarketTradeReq;
 import com.huobi.model.market.MbpIncrementalUpdateEvent;
 import com.huobi.model.market.MbpRefreshUpdateEvent;
 import com.huobi.service.huobi.HuobiMarketService;
+import com.huobi.service.huobi.connection.HuobiWebSocketConnection;
 import com.huobi.utils.ResponseCallback;
 import com.huobi.utils.WebSocketConnection;
 
@@ -59,7 +60,7 @@ public interface MarketClient {
 
     List<MarketTrade> getMarketHistoryTrade(MarketHistoryTradeRequest request);
 
-    void subCandlestick(SubCandlestickRequest request, ResponseCallback<CandlestickEvent> callback);
+    HuobiWebSocketConnection subCandlestick(SubCandlestickRequest request, ResponseCallback<CandlestickEvent> callback);
 
     void subMarketDetail(SubMarketDetailRequest request, ResponseCallback<MarketDetailEvent> callback);
 
@@ -84,7 +85,6 @@ public interface MarketClient {
     void reqMarketDetail(ReqMarketDetailRequest request, ResponseCallback<MarketDetailReq> callback);
 
     static MarketClient create(Options options) {
-
         if (options.getExchange().equals(ExchangeEnum.HUOBI)) {
             return new HuobiMarketService(options);
         }

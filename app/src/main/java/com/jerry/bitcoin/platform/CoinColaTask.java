@@ -165,7 +165,7 @@ public class CoinColaTask extends BaseTask {
                                 String priceStr = tvPrices.get(0).getText().toString();
                                 int spaceIndex = priceStr.indexOf(Key.SPACE);
                                 if (spaceIndex > -1) {
-                                    return ParseUtil.parseDouble(priceStr.substring(0, spaceIndex));
+                                    return ParseUtil.parseDouble(priceStr.substring(0, spaceIndex).replace(Key.COMMA, Key.NIL));
                                 }
                             }
                         }
@@ -237,6 +237,7 @@ public class CoinColaTask extends BaseTask {
                 }
                 break;
             case "待付款":
+                String title = service.getNodeText(getPackageName() + "tv_title");
                 String nickname = service.getNodeText(getPackageName() + "tv_opposite_name");
                 double amount = getNumberFromStr(service.getNodeText(getPackageName() + "tv_trade_amount"));
                 double qty = getNumberFromStr(service.getNodeText(getPackageName() + "tv_trade_qty"));
@@ -247,6 +248,7 @@ public class CoinColaTask extends BaseTask {
                 if (cOrder == null) {
                     cOrder = new CoinOrder();
                     cOrder.setOrderId(orderId);
+                    cOrder.setCoinType(title.replace("购买", "").trim().toLowerCase() + "usdt");
                     cOrder.setName(nickname);
                     cOrder.setStatus(2);
                     cOrder.setAmount(amount);
@@ -264,6 +266,7 @@ public class CoinColaTask extends BaseTask {
                     String transInfo = service.getAllNodeText(getPackageName() + "tv_message_text");
                     if (StringUtil.numericInStr(transInfo) >= 16) {
                         cOrder.setOrderId(orderId);
+                        cOrder.setCoinType(title.replace("购买", "").trim().toLowerCase() + "usdt");
                         cOrder.setName(nickname);
                         cOrder.setAmount(amount);
                         cOrder.setQuantity(qty);
