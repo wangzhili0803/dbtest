@@ -302,6 +302,26 @@ public abstract class BaseListenerService extends AccessibilityService {
         this.mWeakHandler.postDelayed(() -> endCallback.onEnd(true), TIME_LONG);
     }
 
+    public AccessibilityNodeInfo findFirstByText(AccessibilityNodeInfo root, final String text) {
+        if (root != null) {
+            List<AccessibilityNodeInfo> nodeInfos = root.findAccessibilityNodeInfosByText(text);
+            if (!CollectionUtils.isEmpty(nodeInfos)) {
+                return nodeInfos.get(0);
+            }
+        }
+        return null;
+    }
+
+    public AccessibilityNodeInfo findFirstById(AccessibilityNodeInfo root, final String id) {
+        if (root != null) {
+            List<AccessibilityNodeInfo> nodeInfos = root.findAccessibilityNodeInfosByViewId(id);
+            if (!CollectionUtils.isEmpty(nodeInfos)) {
+                return nodeInfos.get(0);
+            }
+        }
+        return null;
+    }
+
     public String getNodeText(String id) {
         return getNodeText(getRootInActiveWindow(), id);
     }
@@ -405,6 +425,18 @@ public abstract class BaseListenerService extends AccessibilityService {
                 callBack.onDataChanged(index);
             }
         }
+    }
+
+    @SuppressLint("DefaultLocale")
+    public boolean exeLongClick(String text) {
+        AccessibilityNodeInfo newRootNode = getRootInActiveWindow();
+        if (newRootNode != null) {
+            List<AccessibilityNodeInfo> nodes = newRootNode.findAccessibilityNodeInfosByText(text);
+            if (!CollectionUtils.isEmpty(nodes)) {
+                return exeLongClick(nodes.get(nodes.size() - 1));
+            }
+        }
+        return false;
     }
 
     @SuppressLint("DefaultLocale")

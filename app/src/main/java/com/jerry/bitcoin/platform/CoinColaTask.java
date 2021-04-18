@@ -178,32 +178,31 @@ public class CoinColaTask extends BaseTask {
 
     public void listenOrder(final ListenerService service, final EndCallback endCallback) {
         AccessibilityNodeInfo accessibilityNodeInfo = service.getRootInActiveWindow();
-        if (accessibilityNodeInfo != null) {
-            List<AccessibilityNodeInfo> recyclerViews = accessibilityNodeInfo.findAccessibilityNodeInfosByViewId(getPackageName() + "recycler_view");
-            if (!CollectionUtils.isEmpty(recyclerViews)) {
-                AccessibilityNodeInfo recyclerView = recyclerViews.get(0);
-//                for (int i = 0, count = recyclerView.getChildCount(); i < count; i++) {
-//                    AccessibilityNodeInfo child = recyclerView.getChild(i);
-//                    String orderId = service.getNodeText(child, getPackageName() + "tv_order_id");
-//                    String name = service.getNodeText(child, getPackageName() + "tv_nick_name");
-//                    String type = service.getNodeText(child, getPackageName() + "tv_crypto_currency");
-//                    String amount = service.getNodeText(child, getPackageName() + "tv_order_amount");
-//                    if (TextUtils.isEmpty(orderId)) {
-//
-//                    } else {
-//                        CoinOrder order = ProManager.getInstance().queryObj(CoinOrder.class, Properties.OrderId.like(orderId));
-//                        if (order == null) {
-//                            order = new CoinOrder();
-//                        }
-//                    }
-//                }
-                List<AccessibilityNodeInfo> ivDots = recyclerView.findAccessibilityNodeInfosByViewId(getPackageName() + "iv_dot");
-                if (!CollectionUtils.isEmpty(ivDots)) {
-                    service.exeClick(ivDots.get(0));
-                    endCallback.onEnd(true);
-                    return;
-                }
+        AccessibilityNodeInfo tabLayout = service.findFirstById(accessibilityNodeInfo, getPackageName() + "tab_layout");
+        AccessibilityNodeInfo complete = service.findFirstByText(tabLayout, "已完成");
+        if (complete != null) {
+            // 已完成中的dot
+            AccessibilityNodeInfo dot = service.findFirstById(complete.getParent(), getPackageName() + "iv_dot");
+            if (dot != null && service.exeClick(dot)) {
+                service.postDelayed(() -> {
+                    if (service.clickFirst(getPackageName() + "iv_dot")) {
+                        //有待评价的订单
+                        handleEvaluation(service, result -> {
+
+                        });
+                    } else {
+                        endCallback.onEnd(false);
+                    }
+                });
+                return;
             }
+        }
+        AccessibilityNodeInfo recyclerView = service.findFirstById(accessibilityNodeInfo, getPackageName() + "recycler_view");
+        AccessibilityNodeInfo ivDot = service.findFirstById(recyclerView, getPackageName() + "iv_dot");
+        if (ivDot != null) {
+            service.exeClick(ivDot);
+            service.postDelayed(() -> endCallback.onEnd(true));
+            return;
         }
         endCallback.onEnd(false);
     }
@@ -214,28 +213,6 @@ public class CoinColaTask extends BaseTask {
     public void handleMsg(final ListenerService service, final OnDataChangedListener<CoinOrder> onDataChangedListener) {
         String orderStatus = service.getNodeText(getPackageName() + "tv_order_status");
         switch (orderStatus) {
-            case "待下单":
-                String name = service.getNodeText(getPackageName() + "tv_opposite_name");
-                CoinOrder coinOrder = ProManager.getInstance().queryObj(CoinOrder.class, Properties.Name.eq(name), Properties.Status.eq(1));
-                if (coinOrder == null) {
-                    coinOrder = new CoinOrder();
-                    coinOrder.setName(name);
-                    coinOrder.setStatus(1);
-                    if (ProManager.getInstance().insertObject(coinOrder)) {
-                        AccessibilityNodeInfo root = service.getRootInActiveWindow();
-                        List<AccessibilityNodeInfo> chats = root.findAccessibilityNodeInfosByViewId(getPackageName() + "lv_chat_before_order");
-                        if (!CollectionUtils.isEmpty(chats)) {
-                            if (service.exeClick(chats.get(MathUtil.random(0, 2)))) {
-                                service.postDelayed(() -> {
-                                    service.back();
-                                    onDataChangedListener.onDataChanged(null);
-                                });
-                                return;
-                            }
-                        }
-                    }
-                }
-                break;
             case "待付款":
                 String title = service.getNodeText(getPackageName() + "tv_title");
                 String nickname = service.getNodeText(getPackageName() + "tv_opposite_name");
@@ -286,11 +263,120 @@ public class CoinColaTask extends BaseTask {
                 }
                 break;
             case "已放行":
-            default:
                 break;
+            case "待下单":
+            default:
+                deleteMsg(service, result -> onDataChangedListener.onDataChanged(null));
+                return;
         }
         service.back();
         onDataChangedListener.onDataChanged(null);
+    }
+
+    private void deleteMsg(final ListenerService service, EndCallback endCallback) {
+        if (errorCount >= 3) {
+            taskStep = 0;
+            errorCount = 0;
+            endCallback.onEnd(false);
+            return;
+        }
+        int tempStep = taskStep;
+        switch (taskStep) {
+            case 0:
+                AccessibilityNodeInfo root = service.getRootInActiveWindow();
+                List<AccessibilityNodeInfo> chats = root.findAccessibilityNodeInfosByViewId(getPackageName() + "lv_chat_before_order");
+                if (!CollectionUtils.isEmpty(chats) && service.exeClick(chats.get(MathUtil.random(0, 2)))) {
+                    taskStep++;
+                }
+                break;
+            case 1:
+                service.back();
+                taskStep++;
+                break;
+            case 2:
+                if (service.exeLongClick("待付款")) {
+                    taskStep++;
+                } else {
+                    // 没有了待付款就返回
+                    taskStep = 4;
+                }
+                break;
+            case 3:
+                if (service.exeClickText("删除")) {
+                    // 继续删除
+                    taskStep = 2;
+                }
+                break;
+            default:
+                taskStep = 0;
+                errorCount = 0;
+                endCallback.onEnd(true);
+                return;
+        }
+        if (tempStep == taskStep) {
+            errorCount++;
+        }
+        service.postDelayed(() -> deleteMsg(service, endCallback));
+    }
+
+    /**
+     * 去评价
+     */
+    private void handleEvaluation(final ListenerService service, final EndCallback endCallback) {
+        if (errorCount >= 3) {
+            taskStep = 0;
+            errorCount = 0;
+            endCallback.onEnd(false);
+            return;
+        }
+        int tempStep = taskStep;
+        switch (taskStep) {
+            case 0:
+                if (service.exeClickText("待评价")) {
+                    taskStep++;
+                } else if (service.clickFirst(getPackageName() + "title_right_text")) {
+                    // 没有了待评价就点击已读返回
+                    taskStep = 5;
+                }
+                break;
+            case 1:
+                if (service.clickFirst(getPackageName() + "tv_trade_finish_operator")) {
+                    taskStep++;
+                }
+                break;
+            case 2:
+                if (service.exeClickText("确定")) {
+                    taskStep++;
+                }
+                break;
+            case 3:
+                sendMsgToBuyer(service, "谢谢，期待下次合作哈！", result -> {
+                    if (result) {
+                        taskStep++;
+                    } else {
+                        errorCount++;
+                        service.postDelayed(() -> handleEvaluation(service, endCallback));
+                    }
+                });
+                return;
+            case 4:
+                service.back();
+                taskStep = 0;
+                break;
+            case 5:
+                if (service.exeClickText("进行中")) {
+                    taskStep++;
+                }
+            default:
+                taskStep = 0;
+                errorCount = 0;
+                endCallback.onEnd(true);
+                return;
+        }
+        if (tempStep == taskStep) {
+            errorCount++;
+        }
+        service.postDelayed(() -> handleEvaluation(service, endCallback));
     }
 
     private double getNumberFromStr(final String text) {
@@ -306,8 +392,12 @@ public class CoinColaTask extends BaseTask {
             service.postDelayed(() -> {
                 if (service.clickLast(getPackageName() + "tv_send_text")) {
                     callback.onEnd(true);
+                } else {
+                    callback.onEnd(false);
                 }
             });
+        } else {
+            callback.onEnd(false);
         }
     }
 }
