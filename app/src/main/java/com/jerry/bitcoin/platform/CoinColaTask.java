@@ -150,7 +150,7 @@ public class CoinColaTask extends BaseTask {
 
     }
 
-    public double getLowestPrice(final ListenerService service) {
+    public double getHighestPrice(final ListenerService service) {
         AccessibilityNodeInfo accessibilityNodeInfo = service.getRootInActiveWindow();
         if (accessibilityNodeInfo != null) {
             List<AccessibilityNodeInfo> recyclerViews = accessibilityNodeInfo
@@ -174,6 +174,24 @@ public class CoinColaTask extends BaseTask {
             }
         }
         return 0;
+    }
+
+    public String getSelectedSymbol(final ListenerService service) {
+        AccessibilityNodeInfo accessibilityNodeInfo = service.getRootInActiveWindow();
+        AccessibilityNodeInfo tabLayouts = service.findFirstById(accessibilityNodeInfo, getPackageName() + "tab_layout");
+        if (tabLayouts != null) {
+            AccessibilityNodeInfo tablayout = tabLayouts.getChild(0);
+            if (tablayout != null) {
+                for (int i = 0; i < tablayout.getChildCount(); i++) {
+                    AccessibilityNodeInfo tab = tablayout.getChild(i);
+                    if (tab.isSelected()) {
+                        String coin = tab.getChild(0).getText().toString();
+                        return coin.toLowerCase() + "usdt";
+                    }
+                }
+            }
+        }
+        return "";
     }
 
     public void listenOrder(final ListenerService service, final EndCallback endCallback) {

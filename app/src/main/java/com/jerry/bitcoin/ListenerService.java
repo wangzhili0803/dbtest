@@ -195,7 +195,7 @@ public class ListenerService extends BaseListenerService {
                                 break;
                             case 1:
                                 AppUtils.playing = false;
-                                cacul("bchusdt", null);
+                                cacul(null);
                                 break;
                             default:
                                 break;
@@ -264,7 +264,7 @@ public class ListenerService extends BaseListenerService {
         }
     }
 
-    private void cacul(String symbol, EndCallback endCallback) {
+    private void cacul(EndCallback endCallback) {
         webLoader.load(URL_GWEB, data -> {
             LogUtils.d(data);
             Document doc = Jsoup.parse(data);
@@ -272,6 +272,7 @@ public class ListenerService extends BaseListenerService {
             Elements sellRate = allElements.select("#sell_rate");
             double usdtSell = ParseUtil.parseDouble(sellRate.attr("value"));
             shouleBuy = MathUtil.halfEven(usdtSell - 0.01);
+            String symbol = mCoinColaTask.getSelectedSymbol(this);
             if (mHuobiWebSocketConnection == null) {
                 MarketClient marketClient = MarketClient.create(new HuobiOptions());
                 mHuobiWebSocketConnection = marketClient.subCandlestick(CANDLESTICK_RESQUEST, response -> {
@@ -284,12 +285,10 @@ public class ListenerService extends BaseListenerService {
                     if (response.getCh().contains(symbol)) {
                         mHuobiWebSocketConnection.close();
                         pullRefresh(t -> {
-                            double dd = mCoinColaTask.getLowestPrice(this);
-                            double c1 = 10000d / dd * 0.993 - CoinConstant.FEEMAP.get(symbol);
-                            double sdd = c1 * priceMap.get(symbol).doubleValue() * 0.998 * shouleBuy;
-                            ToastUtil.showShortText("ddd:" + (sdd - 10000d));
+                            double lowestClose = getLowestClose(symbol, mCoinColaTask.getHighestPrice(this));
+                            ToastUtil.showShortText("最低价：" + lowestClose);
                             if (endCallback != null) {
-                                endCallback.onEnd(sdd > 10000);
+                                endCallback.onEnd(true);
                             }
                         });
                     }
@@ -298,17 +297,23 @@ public class ListenerService extends BaseListenerService {
                 mHuobiWebSocketConnection.reConnect();
             } else {
                 pullRefresh(t -> {
-                    BigDecimal close = priceMap.get(symbol);
-                    double dd = mCoinColaTask.getLowestPrice(this);
-                    double c1 = 10000d / dd * 0.993 - CoinConstant.FEEMAP.get(symbol);
-                    double sdd = c1 * close.doubleValue() * 0.998 * shouleBuy;
-                    ToastUtil.showShortText("ddd:" + (sdd - 10000d));
+                    double lowestClose = getLowestClose(symbol, mCoinColaTask.getHighestPrice(this));
+                    ToastUtil.showShortText("最低价：" + lowestClose);
                     if (endCallback != null) {
-                        endCallback.onEnd(sdd > 10000);
+                        endCallback.onEnd(true);
                     }
                 });
             }
         });
+    }
+
+    private double getLowestClose(final String symbol, final double highestPrice) {
+        Double fee = CoinConstant.FEEMAP.get(symbol);
+        if (fee != null) {
+            double c1 = 10000d / highestPrice * 0.993 - fee;
+            return 10000d / (c1 * 0.998 * shouleBuy);
+        }
+        return Integer.MAX_VALUE;
     }
 
     private void listenOrder() {
@@ -322,7 +327,7 @@ public class ListenerService extends BaseListenerService {
                     if (coinOrder != null) {
                         LogUtils.d(coinOrder.toString());
                         giveNotice();
-                        cacul(coinOrder.getCoinType(), result1 -> {
+                        cacul(result1 -> {
                             if (result1) {
                                 BigDecimal priceNum = priceMap.get(coinOrder.getCoinType());
                                 if (priceNum != null) {
