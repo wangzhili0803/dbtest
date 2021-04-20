@@ -215,14 +215,15 @@ public class CoinColaTask extends BaseTask {
                 return;
             }
         }
-        AccessibilityNodeInfo recyclerView = service.findFirstById(accessibilityNodeInfo, getPackageName() + "recycler_view");
-        AccessibilityNodeInfo ivDot = service.findFirstById(recyclerView, getPackageName() + "iv_dot");
-        if (ivDot != null) {
-            service.exeClick(ivDot);
-            service.postDelayed(() -> endCallback.onEnd(true));
-            return;
-        }
-        endCallback.onEnd(false);
+        deleteUnusedMsg(service, result -> {
+            AccessibilityNodeInfo recyclerView = service.findFirstById(accessibilityNodeInfo, getPackageName() + "recycler_view");
+            AccessibilityNodeInfo ivDot = service.findFirstById(recyclerView, getPackageName() + "iv_dot");
+            if (ivDot != null && service.exeClick(ivDot)) {
+                service.postDelayed(() -> endCallback.onEnd(true));
+                return;
+            }
+            endCallback.onEnd(false);
+        });
     }
 
     /**
@@ -284,14 +285,22 @@ public class CoinColaTask extends BaseTask {
                 break;
             case "待下单":
             default:
-                deleteMsg(service, result -> onDataChangedListener.onDataChanged(null));
-                return;
+                AccessibilityNodeInfo root = service.getRootInActiveWindow();
+                AccessibilityNodeInfo chat = service.findFirstById(root, getPackageName() + "lv_chat_before_order");
+                if (chat != null && service.exeClick(chat.getChild(MathUtil.random(0, 2)))) {
+                    service.postDelayed(() -> {
+                        service.back();
+                        onDataChangedListener.onDataChanged(null);
+                    });
+                    return;
+                }
+                break;
         }
         service.back();
         onDataChangedListener.onDataChanged(null);
     }
 
-    private void deleteMsg(final ListenerService service, EndCallback endCallback) {
+    private void deleteUnusedMsg(final ListenerService service, EndCallback endCallback) {
         if (errorCount >= 3) {
             taskStep = 0;
             errorCount = 0;
@@ -301,28 +310,17 @@ public class CoinColaTask extends BaseTask {
         int tempStep = taskStep;
         switch (taskStep) {
             case 0:
-                AccessibilityNodeInfo root = service.getRootInActiveWindow();
-                List<AccessibilityNodeInfo> chats = root.findAccessibilityNodeInfosByViewId(getPackageName() + "lv_chat_before_order");
-                if (!CollectionUtils.isEmpty(chats) && service.exeClick(chats.get(MathUtil.random(0, 2)))) {
-                    taskStep++;
-                }
-                break;
-            case 1:
-                service.back();
-                taskStep++;
-                break;
-            case 2:
-                if (service.exeLongClick("待付款")) {
+                if (service.exeLongClick("待下单")) {
                     taskStep++;
                 } else {
                     // 没有了待付款就返回
-                    taskStep = 4;
+                    taskStep = 2;
                 }
                 break;
-            case 3:
+            case 1:
                 if (service.exeClickText("删除")) {
                     // 继续删除
-                    taskStep = 2;
+                    taskStep = 0;
                 }
                 break;
             default:
@@ -334,7 +332,7 @@ public class CoinColaTask extends BaseTask {
         if (tempStep == taskStep) {
             errorCount++;
         }
-        service.postDelayed(() -> deleteMsg(service, endCallback));
+        service.postDelayed(() -> deleteUnusedMsg(service, endCallback));
     }
 
     /**
