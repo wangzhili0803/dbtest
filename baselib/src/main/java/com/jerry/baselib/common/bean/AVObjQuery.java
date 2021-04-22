@@ -13,7 +13,7 @@ import android.util.ArrayMap;
 import com.jerry.baselib.common.util.AppUtils;
 import com.jerry.baselib.common.util.CollectionUtils;
 import com.jerry.baselib.common.util.JJSON;
-import com.jerry.baselib.common.util.OnDataChangedListener;
+import com.jerry.baselib.common.util.OnDataCallback;
 
 import cn.leancloud.AVObject;
 import cn.leancloud.AVQuery;
@@ -108,7 +108,7 @@ public class AVObjQuery<T> {
         return this;
     }
 
-    public void getObject(String id, OnDataChangedListener<DataResponse<T>> dataChangedListener) {
+    public void getObject(String id, OnDataCallback<DataResponse<T>> dataChangedListener) {
         if (mAVQuery != null) {
             mAVQuery.whereEqualTo("objectId", id);
         }
@@ -117,7 +117,7 @@ public class AVObjQuery<T> {
             if (dataChangedListener != null) {
                 dataResponse.setCode(1);
                 dataResponse.setMsg("mAVQuery not null!");
-                dataChangedListener.onDataChanged(dataResponse);
+                dataChangedListener.onDataCallback(dataResponse);
             }
             return;
         }
@@ -137,7 +137,7 @@ public class AVObjQuery<T> {
                         dataResponse.setCode(1);
                         dataResponse.setMsg("not found any data!");
                     }
-                    dataChangedListener.onDataChanged(dataResponse);
+                    dataChangedListener.onDataCallback(dataResponse);
                 }
             }
 
@@ -146,7 +146,7 @@ public class AVObjQuery<T> {
                 if (dataChangedListener != null) {
                     dataResponse.setCode(1);
                     dataResponse.setMsg(e.getMessage());
-                    dataChangedListener.onDataChanged(dataResponse);
+                    dataChangedListener.onDataCallback(dataResponse);
                 }
             }
 
@@ -157,13 +157,13 @@ public class AVObjQuery<T> {
         });
     }
 
-    public void findObjects(OnDataChangedListener<DataResponse<List<T>>> dataChangedListener) {
+    public void findObjects(OnDataCallback<DataResponse<List<T>>> dataChangedListener) {
         DataResponse<List<T>> dataResponse = new DataResponse<>();
         if (mAVQuery == null) {
             if (dataChangedListener != null) {
                 dataResponse.setCode(1);
                 dataResponse.setMsg("mAVQuery not null!");
-                dataChangedListener.onDataChanged(dataResponse);
+                dataChangedListener.onDataCallback(dataResponse);
             }
             return;
         }
@@ -187,7 +187,7 @@ public class AVObjQuery<T> {
                     }
                     dataResponse.setCode(0);
                     dataResponse.setData(list);
-                    dataChangedListener.onDataChanged(dataResponse);
+                    dataChangedListener.onDataCallback(dataResponse);
                 }
             }
 
@@ -196,7 +196,7 @@ public class AVObjQuery<T> {
                 if (dataChangedListener != null) {
                     dataResponse.setCode(1);
                     dataResponse.setMsg(e.getMessage());
-                    dataChangedListener.onDataChanged(dataResponse);
+                    dataChangedListener.onDataCallback(dataResponse);
                 }
             }
 
@@ -229,12 +229,12 @@ public class AVObjQuery<T> {
     /**
      * 批量添加
      */
-    public static <T extends AVBaseObject> void saveAll(List<T> list, OnDataChangedListener<DataResponse<List<T>>> dataChangedListener) {
+    public static <T extends AVBaseObject> void saveAll(List<T> list, OnDataCallback<DataResponse<List<T>>> dataChangedListener) {
         DataResponse<List<T>> dataResponse = new DataResponse<>();
         if (CollectionUtils.isEmpty(list)) {
             dataResponse.setCode(1);
             dataResponse.setMsg("list is Empty!");
-            dataChangedListener.onDataChanged(dataResponse);
+            dataChangedListener.onDataCallback(dataResponse);
             return;
         }
         List<AVObject> objects = new ArrayList<>();
@@ -270,14 +270,14 @@ public class AVObjQuery<T> {
                 }
                 dataResponse.setCode(0);
                 dataResponse.setData(list);
-                dataChangedListener.onDataChanged(dataResponse);
+                dataChangedListener.onDataCallback(dataResponse);
             }
 
             @Override
             public void onError(Throwable throwable) {
                 dataResponse.setCode(1);
                 dataResponse.setMsg(throwable.getMessage());
-                dataChangedListener.onDataChanged(dataResponse);
+                dataChangedListener.onDataCallback(dataResponse);
             }
 
             @Override
@@ -289,12 +289,12 @@ public class AVObjQuery<T> {
     /**
      * 批量删除
      */
-    public static <T extends AVBaseObject> void deleteAll(List<T> list, OnDataChangedListener<DataResponse<Integer>> dataChangedListener) {
+    public static <T extends AVBaseObject> void deleteAll(List<T> list, OnDataCallback<DataResponse<Integer>> dataChangedListener) {
         DataResponse<Integer> dataResponse = new DataResponse<>();
         if (CollectionUtils.isEmpty(list)) {
             dataResponse.setCode(1);
             dataResponse.setMsg("list is Empty!");
-            dataChangedListener.onDataChanged(dataResponse);
+            dataChangedListener.onDataCallback(dataResponse);
             return;
         }
         List<AVObject> objects = new ArrayList<>();
@@ -335,14 +335,14 @@ public class AVObjQuery<T> {
             public void onNext(AVNull todo) {
                 dataResponse.setCode(0);
                 dataResponse.setData(list.size());
-                dataChangedListener.onDataChanged(dataResponse);
+                dataChangedListener.onDataCallback(dataResponse);
             }
 
             @Override
             public void onError(Throwable throwable) {
                 dataResponse.setCode(1);
                 dataResponse.setMsg(throwable.getMessage());
-                dataChangedListener.onDataChanged(dataResponse);
+                dataChangedListener.onDataCallback(dataResponse);
             }
 
 

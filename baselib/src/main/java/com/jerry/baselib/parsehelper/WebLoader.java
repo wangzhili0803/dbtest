@@ -13,7 +13,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import com.jerry.baselib.common.util.LogUtils;
-import com.jerry.baselib.common.util.OnDataChangedListener;
+import com.jerry.baselib.common.util.OnDataCallback;
 import com.jerry.baselib.common.util.WeakHandler;
 
 /**
@@ -26,7 +26,7 @@ public class WebLoader {
     private WebView webview;
     private String currentUrl;
     private WeakHandler mHandler = new WeakHandler();
-    private ConcurrentHashMap<String, OnDataChangedListener<String>> mArrayMap = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, OnDataCallback<String>> mArrayMap = new ConcurrentHashMap<>();
 
     public WebLoader(final Context context) {
         webview = new WebView(context);
@@ -83,10 +83,10 @@ public class WebLoader {
         }
     }
 
-    public synchronized void load(String url, OnDataChangedListener<String> onDataChangedListener) {
+    public synchronized void load(String url, OnDataCallback<String> onDataCallback) {
         currentUrl = url;
         webview.loadUrl(url);
-        mArrayMap.put(url, onDataChangedListener);
+        mArrayMap.put(url, onDataCallback);
     }
 
     public void reset() {
@@ -97,9 +97,9 @@ public class WebLoader {
     @JavascriptInterface
     public void getSource(String html) {
         LogUtils.d(html);
-        OnDataChangedListener<String> onDataChangedListener = mArrayMap.remove(currentUrl);
-        if (onDataChangedListener != null) {
-            onDataChangedListener.onDataChanged(html);
+        OnDataCallback<String> onDataCallback = mArrayMap.remove(currentUrl);
+        if (onDataCallback != null) {
+            onDataCallback.onDataCallback(html);
         }
         if (mArrayMap.isEmpty()) {
             currentUrl = null;

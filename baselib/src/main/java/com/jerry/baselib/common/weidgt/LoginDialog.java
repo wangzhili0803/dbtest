@@ -20,7 +20,7 @@ import com.jerry.baselib.common.bean.DataResponse;
 import com.jerry.baselib.common.util.AppUtils;
 import com.jerry.baselib.common.util.CollectionUtils;
 import com.jerry.baselib.common.util.MD5;
-import com.jerry.baselib.common.util.OnDataChangedListener;
+import com.jerry.baselib.common.util.OnDataCallback;
 import com.jerry.baselib.common.util.ToastUtil;
 import com.jerry.baselib.common.util.UserManager;
 
@@ -34,7 +34,7 @@ public class LoginDialog extends BaseDialog {
     private EditText etPhone;
     private EditText etLivecode;
     private String mWxCode;
-    private OnDataChangedListener<DataResponse<AxUser>> mOnDataChangedListener;
+    private OnDataCallback<DataResponse<AxUser>> mOnDataCallback;
 
     public LoginDialog(Context context) {
         super(context);
@@ -86,13 +86,13 @@ public class LoginDialog extends BaseDialog {
             }
             List<AxUser> list = data.getData();
             if (CollectionUtils.isEmpty(list)) {
-                if (mOnDataChangedListener != null) {
+                if (mOnDataCallback != null) {
                     DataResponse<AxUser> response = new DataResponse<>();
                     response.setCode(1);
                     AxUser user = new AxUser();
                     user.setWxCode(mWxCode);
                     response.setData(user);
-                    mOnDataChangedListener.onDataChanged(response);
+                    mOnDataCallback.onDataCallback(response);
                 }
                 ((BaseActivity) mContext).closeLoadingDialog();
                 return;
@@ -100,11 +100,11 @@ public class LoginDialog extends BaseDialog {
 
             AxUser user = list.get(0);
             if (TextUtils.isEmpty(user.getPhone())) {
-                if (mOnDataChangedListener != null) {
+                if (mOnDataCallback != null) {
                     DataResponse<AxUser> response = new DataResponse<>();
                     response.setCode(1);
                     response.setData(user);
-                    mOnDataChangedListener.onDataChanged(response);
+                    mOnDataCallback.onDataCallback(response);
                 }
                 ((BaseActivity) mContext).closeLoadingDialog();
                 return;
@@ -131,11 +131,11 @@ public class LoginDialog extends BaseDialog {
                 dismiss();
                 ToastUtil.showShortText("登录成功");
                 UserManager.getInstance().saveUser(user);
-                if (mOnDataChangedListener != null) {
+                if (mOnDataCallback != null) {
                     DataResponse<AxUser> response = new DataResponse<>();
                     response.setCode(0);
                     response.setData(user);
-                    mOnDataChangedListener.onDataChanged(response);
+                    mOnDataCallback.onDataCallback(response);
                 }
             });
         });
@@ -186,18 +186,18 @@ public class LoginDialog extends BaseDialog {
                 }
                 dismiss();
                 UserManager.getInstance().saveUser(user);
-                if (mOnDataChangedListener != null) {
+                if (mOnDataCallback != null) {
                     DataResponse<AxUser> response = new DataResponse<>();
                     response.setCode(0);
                     response.setData(user);
-                    mOnDataChangedListener.onDataChanged(response);
+                    mOnDataCallback.onDataCallback(response);
                 }
             });
         });
     }
 
-    public void setOnDataChangedListener(OnDataChangedListener<DataResponse<AxUser>> onDataChangedListener) {
-        this.mOnDataChangedListener = onDataChangedListener;
+    public void setOnDataCallback(OnDataCallback<DataResponse<AxUser>> onDataCallback) {
+        this.mOnDataCallback = onDataCallback;
     }
 
     public void setWxCode(final String wxCode) {

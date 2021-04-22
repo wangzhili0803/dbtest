@@ -14,7 +14,7 @@ import com.jerry.baselib.common.bean.AVObjQuery;
 import com.jerry.baselib.common.bean.AxUser;
 import com.jerry.baselib.common.util.CollectionUtils;
 import com.jerry.baselib.common.util.MD5;
-import com.jerry.baselib.common.util.OnDataChangedListener;
+import com.jerry.baselib.common.util.OnDataCallback;
 import com.jerry.baselib.common.util.ToastUtil;
 import com.jerry.baselib.common.util.UserManager;
 
@@ -29,12 +29,12 @@ public class BindingDialog extends BaseDialog {
     private EditText etPhone;
     private EditText etPasswd;
     private EditText etConPasswd;
-    private OnDataChangedListener<AxUser> mOnDataChangedListener;
+    private OnDataCallback<AxUser> mOnDataCallback;
 
-    public BindingDialog(Context context, AxUser user, OnDataChangedListener<AxUser> onDataChangedListener) {
+    public BindingDialog(Context context, AxUser user, OnDataCallback<AxUser> onDataCallback) {
         super(context);
         this.mUser = user;
-        this.mOnDataChangedListener = onDataChangedListener;
+        this.mOnDataCallback = onDataCallback;
     }
 
     @Override
@@ -107,8 +107,8 @@ public class BindingDialog extends BaseDialog {
                     }
                     dismiss();
                     UserManager.getInstance().saveUser(mUser);
-                    if (mOnDataChangedListener != null) {
-                        mOnDataChangedListener.onDataChanged(user);
+                    if (mOnDataCallback != null) {
+                        mOnDataCallback.onDataCallback(user);
                     }
                 });
                 return;
@@ -129,8 +129,8 @@ public class BindingDialog extends BaseDialog {
                     user.setObjectId(data1.getData());
                     dismiss();
                     UserManager.getInstance().saveUser(mUser);
-                    if (mOnDataChangedListener != null) {
-                        mOnDataChangedListener.onDataChanged(user);
+                    if (mOnDataCallback != null) {
+                        mOnDataCallback.onDataCallback(user);
                     }
                 });
             } else {
@@ -148,8 +148,8 @@ public class BindingDialog extends BaseDialog {
                     mUser.setObjectId(data1.getData());
                     dismiss();
                     UserManager.getInstance().saveUser(mUser);
-                    if (mOnDataChangedListener != null) {
-                        mOnDataChangedListener.onDataChanged(mUser);
+                    if (mOnDataCallback != null) {
+                        mOnDataCallback.onDataCallback(mUser);
                     }
                 });
             }

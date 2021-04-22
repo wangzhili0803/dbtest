@@ -74,7 +74,7 @@ public class MainActivity extends BaseActivity implements LoginActionListener {
             }
             LoginDialog loginDialog = new LoginDialog(this);
             loginDialog.setWxCode(wxCode);
-            loginDialog.setOnDataChangedListener(data -> {
+            loginDialog.setOnDataCallback(data -> {
                 closeLoadingDialog();
                 if (data == null) {
                     return;
@@ -202,7 +202,7 @@ public class MainActivity extends BaseActivity implements LoginActionListener {
     @Override
     public void showLogin() {
         LoginDialog loginDialog = new LoginDialog(this);
-        loginDialog.setOnDataChangedListener(data -> {
+        loginDialog.setOnDataCallback(data -> {
             closeLoadingDialog();
             if (mMineFragment != null) {
                 mMineFragment.updateUi();

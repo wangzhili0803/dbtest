@@ -2,7 +2,7 @@ package com.jerry.bitcoin.interfaces;
 
 import com.jerry.baselib.assibility.EndCallback;
 import com.jerry.baselib.common.retrofit.retrofit.response.Response4Data;
-import com.jerry.baselib.common.util.OnDataChangedListener;
+import com.jerry.baselib.common.util.OnDataCallback;
 import com.jerry.bitcoin.ListenerService;
 import com.jerry.bitcoin.beans.CoinBean;
 import com.jerry.bitcoin.beans.TransformInfo;
@@ -29,9 +29,9 @@ public interface TaskCallback {
 
     int getBuyType();
 
-    void setBuyType(final int buyType, OnDataChangedListener<AVIMConversation> onDataChangedListener);
+    void setBuyType(final int buyType, OnDataCallback<AVIMConversation> onDataCallback);
 
-    void setCoinType(final String coinType, OnDataChangedListener<AVIMConversation> onDataChangedListener);
+    void setCoinType(final String coinType, OnDataCallback<AVIMConversation> onDataCallback);
 
     /**
      * 获取购买币的信息
@@ -81,5 +81,5 @@ public interface TaskCallback {
     /**
      * 检查是否可以继续交易
      */
-    void checkContinuePay(ListenerService listenerService, OnDataChangedListener<Response4Data<TransformInfo>> endCallback);
+    void checkContinuePay(ListenerService listenerService, OnDataCallback<Response4Data<TransformInfo>> endCallback);
 }

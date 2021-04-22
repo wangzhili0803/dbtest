@@ -5,10 +5,9 @@ import android.graphics.drawable.Drawable;
 import androidx.core.content.ContextCompat;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.widget.EditText;
 
 import com.jerry.baselib.R;
-import com.jerry.baselib.common.util.OnDataChangedListener;
+import com.jerry.baselib.common.util.OnDataCallback;
 
 /**
  * 带清空按钮的EditText
@@ -17,7 +16,7 @@ public class MyEditText extends androidx.appcompat.widget.AppCompatEditText {
 
     private Drawable dLeft;
     private Drawable dRight;
-    private OnDataChangedListener<CharSequence> mOnDataChangedListener;
+    private OnDataCallback<CharSequence> mOnDataCallback;
 
     public MyEditText(Context context) {
         super(context);
@@ -37,15 +36,15 @@ public class MyEditText extends androidx.appcompat.widget.AppCompatEditText {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 setEditTextDrawable(s);
-                if (mOnDataChangedListener != null) {
-                    mOnDataChangedListener.onDataChanged(s);
+                if (mOnDataCallback != null) {
+                    mOnDataCallback.onDataCallback(s);
                 }
             }
         });
     }
 
-    public void setOnTextChangedListener(OnDataChangedListener<CharSequence> onDataChangedListener) {
-        mOnDataChangedListener = onDataChangedListener;
+    public void setOnTextChangedListener(OnDataCallback<CharSequence> onDataCallback) {
+        mOnDataCallback = onDataCallback;
     }
 
     // 控制图片的显示

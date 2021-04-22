@@ -13,7 +13,7 @@ import com.jerry.baselib.common.retrofit.retrofit.response.Response4Data;
 import com.jerry.baselib.common.util.CollectionUtils;
 import com.jerry.baselib.common.util.DisplayUtil;
 import com.jerry.baselib.common.util.MathUtil;
-import com.jerry.baselib.common.util.OnDataChangedListener;
+import com.jerry.baselib.common.util.OnDataCallback;
 import com.jerry.baselib.common.util.ParseUtil;
 import com.jerry.baselib.common.util.PreferenceHelp;
 import com.jerry.baselib.common.util.StringUtil;
@@ -146,7 +146,7 @@ public class CoinColaTask extends BaseTask {
     }
 
     @Override
-    public void checkContinuePay(final ListenerService listenerService, final OnDataChangedListener<Response4Data<TransformInfo>> endCallback) {
+    public void checkContinuePay(final ListenerService listenerService, final OnDataCallback<Response4Data<TransformInfo>> endCallback) {
 
     }
 
@@ -194,7 +194,7 @@ public class CoinColaTask extends BaseTask {
         return "";
     }
 
-    public void listenOrder(final ListenerService service, final EndCallback endCallback) {
+    public void listenOrder(final ListenerService service, final OnDataCallback<Integer> endCallback) {
         AccessibilityNodeInfo accessibilityNodeInfo = service.getRootInActiveWindow();
         AccessibilityNodeInfo tabLayout = service.findFirstById(accessibilityNodeInfo, getPackageName() + "tab_layout");
         AccessibilityNodeInfo complete = service.findFirstByText(tabLayout, "已完成");
@@ -206,10 +206,10 @@ public class CoinColaTask extends BaseTask {
                     if (service.clickFirst(getPackageName() + "iv_dot")) {
                         //有待评价的订单
                         handleEvaluation(service, result -> {
-
+                            endCallback.onDataCallback(1);
                         });
                     } else {
-                        endCallback.onEnd(false);
+                        endCallback.onDataCallback(1);
                     }
                 });
                 return;
@@ -219,17 +219,17 @@ public class CoinColaTask extends BaseTask {
             AccessibilityNodeInfo recyclerView = service.findFirstById(accessibilityNodeInfo, getPackageName() + "recycler_view");
             AccessibilityNodeInfo ivDot = service.findFirstById(recyclerView, getPackageName() + "iv_dot");
             if (ivDot != null && service.exeClick(ivDot)) {
-                service.postDelayed(() -> endCallback.onEnd(true));
+                service.postDelayed(() -> endCallback.onDataCallback(0));
                 return;
             }
-            endCallback.onEnd(false);
+            endCallback.onDataCallback(1);
         });
     }
 
     /**
      * 处理消息
      */
-    public void handleMsg(final ListenerService service, final OnDataChangedListener<CoinOrder> onDataChangedListener) {
+    public void handleMsg(final ListenerService service, final OnDataCallback<CoinOrder> onDataCallback) {
         String orderStatus = service.getNodeText(getPackageName() + "tv_order_status");
         switch (orderStatus) {
             case "待付款":
@@ -254,7 +254,7 @@ public class CoinColaTask extends BaseTask {
                     if (ProManager.getInstance().insertObject(cOrder)) {
                         sendMsgToBuyer(service, "您好，请提供一下您的支付信息：姓名+银行卡号+银行名称", result -> {
                             service.back();
-                            onDataChangedListener.onDataChanged(null);
+                            onDataCallback.onDataCallback(null);
                         });
                         return;
                     }
@@ -274,7 +274,7 @@ public class CoinColaTask extends BaseTask {
                             CoinOrder finalOrder = cOrder;
                             sendMsgToBuyer(service, "OK", result -> {
                                 service.back();
-                                onDataChangedListener.onDataChanged(finalOrder);
+                                onDataCallback.onDataCallback(finalOrder);
                             });
                             return;
                         }
@@ -290,14 +290,14 @@ public class CoinColaTask extends BaseTask {
                 if (chat != null && service.exeClick(chat.getChild(MathUtil.random(0, 2)))) {
                     service.postDelayed(() -> {
                         service.back();
-                        onDataChangedListener.onDataChanged(null);
+                        onDataCallback.onDataCallback(null);
                     });
                     return;
                 }
                 break;
         }
         service.back();
-        onDataChangedListener.onDataChanged(null);
+        onDataCallback.onDataCallback(null);
     }
 
     private void deleteUnusedMsg(final ListenerService service, EndCallback endCallback) {
@@ -371,8 +371,8 @@ public class CoinColaTask extends BaseTask {
                         taskStep++;
                     } else {
                         errorCount++;
-                        service.postDelayed(() -> handleEvaluation(service, endCallback));
                     }
+                    service.postDelayed(() -> handleEvaluation(service, endCallback));
                 });
                 return;
             case 4:

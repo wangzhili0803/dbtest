@@ -310,8 +310,8 @@ public class ListenerService extends BaseListenerService {
     private double getLowestClose(final String symbol, final double highestPrice) {
         Double fee = CoinConstant.FEEMAP.get(symbol);
         if (fee != null) {
-            double c1 = 10000d / highestPrice * 0.993 - fee;
-            return 10000d / (c1 * 0.998 * shouleBuy);
+            double c1 = 3000 / highestPrice * 0.993 - fee;
+            return 3000 / (c1 * 0.998 * shouleBuy);
         }
         return Integer.MAX_VALUE;
     }
@@ -321,7 +321,7 @@ public class ListenerService extends BaseListenerService {
             return;
         }
         mWeakHandler.postDelayed(() -> pullRefresh(t -> mCoinColaTask.listenOrder(this, result -> {
-            if (result) {
+            if (result == 0) {
                 // 进入聊天界面
                 mCoinColaTask.handleMsg(this, coinOrder -> {
                     if (coinOrder != null) {

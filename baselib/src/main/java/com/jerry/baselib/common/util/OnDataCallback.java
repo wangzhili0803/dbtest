@@ -5,7 +5,7 @@ package com.jerry.baselib.common.util;
  *
  * @Description 数据变化监听
  */
-public interface OnDataChangedListener<T> {
+public interface OnDataCallback<T> {
 
-    void onDataChanged(T data);
+    void onDataCallback(T data);
 }

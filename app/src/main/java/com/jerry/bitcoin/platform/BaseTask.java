@@ -8,7 +8,7 @@ import android.text.TextUtils;
 import android.view.accessibility.AccessibilityNodeInfo;
 
 import com.jerry.baselib.Key;
-import com.jerry.baselib.common.util.OnDataChangedListener;
+import com.jerry.baselib.common.util.OnDataCallback;
 import com.jerry.baselib.common.util.Patterns;
 import com.jerry.baselib.common.util.PreferenceHelp;
 import com.jerry.baselib.common.util.StringUtil;
@@ -67,9 +67,9 @@ public abstract class BaseTask implements TaskCallback {
     }
 
     @Override
-    public void setCoinType(final String coinType, OnDataChangedListener<AVIMConversation> onDataChangedListener) {
+    public void setCoinType(final String coinType, OnDataCallback<AVIMConversation> onDataCallback) {
         this.coinType = coinType;
-        openConversation(onDataChangedListener);
+        openConversation(onDataCallback);
     }
 
     @Override
@@ -78,9 +78,9 @@ public abstract class BaseTask implements TaskCallback {
     }
 
     @Override
-    public void setBuyType(final int buyType, OnDataChangedListener<AVIMConversation> onDataChangedListener) {
+    public void setBuyType(final int buyType, OnDataCallback<AVIMConversation> onDataCallback) {
         this.buyType = buyType;
-        openConversation(onDataChangedListener);
+        openConversation(onDataCallback);
     }
 
     protected String getBuyTypeStr() {
@@ -96,15 +96,15 @@ public abstract class BaseTask implements TaskCallback {
         return mAvimConversation;
     }
 
-    protected void openConversation(OnDataChangedListener<AVIMConversation> onDataChangedListener) {
+    protected void openConversation(OnDataCallback<AVIMConversation> onDataCallback) {
         String connectId = coinType + getBuyTypeStr();
         LCChatKit.getInstance().open(connectId, new AVIMClientCallback() {
             @Override
             public void done(AVIMClient avimClient, AVIMException e) {
                 if (null != e) {
                     ToastUtil.showShortText(e.getMessage());
-                    if (onDataChangedListener != null) {
-                        onDataChangedListener.onDataChanged(mAvimConversation);
+                    if (onDataCallback != null) {
+                        onDataCallback.onDataCallback(mAvimConversation);
                     }
                     return;
                 }
@@ -119,8 +119,8 @@ public abstract class BaseTask implements TaskCallback {
                                 mAvimConversation = avimConversation;
                                 LCIMConversationItemCache.getInstance().insertConversation(avimConversation.getConversationId());
                             }
-                            if (onDataChangedListener != null) {
-                                onDataChangedListener.onDataChanged(mAvimConversation);
+                            if (onDataCallback != null) {
+                                onDataCallback.onDataCallback(mAvimConversation);
                             }
                         }
                     });

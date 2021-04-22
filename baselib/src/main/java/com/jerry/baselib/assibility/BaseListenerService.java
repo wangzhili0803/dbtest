@@ -29,7 +29,7 @@ import com.jerry.baselib.common.util.AppUtils;
 import com.jerry.baselib.common.util.CollectionUtils;
 import com.jerry.baselib.common.util.FileUtil;
 import com.jerry.baselib.common.util.LogUtils;
-import com.jerry.baselib.common.util.OnDataChangedListener;
+import com.jerry.baselib.common.util.OnDataCallback;
 import com.jerry.baselib.common.util.ToastUtil;
 import com.jerry.baselib.common.util.WeakHandler;
 
@@ -401,7 +401,7 @@ public abstract class BaseListenerService extends AccessibilityService {
     }
 
     @SuppressLint("DefaultLocale")
-    public void exeClicks(List<Point> points, int index, OnDataChangedListener<Integer> callBack) {
+    public void exeClicks(List<Point> points, int index, OnDataCallback<Integer> callBack) {
         if (CollectionUtils.isItemInCollection(index, points)) {
             Point point = points.get(index);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -422,7 +422,7 @@ public abstract class BaseListenerService extends AccessibilityService {
             mWeakHandler.postDelayed(() -> exeClicks(points, index + 1, callBack), TIME_SSHORT);
         } else {
             if (callBack != null) {
-                callBack.onDataChanged(index);
+                callBack.onDataCallback(index);
             }
         }
     }

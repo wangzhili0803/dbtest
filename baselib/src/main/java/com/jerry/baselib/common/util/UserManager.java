@@ -96,7 +96,7 @@ public class UserManager {
         EventBus.getDefault().post(bundle);
     }
 
-    public void requestUser(OnDataChangedListener<AxUser> dataChangedListener) {
+    public void requestUser(OnDataCallback<AxUser> dataChangedListener) {
         if (!NetworkUtil.isNetworkAvailable(true)) {
             return;
         }
@@ -112,7 +112,7 @@ public class UserManager {
                     if ((!CollectionUtils.isEmpty(devices) && devices.contains(AppUtils.getDeviceId()))) {
                         UserManager.getInstance().saveUser(ruser);
                         if (dataChangedListener != null) {
-                            dataChangedListener.onDataChanged(user);
+                            dataChangedListener.onDataCallback(user);
                         }
                         return;
                     }
@@ -120,14 +120,14 @@ public class UserManager {
                 logout(false, dataChangedListener);
             });
         } else if (dataChangedListener != null) {
-            dataChangedListener.onDataChanged(user);
+            dataChangedListener.onDataCallback(user);
         }
     }
 
     /**
      * host：主动登出 登出
      */
-    public void logout(boolean host, OnDataChangedListener<AxUser> dataChangedListener) {
+    public void logout(boolean host, OnDataCallback<AxUser> dataChangedListener) {
         if (UserManager.getInstance().isLogined()) {
             Set<String> devices = user.getDevices();
             if (devices != null) {
@@ -145,13 +145,13 @@ public class UserManager {
                 notifyUserUpdate();
                 ToastUtil.showShortText(host ? R.string.user_logouted : R.string.user_out_relogin);
                 if (dataChangedListener != null) {
-                    dataChangedListener.onDataChanged(user);
+                    dataChangedListener.onDataCallback(user);
                 }
             });
             return;
         }
         if (dataChangedListener != null) {
-            dataChangedListener.onDataChanged(user);
+            dataChangedListener.onDataCallback(user);
         }
     }
 }

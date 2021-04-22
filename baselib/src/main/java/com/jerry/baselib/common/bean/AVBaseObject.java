@@ -10,7 +10,7 @@ import java.util.Set;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 
-import com.jerry.baselib.common.util.OnDataChangedListener;
+import com.jerry.baselib.common.util.OnDataCallback;
 
 import cn.leancloud.AVObject;
 import cn.leancloud.types.AVNull;
@@ -58,7 +58,7 @@ public class AVBaseObject {
         this.updatedAt = updatedAt;
     }
 
-    public void save(OnDataChangedListener<DataResponse<String>> dataChangedListener) {
+    public void save(OnDataCallback<DataResponse<String>> dataChangedListener) {
         AVObject object = new AVObject(getClass().getSimpleName());
         Field[] tempClass = getClass().getDeclaredFields();
         List<Field> fieldList = new ArrayList<>(Arrays.asList(tempClass));
@@ -85,14 +85,14 @@ public class AVBaseObject {
             public void onNext(AVObject todo) {
                 dataResponse.setCode(0);
                 dataResponse.setData(todo.getObjectId());
-                dataChangedListener.onDataChanged(dataResponse);
+                dataChangedListener.onDataCallback(dataResponse);
             }
 
             @Override
             public void onError(Throwable throwable) {
                 dataResponse.setCode(1);
                 dataResponse.setMsg(throwable.getMessage());
-                dataChangedListener.onDataChanged(dataResponse);
+                dataChangedListener.onDataCallback(dataResponse);
             }
 
             @Override
@@ -101,7 +101,7 @@ public class AVBaseObject {
         });
     }
 
-    public void update(OnDataChangedListener<DataResponse<String>> dataChangedListener) {
+    public void update(OnDataCallback<DataResponse<String>> dataChangedListener) {
         Map<String, Object> map = new ArrayMap<>();
         Field[] tempClass = getClass().getDeclaredFields();
         List<Field> fieldList = new ArrayList<>(Arrays.asList(tempClass));
@@ -135,14 +135,14 @@ public class AVBaseObject {
                 public void onNext(AVObject todo) {
                     dataResponse.setCode(0);
                     dataResponse.setData(todo.getObjectId());
-                    dataChangedListener.onDataChanged(dataResponse);
+                    dataChangedListener.onDataCallback(dataResponse);
                 }
 
                 @Override
                 public void onError(Throwable throwable) {
                     dataResponse.setCode(1);
                     dataResponse.setMsg(throwable.getMessage());
-                    dataChangedListener.onDataChanged(dataResponse);
+                    dataChangedListener.onDataCallback(dataResponse);
                 }
 
                 @Override
@@ -153,10 +153,10 @@ public class AVBaseObject {
         }
         dataResponse.setCode(1);
         dataResponse.setMsg("Object update failed！");
-        dataChangedListener.onDataChanged(dataResponse);
+        dataChangedListener.onDataCallback(dataResponse);
     }
 
-    public void delete(OnDataChangedListener<DataResponse<AVBaseObject>> dataChangedListener) {
+    public void delete(OnDataCallback<DataResponse<AVBaseObject>> dataChangedListener) {
         DataResponse<AVBaseObject> dataResponse = new DataResponse<>();
         if (!TextUtils.isEmpty(objectId)) {
             AVObject object = AVObject.createWithoutData(getClass().getSimpleName(), objectId);
@@ -170,14 +170,14 @@ public class AVBaseObject {
                 public void onNext(final AVNull avNull) {
                     dataResponse.setCode(0);
                     dataResponse.setData(AVBaseObject.this);
-                    dataChangedListener.onDataChanged(dataResponse);
+                    dataChangedListener.onDataCallback(dataResponse);
                 }
 
                 @Override
                 public void onError(final Throwable e) {
                     dataResponse.setCode(1);
                     dataResponse.setMsg(e.getMessage());
-                    dataChangedListener.onDataChanged(dataResponse);
+                    dataChangedListener.onDataCallback(dataResponse);
                 }
 
                 @Override
@@ -189,7 +189,7 @@ public class AVBaseObject {
         }
         dataResponse.setCode(1);
         dataResponse.setMsg("Object delete failed！objectId is null");
-        dataChangedListener.onDataChanged(dataResponse);
+        dataChangedListener.onDataCallback(dataResponse);
     }
 
     public void save() {

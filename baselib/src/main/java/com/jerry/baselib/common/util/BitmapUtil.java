@@ -60,22 +60,22 @@ public class BitmapUtil {
         return true;
     }
 
-    public static void copyFiles(boolean md5, List<String> froms, String to, OnDataChangedListener<Boolean> onDataChangedListener) {
+    public static void copyFiles(boolean md5, List<String> froms, String to, OnDataCallback<Boolean> onDataCallback) {
         if (froms == null || froms.size() == 0 || to == null) {
-            if (onDataChangedListener != null) {
-                onDataChangedListener.onDataChanged(true);
+            if (onDataCallback != null) {
+                onDataCallback.onDataCallback(true);
             }
             return;
         }
-        copyFile(md5, froms.size() - 1, froms, to, onDataChangedListener);
+        copyFile(md5, froms.size() - 1, froms, to, onDataCallback);
     }
 
-    private static void copyFile(boolean md5, int i, List<String> froms, String to, OnDataChangedListener<Boolean> onDataChangedListener) {
+    private static void copyFile(boolean md5, int i, List<String> froms, String to, OnDataCallback<Boolean> onDataCallback) {
         if (!AppUtils.playing) {
             return;
         }
         if (i < 0 || i >= froms.size()) {
-            onDataChangedListener.onDataChanged(true);
+            onDataCallback.onDataCallback(true);
             return;
         }
         AppTask.withoutContext().assign((BackgroundTask<Boolean>) () -> {
@@ -100,7 +100,7 @@ public class BitmapUtil {
             return false;
         }).whenDone((WhenTaskDone<Boolean>) result -> {
             ToastUtil.showShortText("复制图片：" + (froms.size() - i) + "/" + froms.size());
-            copyFile(md5, i - 1, froms, to, onDataChangedListener);
+            copyFile(md5, i - 1, froms, to, onDataCallback);
         }).execute();
     }
 

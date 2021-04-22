@@ -21,7 +21,7 @@ import com.jerry.baselib.common.bean.DataResponse;
 import com.jerry.baselib.common.util.AppUtils;
 import com.jerry.baselib.common.util.CollectionUtils;
 import com.jerry.baselib.common.util.MD5;
-import com.jerry.baselib.common.util.OnDataChangedListener;
+import com.jerry.baselib.common.util.OnDataCallback;
 import com.jerry.baselib.common.util.Patterns;
 import com.jerry.baselib.common.util.ToastUtil;
 import com.jerry.baselib.common.util.UserManager;
@@ -37,7 +37,7 @@ public class RegisterDialog extends BaseDialog {
     private EditText etPassWd;
     private EditText etConPasswd;
     private EditText etInvitation;
-    private OnDataChangedListener<DataResponse<AxUser>> mOnDataChangedListener;
+    private OnDataCallback<DataResponse<AxUser>> mOnDataCallback;
 
     public RegisterDialog(Context context) {
         super(context);
@@ -149,18 +149,18 @@ public class RegisterDialog extends BaseDialog {
                     dismiss();
                     ToastUtil.showShortText("注册成功");
                     UserManager.getInstance().saveUser(user);
-                    if (mOnDataChangedListener != null) {
+                    if (mOnDataCallback != null) {
                         DataResponse<AxUser> response = new DataResponse<>();
                         response.setCode(0);
                         response.setData(user);
-                        mOnDataChangedListener.onDataChanged(response);
+                        mOnDataCallback.onDataCallback(response);
                     }
                 });
             });
         });
     }
 
-    public void setOnDataChangedListener(OnDataChangedListener<DataResponse<AxUser>> onDataChangedListener) {
-        this.mOnDataChangedListener = onDataChangedListener;
+    public void setOnDataCallback(OnDataCallback<DataResponse<AxUser>> onDataCallback) {
+        this.mOnDataCallback = onDataCallback;
     }
 }

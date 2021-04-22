@@ -21,7 +21,7 @@ public class PayUtil {
      * notifyurl 商户系统回调地址
      * userid 商户系统用户ID(如：trpay@52yszd.com，商户系统内唯一)
      */
-    public static void pay(Activity activity, PayInfo payInfo, OnDataChangedListener<Integer> onDataChangedListener) {
+    public static void pay(Activity activity, PayInfo payInfo, OnDataCallback<Integer> onDataCallback) {
 //        TrPay.getInstance(activity).callPay(payInfo.getTradename(), payInfo.getOuttradeno(), payInfo.getAmount(), payInfo.getBackparams(),
 //            payInfo.getNotifyurl(), payInfo.getUserid(), new PayResultListener() {
 //                /**

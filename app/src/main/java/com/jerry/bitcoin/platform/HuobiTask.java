@@ -11,7 +11,7 @@ import com.jerry.baselib.common.retrofit.retrofit.response.Response4Data;
 import com.jerry.baselib.common.util.CollectionUtils;
 import com.jerry.baselib.common.util.JJSON;
 import com.jerry.baselib.common.util.ListCacheUtil;
-import com.jerry.baselib.common.util.OnDataChangedListener;
+import com.jerry.baselib.common.util.OnDataCallback;
 import com.jerry.baselib.common.util.ParseUtil;
 import com.jerry.baselib.common.util.PreferenceHelp;
 import com.jerry.baselib.common.util.StringUtil;
@@ -516,11 +516,11 @@ public class HuobiTask extends BaseTask {
     }
 
     @Override
-    public void checkContinuePay(final ListenerService service, final OnDataChangedListener<Response4Data<TransformInfo>> endCallback) {
+    public void checkContinuePay(final ListenerService service, final OnDataCallback<Response4Data<TransformInfo>> endCallback) {
         if (errorCount >= 3) {
             taskStep = 0;
             errorCount = 0;
-            endCallback.onDataChanged(null);
+            endCallback.onDataCallback(null);
             return;
         }
         String infoStr = service.getNodeText(getPackageName() + "otc_chat_otherside_content");
@@ -534,7 +534,7 @@ public class HuobiTask extends BaseTask {
                     Response4Data<TransformInfo> response4Data = new Response4Data<>();
                     response4Data.setCode(1);
                     response4Data.setMsg(msg);
-                    endCallback.onDataChanged(response4Data);
+                    endCallback.onDataCallback(response4Data);
                 }
             });
             return;
@@ -590,7 +590,7 @@ public class HuobiTask extends BaseTask {
                 Response4Data<TransformInfo> response4Data = new Response4Data<>();
                 response4Data.setCode(1);
                 response4Data.setData(mTransformInfo);
-                endCallback.onDataChanged(response4Data);
+                endCallback.onDataCallback(response4Data);
                 return;
         }
         if (tempStep == taskStep) {
