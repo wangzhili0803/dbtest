@@ -76,7 +76,8 @@ public class HuobiTask extends BaseTask {
                     AccessibilityNodeInfo validNode = list.getChild(i);
                     String priceStr = service.getNodeText(validNode, getPackageName() + "unitPriceValue");
                     double price = ParseUtil.parse2Double(priceStr);
-                    if (price <= ListenerService.shouleBuy) {
+                    Double usdtPrice = ListenerService.usdtPrices.get(CoinConstant.HUOBI);
+                    if (usdtPrice != null && price <= usdtPrice) {
                         // 成交量大于1000
                         String merchant = service.getNodeText(validNode, getPackageName() + "merchantName");
                         if (blackList == null || !blackList.contains(merchant)) {
@@ -129,7 +130,8 @@ public class HuobiTask extends BaseTask {
                     AccessibilityNodeInfo validNode = list.getChild(i);
                     String priceStr = service.getNodeText(validNode, getPackageName() + "unitPriceValue");
                     double price = ParseUtil.parse2Double(priceStr);
-                    if (price > ListenerService.shouleBuy) {
+                    Double usdtPrice = ListenerService.usdtPrices.get(CoinConstant.HUOBI);
+                    if (usdtPrice != null && price > usdtPrice) {
                         // 成交量大于1000
                         String dealNum = service.getNodeText(validNode, getPackageName() + "merchantDealNum");
                         if (ParseUtil.parseInt(dealNum) > 1000) {
@@ -492,7 +494,8 @@ public class HuobiTask extends BaseTask {
                 int spaceIndex = priceStr.indexOf(Key.SPACE);
                 if (spaceIndex > 0) {
                     double price = ParseUtil.parseDouble(priceStr.substring(0, spaceIndex));
-                    if (price > 0 && price < ListenerService.shouleBuy) {
+                    Double usdtPrice = ListenerService.usdtPrices.get(CoinConstant.HUOBI);
+                    if (price > 0 && usdtPrice != null && price < usdtPrice) {
                         if (service.clickLast(getPackageName() + "buy_rl")) {
                             taskStep++;
                         }

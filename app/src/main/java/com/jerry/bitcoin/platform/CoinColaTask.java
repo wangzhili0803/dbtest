@@ -196,6 +196,13 @@ public class CoinColaTask extends BaseTask {
 
     public void listenOrder(final ListenerService service, final OnDataCallback<Integer> endCallback) {
         AccessibilityNodeInfo accessibilityNodeInfo = service.getRootInActiveWindow();
+        List<AccessibilityNodeInfo> recyclerViews = accessibilityNodeInfo.findAccessibilityNodeInfosByViewId(getPackageName() + "recycler_view");
+        for (AccessibilityNodeInfo recyclerView : recyclerViews) {
+            if (recyclerView.isFocused() && recyclerView.getChildCount() == 0) {
+                endCallback.onDataCallback(2);
+                return;
+            }
+        }
         AccessibilityNodeInfo tabLayout = service.findFirstById(accessibilityNodeInfo, getPackageName() + "tab_layout");
         AccessibilityNodeInfo complete = service.findFirstByText(tabLayout, "已完成");
         if (complete != null) {
@@ -205,9 +212,7 @@ public class CoinColaTask extends BaseTask {
                 service.postDelayed(() -> {
                     if (service.clickFirst(getPackageName() + "iv_dot")) {
                         //有待评价的订单
-                        handleEvaluation(service, result -> {
-                            endCallback.onDataCallback(1);
-                        });
+                        handleEvaluation(service, result -> endCallback.onDataCallback(1));
                     } else {
                         endCallback.onDataCallback(1);
                     }

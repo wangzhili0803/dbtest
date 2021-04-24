@@ -19,7 +19,11 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
 import com.huobi.client.MarketClient;
@@ -38,7 +42,6 @@ import com.jerry.baselib.common.flow.FloatMenuView;
 import com.jerry.baselib.common.util.AppUtils;
 import com.jerry.baselib.common.util.DisplayUtil;
 import com.jerry.baselib.common.util.LogUtils;
-import com.jerry.baselib.common.util.MathUtil;
 import com.jerry.baselib.common.util.ParseUtil;
 import com.jerry.baselib.common.util.ToastUtil;
 import com.jerry.baselib.common.util.WeakHandler;
@@ -73,7 +76,7 @@ public class ListenerService extends BaseListenerService {
     public static final String TYPE_COINS = "TYPE_COINS";
 
     private static final String URL_HUOBI = "https://c2c.huobi.be/zh-cn/trade/buy-usdt/";
-    private static final String URL_GWEB = "https://www.gateio.ch/cn/c2c/usdt_cny";
+    private static final String URL_GWEB = "https://history.btc126.com/usdt/";
     /**
      * 擦亮
      */
@@ -91,7 +94,7 @@ public class ListenerService extends BaseListenerService {
 
     private FloatLogoMenu menu;
     private WebLoader webLoader;
-    public static double shouleBuy;
+    public static ArrayMap<String, Double> usdtPrices = new ArrayMap<>();
 
     private final FloatItem startItem = new FloatItem("开始", 0x99000000, 0x99000000,
         BitmapFactory.decodeResource(BaseApp.getInstance().getResources(), R.drawable.play), "0");
@@ -238,9 +241,20 @@ public class ListenerService extends BaseListenerService {
             LogUtils.d(data);
             Document doc = Jsoup.parse(data);
             Elements allElements = doc.getAllElements();
-            Elements sellRate = allElements.select("#sell_rate");
-            double usdtSell = ParseUtil.parseDouble(sellRate.attr("value"));
-            shouleBuy = MathUtil.halfEven(usdtSell - 0.02);
+            Element sellBody = allElements.select(".layui-card-body").get(0);
+            String tmp = "";
+            for (int i = 0; i < sellBody.childNodeSize(); i++) {
+                Node element = sellBody.childNode(i);
+                if (element instanceof Element) {
+                    tmp = ((Element) element).text().replace("：", "");
+                } else if (element instanceof TextNode) {
+                    if (!TextUtils.isEmpty(tmp)) {
+                        usdtPrices.put(tmp, ParseUtil.parseDouble(((TextNode) element).text(), 6.6));
+                    }
+                } else if (element instanceof Comment) {
+                    LogUtils.d(element.baseUri());
+                }
+            }
             mWeakHandler.postDelayed(ListenerService.this::getUsdtData, 60000);
         });
     }
@@ -269,9 +283,20 @@ public class ListenerService extends BaseListenerService {
             LogUtils.d(data);
             Document doc = Jsoup.parse(data);
             Elements allElements = doc.getAllElements();
-            Elements sellRate = allElements.select("#sell_rate");
-            double usdtSell = ParseUtil.parseDouble(sellRate.attr("value"));
-            shouleBuy = MathUtil.halfEven(usdtSell - 0.01);
+            Element sellBody = allElements.select(".layui-card-body").get(0);
+            String tmp = "";
+            for (int i = 0; i < sellBody.childNodeSize(); i++) {
+                Node element = sellBody.childNode(i);
+                if (element instanceof Element) {
+                    tmp = ((Element) element).text().replace("：", "").toLowerCase().trim();
+                } else if (element instanceof TextNode) {
+                    if (!TextUtils.isEmpty(tmp)) {
+                        usdtPrices.put(tmp, ParseUtil.parseDouble(((TextNode) element).text(), 6.6));
+                    }
+                } else if (element instanceof Comment) {
+                    LogUtils.d(element.baseUri());
+                }
+            }
             String symbol = mCoinColaTask.getSelectedSymbol(this);
             if (mHuobiWebSocketConnection == null) {
                 MarketClient marketClient = MarketClient.create(new HuobiOptions());
@@ -311,16 +336,26 @@ public class ListenerService extends BaseListenerService {
         Double fee = CoinConstant.FEEMAP.get(symbol);
         if (fee != null) {
             double c1 = 3000 / highestPrice * 0.993 - fee;
-            return 3000 / (c1 * 0.998 * shouleBuy);
+            Double usdtPrice = usdtPrices.get(CoinConstant.HUOBI);
+            if (usdtPrice != null) {
+                return 3000 / (c1 * 0.998 * usdtPrice);
+            }
         }
         return Integer.MAX_VALUE;
+    }
+
+    private void listenLists() {
+        if (!AppUtils.playing) {
+            return;
+        }
+
     }
 
     private void listenOrder() {
         if (!AppUtils.playing) {
             return;
         }
-        mWeakHandler.postDelayed(() -> pullRefresh(t -> mCoinColaTask.listenOrder(this, result -> {
+        pullRefresh(t -> mCoinColaTask.listenOrder(this, result -> {
             if (result == 0) {
                 // 进入聊天界面
                 mCoinColaTask.handleMsg(this, coinOrder -> {
@@ -339,11 +374,14 @@ public class ListenerService extends BaseListenerService {
                         });
                     }
                 });
-            } else {
+            } else if (result == 1) {
                 ToastUtil.showShortText("暂无消息");
                 mWeakHandler.postDelayed(this::listenOrder, TIME_LONGLONG);
+            } else {
+                back();
+                mWeakHandler.postDelayed(this::listenLists, TIME_LONGLONG);
             }
-        })), TIME_SHORT);
+        }));
     }
 
     /**
