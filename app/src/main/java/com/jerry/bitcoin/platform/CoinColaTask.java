@@ -226,7 +226,7 @@ public class CoinColaTask extends BaseTask {
                 service.postDelayed(() -> getPremiumRate(service, priceSecond, endCallback));
                 return;
             }
-            String priceMeStr = service.getNodeText(secondItem, getPackageName() + "tv_price").replace(Key.COMMA, Key.NIL).replace("CNY", Key.NIL)
+            String priceMeStr = service.getNodeText(firstItem, getPackageName() + "tv_price").replace(Key.COMMA, Key.NIL).replace("CNY", Key.NIL)
                 .trim();
             double priceMe = ParseUtil.parse2Double(priceMeStr);
             // 原价
