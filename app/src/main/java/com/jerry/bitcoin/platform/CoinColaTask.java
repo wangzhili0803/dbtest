@@ -10,6 +10,7 @@ import com.jerry.baselib.assibility.EndCallback;
 import com.jerry.baselib.common.bean.CoinOrder;
 import com.jerry.baselib.common.dbhelper.ProManager;
 import com.jerry.baselib.common.retrofit.retrofit.response.Response4Data;
+import com.jerry.baselib.common.util.AppUtils;
 import com.jerry.baselib.common.util.CollectionUtils;
 import com.jerry.baselib.common.util.DisplayUtil;
 import com.jerry.baselib.common.util.MathUtil;
@@ -33,6 +34,7 @@ import androidx.annotation.NonNull;
 public class CoinColaTask extends BaseTask {
 
     private static volatile CoinColaTask mInstance;
+    private double premiumRate;
 
     private CoinColaTask() {
         coinType = PreferenceHelp.getString(ListenerService.TYPE_COINS, CoinConstant.USDT);
@@ -192,6 +194,105 @@ public class CoinColaTask extends BaseTask {
             }
         }
         return "";
+    }
+
+    public void listenLists(final ListenerService service, final EndCallback endCallback) {
+        AccessibilityNodeInfo accessibilityNodeInfo = service.getRootInActiveWindow();
+        AccessibilityNodeInfo floatingOrderMenu = service.findFirstById(accessibilityNodeInfo, getPackageName() + "floating_order_menu");
+        if (service.exeClickId(floatingOrderMenu, getPackageName() + "tv_going")) {
+            service.postDelayed(() -> endCallback.onEnd(true));
+            return;
+        }
+        AccessibilityNodeInfo targetRecyclerView = null;
+        List<AccessibilityNodeInfo> recyclerViews = accessibilityNodeInfo.findAccessibilityNodeInfosByViewId(getPackageName() + "recycler_view_ad");
+        for (AccessibilityNodeInfo recyclerView : recyclerViews) {
+            if (recyclerView.isFocused()) {
+                targetRecyclerView = recyclerView;
+                break;
+            }
+        }
+        if (targetRecyclerView == null) {
+            endCallback.onEnd(false);
+            return;
+        }
+        AccessibilityNodeInfo firstItem = targetRecyclerView.getChild(1);
+        String nickname = service.getNodeText(firstItem, getPackageName() + "tv_nickname");
+        if ("jerrywonder".equals(nickname)) {
+            AccessibilityNodeInfo secondItem = targetRecyclerView.getChild(2);
+            String priceSecondStr = service.getNodeText(secondItem, getPackageName() + "tv_price").replace(Key.COMMA, Key.NIL).replace("CNY", Key.NIL)
+                .trim();
+            double priceSecond = ParseUtil.parse2Double(priceSecondStr);
+            if (premiumRate == 0 && service.exeClickId(firstItem, getPackageName() + "tv_operator")) {
+                service.postDelayed(() -> getPremiumRate(service, priceSecond, endCallback));
+                return;
+            }
+            String priceMeStr = service.getNodeText(secondItem, getPackageName() + "tv_price").replace(Key.COMMA, Key.NIL).replace("CNY", Key.NIL)
+                .trim();
+            double priceMe = ParseUtil.parse2Double(priceMeStr);
+            // 原价
+            double origin = priceMe / (1 + premiumRate / 100);
+            double secondRate = MathUtil.halfEven((priceSecond / origin - 1) * 100);
+            if (premiumRate > secondRate + 0.01 && service.exeClickId(firstItem, getPackageName() + "tv_operator")) {
+                service.postDelayed(() -> getPremiumRate(service, priceSecond, endCallback));
+            } else {
+                endCallback.onEnd(false);
+            }
+        } else {
+            String highestPriceStr = service.getNodeText(firstItem, getPackageName() + "tv_price").replace(Key.COMMA, Key.NIL).replace("CNY", Key.NIL)
+                .trim();
+            double highestPrice = ParseUtil.parse2Double(highestPriceStr);
+            service.swipToClickText("jerrywonder", result -> {
+                if (result) {
+                    service.postDelayed(() -> getPremiumRate(service, highestPrice, endCallback));
+                } else {
+                    endCallback.onEnd(false);
+                }
+            });
+        }
+    }
+
+    private void getPremiumRate(final ListenerService service, final double higestPrice, final EndCallback endCallback) {
+        if (errorCount >= 3 || !AppUtils.playing) {
+            taskStep = 0;
+            errorCount = 0;
+            endCallback.onEnd(false);
+            return;
+        }
+        int tempStep = taskStep;
+        switch (taskStep) {
+            case 0:
+                if (service.exeClickId(service.getRootInActiveWindow(), getPackageName() + "btn_edit")) {
+                    taskStep++;
+                }
+                break;
+            case 1:
+                AccessibilityNodeInfo root = service.getRootInActiveWindow();
+                String marketPriceStr = service.getNodeText(root, getPackageName() + "tv_market_price").replace(Key.COMMA, Key.NIL)
+                    .replace("CNY", Key.NIL).trim();
+                String publishPrice = service.getNodeText(root, getPackageName() + "tv_publish_price").replace(Key.COMMA, Key.NIL)
+                    .replace("CNY", Key.NIL).trim();
+                double priceMarket = ParseUtil.parse2Double(marketPriceStr);
+                double highestMargin = MathUtil.halfEven((higestPrice / priceMarket - 1) * 100);
+                premiumRate = highestMargin + 0.01;
+                if (service.input(getPackageName() + "et_margin", String.valueOf(premiumRate))) {
+                    taskStep++;
+                }
+                break;
+            case 2:
+                if (service.exeClickId(service.getRootInActiveWindow(), getPackageName() + "btn_commit")) {
+                    taskStep++;
+                }
+                break;
+            default:
+                taskStep = 0;
+                errorCount = 0;
+                endCallback.onEnd(false);
+                return;
+        }
+        if (tempStep == taskStep) {
+            errorCount++;
+        }
+        service.postDelayed(() -> getPremiumRate(service, higestPrice, endCallback));
     }
 
     public void listenOrder(final ListenerService service, final OnDataCallback<Integer> endCallback) {

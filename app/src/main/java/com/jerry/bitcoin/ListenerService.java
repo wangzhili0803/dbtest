@@ -118,7 +118,7 @@ public class ListenerService extends BaseListenerService {
                 case MSG_DO_TASK:
                     getUsdtData();
                     requestTickers();
-                    listenOrder();
+                    listenLists();
                     return true;
                 default:
                     return false;
@@ -348,7 +348,13 @@ public class ListenerService extends BaseListenerService {
         if (!AppUtils.playing) {
             return;
         }
-
+        pullRefresh(t -> mCoinColaTask.listenLists(this, result -> {
+            if (result) {
+                mWeakHandler.postDelayed(this::listenOrder, TIME_LONG);
+            }  else {
+                mWeakHandler.postDelayed(this::listenLists, TIME_LONGLONG);
+            }
+        }));
     }
 
     private void listenOrder() {
