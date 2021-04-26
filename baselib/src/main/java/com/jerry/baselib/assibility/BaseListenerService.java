@@ -263,7 +263,7 @@ public abstract class BaseListenerService extends AccessibilityService {
             endCallback.onEnd(false);
             return;
         }
-        if ((exeClickText(text, 0, (int) (mHeight * 0.1), mWidth, (int) (mHeight * 0.9)))) {
+        if (exeClickText(text, 0, (int) (mHeight * 0.1), mWidth, (int) (mHeight * 0.9))) {
             errorCount = 0;
             this.mWeakHandler.postDelayed(() -> endCallback.onEnd(true), TIME_SHORT);
             return;

@@ -36,12 +36,14 @@ import com.huobi.service.huobi.connection.HuobiWebSocketConnection;
 import com.jerry.baselib.BaseApp;
 import com.jerry.baselib.assibility.BaseListenerService;
 import com.jerry.baselib.assibility.EndCallback;
+import com.jerry.baselib.common.bean.CoinOrder;
 import com.jerry.baselib.common.flow.FloatItem;
 import com.jerry.baselib.common.flow.FloatLogoMenu;
 import com.jerry.baselib.common.flow.FloatMenuView;
 import com.jerry.baselib.common.util.AppUtils;
 import com.jerry.baselib.common.util.DisplayUtil;
 import com.jerry.baselib.common.util.LogUtils;
+import com.jerry.baselib.common.util.OnDataCallback;
 import com.jerry.baselib.common.util.ParseUtil;
 import com.jerry.baselib.common.util.ToastUtil;
 import com.jerry.baselib.common.util.WeakHandler;
@@ -81,7 +83,7 @@ public class ListenerService extends BaseListenerService {
      * 擦亮
      */
     private static final int MSG_DO_TASK = 101;
-    private static final int MSG_CACUL = 102;
+    private static final int MSG_TEST = 102;
     private ArrayMap<String, BigDecimal> priceMap = new ArrayMap<>();
 
     private static final SubCandlestickRequest CANDLESTICK_RESQUEST = new SubCandlestickRequest();
@@ -99,6 +101,8 @@ public class ListenerService extends BaseListenerService {
     private final FloatItem startItem = new FloatItem("开始", 0x99000000, 0x99000000,
         BitmapFactory.decodeResource(BaseApp.getInstance().getResources(), R.drawable.play), "0");
     private final FloatItem caculItem = new FloatItem("计算", 0x99000000, 0x99000000,
+        BitmapFactory.decodeResource(BaseApp.getInstance().getResources(), R.drawable.play), "0");
+    private final FloatItem moneyItem = new FloatItem("付成", 0x99000000, 0x99000000,
         BitmapFactory.decodeResource(BaseApp.getInstance().getResources(), R.drawable.play), "0");
     private final FloatItem stopItem = new FloatItem("暂停", 0x99000000, 0x99000000,
         BitmapFactory.decodeResource(BaseApp.getInstance().getResources(), R.drawable.pause), "0");
@@ -120,6 +124,13 @@ public class ListenerService extends BaseListenerService {
                     requestTickers();
                     listenLists();
                     return true;
+                case MSG_TEST:
+                    mCoinColaTask.handleMsg(this, new OnDataCallback<CoinOrder>() {
+                        @Override
+                        public void onDataCallback(final CoinOrder data) {
+
+                        }
+                    });
                 default:
                     return false;
             }
@@ -156,7 +167,7 @@ public class ListenerService extends BaseListenerService {
         itemList.clear();
         itemList.add(startItem);
         itemList.add(caculItem);
-
+        itemList.add(moneyItem);
         if (menu == null) {
             menu = new FloatLogoMenu.Builder()
                 .withContext(
@@ -177,6 +188,7 @@ public class ListenerService extends BaseListenerService {
                             itemList.clear();
                             itemList.add(startItem);
                             itemList.add(caculItem);
+                            itemList.add(moneyItem);
                             menu.updateFloatItemList(itemList);
                             menu.hide();
                             return;
@@ -199,6 +211,13 @@ public class ListenerService extends BaseListenerService {
                             case 1:
                                 AppUtils.playing = false;
                                 cacul(null);
+                                break;
+                            case 2:
+                                start(MSG_TEST);
+                                itemList.clear();
+                                itemList.add(stopItem);
+                                menu.updateFloatItemList(itemList);
+                                menu.hide();
                                 break;
                             default:
                                 break;
@@ -227,6 +246,7 @@ public class ListenerService extends BaseListenerService {
     protected void removeAllMessages() {
         super.removeAllMessages();
         mWeakHandler.removeMessages(MSG_DO_TASK);
+        mWeakHandler.removeMessages(MSG_TEST);
     }
 
     public void postDelayed(Runnable runnable) {
@@ -377,6 +397,8 @@ public class ListenerService extends BaseListenerService {
                             LogUtils.d("lowestPrice:" + lowestPrice + ",currentPrice:" + currentPrice);
                             double finalPrice = Math.max(lowestPrice, currentPrice.doubleValue());
                             HuobiTradeHelper.getInstance().createOrder(symbol, finalPrice, coinOrder.getQuantity() - coinOrder.getFee());
+                            // TODO发消息去控制端
+
                         }
                     }
                 });

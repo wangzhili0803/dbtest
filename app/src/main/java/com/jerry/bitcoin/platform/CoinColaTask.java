@@ -341,6 +341,7 @@ public class CoinColaTask extends BaseTask {
         String orderStatus = service.getNodeText(getPackageName() + "tv_order_status");
         switch (orderStatus) {
             case "待付款":
+            case "已完成":
                 String title = service.getNodeText(getPackageName() + "tv_title");
                 String nickname = service.getNodeText(getPackageName() + "tv_opposite_name");
                 double amount = getNumberFromStr(service.getNodeText(getPackageName() + "tv_trade_amount"));
@@ -348,6 +349,7 @@ public class CoinColaTask extends BaseTask {
                 String orderId = service.getNodeText(getPackageName() + "tv_trade_no");
                 double price = getNumberFromStr(service.getNodeText(getPackageName() + "tv_trade_price"));
                 double fee = getNumberFromStr(service.getNodeText(getPackageName() + "tv_trade_fee"));
+                String transInfo = service.getAllNodeText(getPackageName() + "tv_message_text");
                 CoinOrder cOrder = ProManager.getInstance().queryObj(CoinOrder.class, Properties.Name.eq(nickname));
                 if (cOrder == null) {
                     cOrder = new CoinOrder();
@@ -360,14 +362,22 @@ public class CoinColaTask extends BaseTask {
                     cOrder.setPrice(price);
                     cOrder.setFee(fee);
                     if (ProManager.getInstance().insertObject(cOrder)) {
-                        sendMsgToBuyer(service, "您好，请提供一下您的支付信息：姓名+银行卡号+银行名称", result -> {
-                            service.back();
-                            onDataCallback.onDataCallback(null);
-                        });
+                        if (StringUtil.numericInStr(transInfo) >= 16) {
+                            cOrder.setTransInfo(transInfo);
+                            CoinOrder finalOrder = cOrder;
+                            sendMsgToBuyer(service, "OK", result -> {
+                                service.back();
+                                onDataCallback.onDataCallback(finalOrder);
+                            });
+                        } else {
+                            sendMsgToBuyer(service, "您好，请提供一下您的支付信息：姓名+银行卡号+银行名称", result -> {
+                                service.back();
+                                onDataCallback.onDataCallback(null);
+                            });
+                        }
                         return;
                     }
                 } else {
-                    String transInfo = service.getAllNodeText(getPackageName() + "tv_message_text");
                     if (StringUtil.numericInStr(transInfo) >= 16) {
                         cOrder.setOrderId(orderId);
                         cOrder.setCoinType(title.replace("购买", "").trim().toLowerCase() + "usdt");
@@ -379,11 +389,19 @@ public class CoinColaTask extends BaseTask {
                         cOrder.setStatus(2);
                         cOrder.setTransInfo(transInfo);
                         if (ProManager.getInstance().update(cOrder)) {
-                            CoinOrder finalOrder = cOrder;
-                            sendMsgToBuyer(service, "OK", result -> {
-                                service.back();
-                                onDataCallback.onDataCallback(finalOrder);
-                            });
+                            if (StringUtil.numericInStr(transInfo) >= 16) {
+                                cOrder.setTransInfo(transInfo);
+                                CoinOrder finalOrder = cOrder;
+                                sendMsgToBuyer(service, "OK", result -> {
+                                    service.back();
+                                    onDataCallback.onDataCallback(finalOrder);
+                                });
+                            } else {
+                                sendMsgToBuyer(service, "您好，请提供一下您的支付信息：姓名+银行卡号+银行名称", result -> {
+                                    service.back();
+                                    onDataCallback.onDataCallback(null);
+                                });
+                            }
                             return;
                         }
                     }

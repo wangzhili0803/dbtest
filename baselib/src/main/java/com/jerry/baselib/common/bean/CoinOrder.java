@@ -5,6 +5,7 @@ import android.os.Parcelable;
 
 import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Generated;
+import org.greenrobot.greendao.annotation.Id;
 
 /**
  * @author Jerry
@@ -14,6 +15,8 @@ import org.greenrobot.greendao.annotation.Generated;
 @Entity
 public class CoinOrder implements Parcelable {
 
+    @Id(autoincrement = true)
+    private Long id;
     /**
      * 订单号
      */
@@ -56,6 +59,11 @@ public class CoinOrder implements Parcelable {
     }
 
     protected CoinOrder(Parcel in) {
+        if (in.readByte() == 0) {
+            id = null;
+        } else {
+            id = in.readLong();
+        }
         orderId = in.readString();
         coinType = in.readString();
         name = in.readString();
@@ -67,10 +75,11 @@ public class CoinOrder implements Parcelable {
         transInfo = in.readString();
     }
 
-    @Generated(hash = 1706391502)
-    public CoinOrder(String orderId, String coinType, String name, double amount,
-        double quantity, double price, double fee, int status,
-        String transInfo) {
+    @Generated(hash = 728851149)
+    public CoinOrder(Long id, String orderId, String coinType, String name,
+            double amount, double quantity, double price, double fee, int status,
+            String transInfo) {
+        this.id = id;
         this.orderId = orderId;
         this.coinType = coinType;
         this.name = name;
@@ -101,6 +110,12 @@ public class CoinOrder implements Parcelable {
 
     @Override
     public void writeToParcel(final Parcel dest, final int flags) {
+        if (id == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeLong(id);
+        }
         dest.writeString(orderId);
         dest.writeString(coinType);
         dest.writeString(name);
@@ -187,7 +202,8 @@ public class CoinOrder implements Parcelable {
     @Override
     public String toString() {
         return "CoinOrder{" +
-            "orderId='" + orderId + '\'' +
+            "id=" + id +
+            ", orderId='" + orderId + '\'' +
             ", coinType='" + coinType + '\'' +
             ", name='" + name + '\'' +
             ", amount=" + amount +
@@ -197,5 +213,13 @@ public class CoinOrder implements Parcelable {
             ", status=" + status +
             ", transInfo='" + transInfo + '\'' +
             '}';
+    }
+
+    public Long getId() {
+        return this.id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }

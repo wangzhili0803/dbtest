@@ -15,7 +15,7 @@ import com.jerry.baselib.common.bean.CoinOrder;
 /** 
  * DAO for table "COIN_ORDER".
 */
-public class CoinOrderDao extends AbstractDao<CoinOrder, Void> {
+public class CoinOrderDao extends AbstractDao<CoinOrder, Long> {
 
     public static final String TABLENAME = "COIN_ORDER";
 
@@ -24,15 +24,16 @@ public class CoinOrderDao extends AbstractDao<CoinOrder, Void> {
      * Can be used for QueryBuilder and for referencing column names.
      */
     public static class Properties {
-        public final static Property OrderId = new Property(0, String.class, "orderId", false, "ORDER_ID");
-        public final static Property CoinType = new Property(1, String.class, "coinType", false, "COIN_TYPE");
-        public final static Property Name = new Property(2, String.class, "name", false, "NAME");
-        public final static Property Amount = new Property(3, double.class, "amount", false, "AMOUNT");
-        public final static Property Quantity = new Property(4, double.class, "quantity", false, "QUANTITY");
-        public final static Property Price = new Property(5, double.class, "price", false, "PRICE");
-        public final static Property Fee = new Property(6, double.class, "fee", false, "FEE");
-        public final static Property Status = new Property(7, int.class, "status", false, "STATUS");
-        public final static Property TransInfo = new Property(8, String.class, "transInfo", false, "TRANS_INFO");
+        public final static Property Id = new Property(0, Long.class, "id", true, "_id");
+        public final static Property OrderId = new Property(1, String.class, "orderId", false, "ORDER_ID");
+        public final static Property CoinType = new Property(2, String.class, "coinType", false, "COIN_TYPE");
+        public final static Property Name = new Property(3, String.class, "name", false, "NAME");
+        public final static Property Amount = new Property(4, double.class, "amount", false, "AMOUNT");
+        public final static Property Quantity = new Property(5, double.class, "quantity", false, "QUANTITY");
+        public final static Property Price = new Property(6, double.class, "price", false, "PRICE");
+        public final static Property Fee = new Property(7, double.class, "fee", false, "FEE");
+        public final static Property Status = new Property(8, int.class, "status", false, "STATUS");
+        public final static Property TransInfo = new Property(9, String.class, "transInfo", false, "TRANS_INFO");
     }
 
 
@@ -48,15 +49,16 @@ public class CoinOrderDao extends AbstractDao<CoinOrder, Void> {
     public static void createTable(Database db, boolean ifNotExists) {
         String constraint = ifNotExists? "IF NOT EXISTS ": "";
         db.execSQL("CREATE TABLE " + constraint + "\"COIN_ORDER\" (" + //
-                "\"ORDER_ID\" TEXT," + // 0: orderId
-                "\"COIN_TYPE\" TEXT," + // 1: coinType
-                "\"NAME\" TEXT," + // 2: name
-                "\"AMOUNT\" REAL NOT NULL ," + // 3: amount
-                "\"QUANTITY\" REAL NOT NULL ," + // 4: quantity
-                "\"PRICE\" REAL NOT NULL ," + // 5: price
-                "\"FEE\" REAL NOT NULL ," + // 6: fee
-                "\"STATUS\" INTEGER NOT NULL ," + // 7: status
-                "\"TRANS_INFO\" TEXT);"); // 8: transInfo
+                "\"_id\" INTEGER PRIMARY KEY AUTOINCREMENT ," + // 0: id
+                "\"ORDER_ID\" TEXT," + // 1: orderId
+                "\"COIN_TYPE\" TEXT," + // 2: coinType
+                "\"NAME\" TEXT," + // 3: name
+                "\"AMOUNT\" REAL NOT NULL ," + // 4: amount
+                "\"QUANTITY\" REAL NOT NULL ," + // 5: quantity
+                "\"PRICE\" REAL NOT NULL ," + // 6: price
+                "\"FEE\" REAL NOT NULL ," + // 7: fee
+                "\"STATUS\" INTEGER NOT NULL ," + // 8: status
+                "\"TRANS_INFO\" TEXT);"); // 9: transInfo
     }
 
     /** Drops the underlying database table. */
@@ -69,29 +71,34 @@ public class CoinOrderDao extends AbstractDao<CoinOrder, Void> {
     protected final void bindValues(DatabaseStatement stmt, CoinOrder entity) {
         stmt.clearBindings();
  
+        Long id = entity.getId();
+        if (id != null) {
+            stmt.bindLong(1, id);
+        }
+ 
         String orderId = entity.getOrderId();
         if (orderId != null) {
-            stmt.bindString(1, orderId);
+            stmt.bindString(2, orderId);
         }
  
         String coinType = entity.getCoinType();
         if (coinType != null) {
-            stmt.bindString(2, coinType);
+            stmt.bindString(3, coinType);
         }
  
         String name = entity.getName();
         if (name != null) {
-            stmt.bindString(3, name);
+            stmt.bindString(4, name);
         }
-        stmt.bindDouble(4, entity.getAmount());
-        stmt.bindDouble(5, entity.getQuantity());
-        stmt.bindDouble(6, entity.getPrice());
-        stmt.bindDouble(7, entity.getFee());
-        stmt.bindLong(8, entity.getStatus());
+        stmt.bindDouble(5, entity.getAmount());
+        stmt.bindDouble(6, entity.getQuantity());
+        stmt.bindDouble(7, entity.getPrice());
+        stmt.bindDouble(8, entity.getFee());
+        stmt.bindLong(9, entity.getStatus());
  
         String transInfo = entity.getTransInfo();
         if (transInfo != null) {
-            stmt.bindString(9, transInfo);
+            stmt.bindString(10, transInfo);
         }
     }
 
@@ -99,81 +106,91 @@ public class CoinOrderDao extends AbstractDao<CoinOrder, Void> {
     protected final void bindValues(SQLiteStatement stmt, CoinOrder entity) {
         stmt.clearBindings();
  
+        Long id = entity.getId();
+        if (id != null) {
+            stmt.bindLong(1, id);
+        }
+ 
         String orderId = entity.getOrderId();
         if (orderId != null) {
-            stmt.bindString(1, orderId);
+            stmt.bindString(2, orderId);
         }
  
         String coinType = entity.getCoinType();
         if (coinType != null) {
-            stmt.bindString(2, coinType);
+            stmt.bindString(3, coinType);
         }
  
         String name = entity.getName();
         if (name != null) {
-            stmt.bindString(3, name);
+            stmt.bindString(4, name);
         }
-        stmt.bindDouble(4, entity.getAmount());
-        stmt.bindDouble(5, entity.getQuantity());
-        stmt.bindDouble(6, entity.getPrice());
-        stmt.bindDouble(7, entity.getFee());
-        stmt.bindLong(8, entity.getStatus());
+        stmt.bindDouble(5, entity.getAmount());
+        stmt.bindDouble(6, entity.getQuantity());
+        stmt.bindDouble(7, entity.getPrice());
+        stmt.bindDouble(8, entity.getFee());
+        stmt.bindLong(9, entity.getStatus());
  
         String transInfo = entity.getTransInfo();
         if (transInfo != null) {
-            stmt.bindString(9, transInfo);
+            stmt.bindString(10, transInfo);
         }
     }
 
     @Override
-    public Void readKey(Cursor cursor, int offset) {
-        return null;
+    public Long readKey(Cursor cursor, int offset) {
+        return cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0);
     }    
 
     @Override
     public CoinOrder readEntity(Cursor cursor, int offset) {
         CoinOrder entity = new CoinOrder( //
-            cursor.isNull(offset + 0) ? null : cursor.getString(offset + 0), // orderId
-            cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1), // coinType
-            cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2), // name
-            cursor.getDouble(offset + 3), // amount
-            cursor.getDouble(offset + 4), // quantity
-            cursor.getDouble(offset + 5), // price
-            cursor.getDouble(offset + 6), // fee
-            cursor.getInt(offset + 7), // status
-            cursor.isNull(offset + 8) ? null : cursor.getString(offset + 8) // transInfo
+            cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
+            cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1), // orderId
+            cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2), // coinType
+            cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3), // name
+            cursor.getDouble(offset + 4), // amount
+            cursor.getDouble(offset + 5), // quantity
+            cursor.getDouble(offset + 6), // price
+            cursor.getDouble(offset + 7), // fee
+            cursor.getInt(offset + 8), // status
+            cursor.isNull(offset + 9) ? null : cursor.getString(offset + 9) // transInfo
         );
         return entity;
     }
      
     @Override
     public void readEntity(Cursor cursor, CoinOrder entity, int offset) {
-        entity.setOrderId(cursor.isNull(offset + 0) ? null : cursor.getString(offset + 0));
-        entity.setCoinType(cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1));
-        entity.setName(cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2));
-        entity.setAmount(cursor.getDouble(offset + 3));
-        entity.setQuantity(cursor.getDouble(offset + 4));
-        entity.setPrice(cursor.getDouble(offset + 5));
-        entity.setFee(cursor.getDouble(offset + 6));
-        entity.setStatus(cursor.getInt(offset + 7));
-        entity.setTransInfo(cursor.isNull(offset + 8) ? null : cursor.getString(offset + 8));
+        entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
+        entity.setOrderId(cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1));
+        entity.setCoinType(cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2));
+        entity.setName(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
+        entity.setAmount(cursor.getDouble(offset + 4));
+        entity.setQuantity(cursor.getDouble(offset + 5));
+        entity.setPrice(cursor.getDouble(offset + 6));
+        entity.setFee(cursor.getDouble(offset + 7));
+        entity.setStatus(cursor.getInt(offset + 8));
+        entity.setTransInfo(cursor.isNull(offset + 9) ? null : cursor.getString(offset + 9));
      }
     
     @Override
-    protected final Void updateKeyAfterInsert(CoinOrder entity, long rowId) {
-        // Unsupported or missing PK type
-        return null;
+    protected final Long updateKeyAfterInsert(CoinOrder entity, long rowId) {
+        entity.setId(rowId);
+        return rowId;
     }
     
     @Override
-    public Void getKey(CoinOrder entity) {
-        return null;
+    public Long getKey(CoinOrder entity) {
+        if(entity != null) {
+            return entity.getId();
+        } else {
+            return null;
+        }
     }
 
     @Override
     public boolean hasKey(CoinOrder entity) {
-        // TODO
-        return false;
+        return entity.getId() != null;
     }
 
     @Override
