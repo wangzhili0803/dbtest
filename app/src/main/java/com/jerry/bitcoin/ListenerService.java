@@ -36,14 +36,12 @@ import com.huobi.service.huobi.connection.HuobiWebSocketConnection;
 import com.jerry.baselib.BaseApp;
 import com.jerry.baselib.assibility.BaseListenerService;
 import com.jerry.baselib.assibility.EndCallback;
-import com.jerry.baselib.common.bean.CoinOrder;
 import com.jerry.baselib.common.flow.FloatItem;
 import com.jerry.baselib.common.flow.FloatLogoMenu;
 import com.jerry.baselib.common.flow.FloatMenuView;
 import com.jerry.baselib.common.util.AppUtils;
 import com.jerry.baselib.common.util.DisplayUtil;
 import com.jerry.baselib.common.util.LogUtils;
-import com.jerry.baselib.common.util.OnDataCallback;
 import com.jerry.baselib.common.util.ParseUtil;
 import com.jerry.baselib.common.util.ToastUtil;
 import com.jerry.baselib.common.util.WeakHandler;
@@ -125,12 +123,9 @@ public class ListenerService extends BaseListenerService {
                     listenLists();
                     return true;
                 case MSG_TEST:
-                    mCoinColaTask.handleMsg(this, new OnDataCallback<CoinOrder>() {
-                        @Override
-                        public void onDataCallback(final CoinOrder data) {
+                    backToHome(result -> mCoinColaTask.transferXrp(ListenerService.this, result1 -> {
 
-                        }
-                    });
+                    }));
                 default:
                     return false;
             }
@@ -236,7 +231,7 @@ public class ListenerService extends BaseListenerService {
 
     @Override
     public boolean isHomePage() {
-        return hasText("首页", "行情", "交易", "合约", "资产");
+        return hasText("首页", "币币", "场外", "钱包", "我的");
     }
 
     /**

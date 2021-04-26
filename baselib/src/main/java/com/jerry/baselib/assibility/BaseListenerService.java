@@ -253,6 +253,14 @@ public abstract class BaseListenerService extends AccessibilityService {
         mSoundPool.setOnLoadCompleteListener((soundPool, sampleId, status) -> soundPool.play(mWinMusic, 0.6F, 0.6F, 0, 0, 1.0F));
     }
 
+    public void exeSwipUp() {
+        exeSwip(mWidth >> 1, mHeight >> 2, mWidth >> 1, (int) (mHeight * 0.75));
+    }
+
+    public void exeSwipDown() {
+        exeSwip(mWidth >> 1, (int) (mHeight * 0.75), mWidth >> 1, mHeight >> 2);
+    }
+
     public void swipToClickText(String text, EndCallback endCallback) {
         swipToClickText(text, 2, endCallback);
     }

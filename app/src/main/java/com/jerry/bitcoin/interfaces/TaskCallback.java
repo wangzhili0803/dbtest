@@ -64,11 +64,6 @@ public interface TaskCallback {
     void charge(ListenerService service, EndCallback endCallback);
 
     /**
-     * 转账
-     */
-    void transfer(ListenerService service, EndCallback endCallback);
-
-    /**
      * 支付
      */
     void pay(ListenerService listenerService, EndCallback endCallback);

@@ -132,9 +132,81 @@ public class CoinColaTask extends BaseTask {
 
     }
 
-    @Override
-    public void transfer(final ListenerService service, final EndCallback endCallback) {
-
+    public void transferXrp(final ListenerService service, final EndCallback endCallback) {
+        if (errorCount >= 3 || !AppUtils.playing) {
+            taskStep = 0;
+            errorCount = 0;
+            endCallback.onEnd(false);
+            return;
+        }
+        int tempStep = taskStep;
+        switch (taskStep) {
+            case 0:
+                if (service.exeClickText("钱包")) {
+                    taskStep++;
+                }
+                break;
+            case 1:
+                if (service.exeClickId(service.getRootInActiveWindow(), getPackageName() + "tv_withdraw")) {
+                    taskStep++;
+                }
+                break;
+            case 2:
+                if (service.exeClickText(CoinConstant.XRP)) {
+                    taskStep++;
+                }
+                break;
+            case 3:
+                if (service.exeClickText("我知道了")) {
+                    taskStep++;
+                }
+                break;
+            case 4:
+                if (service.input(getPackageName() + "et_address", "rUNoYkus9ZdvKCDXZiNSLd5EMkby31Bmi6")) {
+                    taskStep++;
+                }
+                break;
+            case 5:
+                if (service.input(getPackageName() + "et_address_tag", "100719")) {
+                    taskStep++;
+                }
+                break;
+            case 6:
+                String priceStr = service.getNodeText(getPackageName() + "tv_total_assets_qty");
+                double dd = ParseUtil.parseDouble(priceStr.replace(CoinConstant.XRP, Key.NIL).trim());
+                if (service.input(getPackageName() + "et_quantity", String.valueOf(dd - 70.25))) {
+                    taskStep++;
+                }
+                break;
+            case 7:
+                service.exeSwipDown();
+                taskStep++;
+                break;
+            case 8:
+                if (service.clickFirst(getPackageName() + "btn_confirm")) {
+                    taskStep++;
+                }
+                break;
+            case 9:
+                if (service.input(getPackageName() + "et_input", "WZLwzl0705")) {
+                    taskStep++;
+                }
+                break;
+            case 10:
+                if (service.exeClickText("确定")) {
+                    taskStep++;
+                }
+                break;
+            default:
+                taskStep = 0;
+                errorCount = 0;
+                endCallback.onEnd(false);
+                return;
+        }
+        if (tempStep == taskStep) {
+            errorCount++;
+        }
+        service.postDelayed(() -> transferXrp(service, endCallback));
     }
 
     @Override

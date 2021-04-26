@@ -356,8 +356,7 @@ public class HuobiTask extends BaseTask {
         service.postDelayed(() -> charge(service, endCallback));
     }
 
-    @Override
-    public void transfer(final ListenerService service, final EndCallback endCallback) {
+    public void transfer(final ListenerService service, final String coinType, final EndCallback endCallback) {
         if (errorCount >= 3) {
             taskStep = 0;
             errorCount = 0;
@@ -423,7 +422,7 @@ public class HuobiTask extends BaseTask {
         if (tempStep == taskStep) {
             errorCount++;
         }
-        service.postDelayed(() -> transfer(service, endCallback));
+        service.postDelayed(() -> transfer(service, coinType, endCallback));
     }
 
     @Override
