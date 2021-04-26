@@ -230,7 +230,7 @@ public class ListenerService extends BaseListenerService {
     }
 
     public void postDelayed(Runnable runnable) {
-        mWeakHandler.postDelayed(runnable, TIME_MIDDLE);
+        mWeakHandler.postDelayed(runnable, TIME_LONG);
     }
 
     public void getUsdtData() {
@@ -310,7 +310,7 @@ public class ListenerService extends BaseListenerService {
                     if (response.getCh().contains(symbol)) {
                         mHuobiWebSocketConnection.close();
                         pullRefresh(t -> {
-                            double lowestClose = getLowestClose(symbol, mCoinColaTask.getHighestPrice(this));
+                            double lowestClose = getLowestClose(symbol, 3001, mCoinColaTask.getHighestPrice(this));
                             ToastUtil.showShortText("最低价：" + lowestClose);
                             if (endCallback != null) {
                                 endCallback.onEnd(true);
@@ -322,7 +322,7 @@ public class ListenerService extends BaseListenerService {
                 mHuobiWebSocketConnection.reConnect();
             } else {
                 pullRefresh(t -> {
-                    double lowestClose = getLowestClose(symbol, mCoinColaTask.getHighestPrice(this));
+                    double lowestClose = getLowestClose(symbol, 3000, mCoinColaTask.getHighestPrice(this));
                     ToastUtil.showShortText("最低价：" + lowestClose);
                     if (endCallback != null) {
                         endCallback.onEnd(true);
@@ -332,13 +332,13 @@ public class ListenerService extends BaseListenerService {
         });
     }
 
-    private double getLowestClose(final String symbol, final double highestPrice) {
+    private double getLowestClose(final String symbol, final double amount, final double highestPrice) {
         Double fee = CoinConstant.FEEMAP.get(symbol);
         if (fee != null) {
-            double c1 = 3000 / highestPrice * 0.993 - fee;
+            double c1 = amount / highestPrice * 0.993 - fee;
             Double usdtPrice = usdtPrices.get(CoinConstant.HUOBI);
             if (usdtPrice != null) {
-                return 3000 / (c1 * 0.998 * usdtPrice);
+                return amount / (c1 * 0.998 * usdtPrice);
             }
         }
         return Integer.MAX_VALUE;
@@ -351,7 +351,7 @@ public class ListenerService extends BaseListenerService {
         pullRefresh(t -> mCoinColaTask.listenLists(this, result -> {
             if (result) {
                 mWeakHandler.postDelayed(this::listenOrder, TIME_LONG);
-            }  else {
+            } else {
                 mWeakHandler.postDelayed(this::listenLists, TIME_LONGLONG);
             }
         }));
@@ -368,16 +368,16 @@ public class ListenerService extends BaseListenerService {
                     if (coinOrder != null) {
                         LogUtils.d(coinOrder.toString());
                         giveNotice();
-                        cacul(result1 -> {
-                            if (result1) {
-                                BigDecimal priceNum = priceMap.get(coinOrder.getCoinType());
-                                if (priceNum != null) {
-                                    String symbol = coinOrder.getCoinType();
-                                    double amount = coinOrder.getQuantity() - coinOrder.getFee();
-                                    HuobiTradeHelper.getInstance().createOrder(symbol, priceNum.doubleValue(), amount);
-                                }
-                            }
-                        });
+                        String symbol = coinOrder.getCoinType();
+                        // 接受的最低价
+                        double lowestPrice = getLowestClose(symbol, coinOrder.getAmount(), coinOrder.getPrice());
+                        // 当前市场价
+                        BigDecimal currentPrice = priceMap.get(symbol);
+                        if (currentPrice != null) {
+                            LogUtils.d("lowestPrice:" + lowestPrice + ",currentPrice:" + currentPrice);
+                            double finalPrice = Math.max(lowestPrice, currentPrice.doubleValue());
+                            HuobiTradeHelper.getInstance().createOrder(symbol, finalPrice, coinOrder.getQuantity() - coinOrder.getFee());
+                        }
                     }
                 });
             } else if (result == 1) {

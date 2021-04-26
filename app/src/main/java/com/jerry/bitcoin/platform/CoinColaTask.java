@@ -241,6 +241,7 @@ public class CoinColaTask extends BaseTask {
             String highestPriceStr = service.getNodeText(firstItem, getPackageName() + "tv_price").replace(Key.COMMA, Key.NIL).replace("CNY", Key.NIL)
                 .trim();
             double highestPrice = ParseUtil.parse2Double(highestPriceStr);
+
             service.swipToClickText("jerrywonder", result -> {
                 if (result) {
                     service.postDelayed(() -> getPremiumRate(service, highestPrice, endCallback));
@@ -269,13 +270,14 @@ public class CoinColaTask extends BaseTask {
                 AccessibilityNodeInfo root = service.getRootInActiveWindow();
                 String marketPriceStr = service.getNodeText(root, getPackageName() + "tv_market_price").replace(Key.COMMA, Key.NIL)
                     .replace("CNY", Key.NIL).trim();
-                String publishPrice = service.getNodeText(root, getPackageName() + "tv_publish_price").replace(Key.COMMA, Key.NIL)
-                    .replace("CNY", Key.NIL).trim();
-                double priceMarket = ParseUtil.parse2Double(marketPriceStr);
-                double highestMargin = MathUtil.halfEven((higestPrice / priceMarket - 1) * 100);
-                premiumRate = highestMargin + 0.01;
-                if (service.input(getPackageName() + "et_margin", String.valueOf(premiumRate))) {
-                    taskStep++;
+                double marketPrice = ParseUtil.parseDouble(marketPriceStr);
+                if (marketPrice > 0) {
+                    double priceMarket = MathUtil.halfEven(marketPrice);
+                    double highestMargin = MathUtil.halfEven((higestPrice / priceMarket - 1) * 100);
+                    premiumRate = highestMargin + 0.01;
+                    if (service.input(getPackageName() + "et_margin", String.valueOf(premiumRate))) {
+                        taskStep++;
+                    }
                 }
                 break;
             case 2:
