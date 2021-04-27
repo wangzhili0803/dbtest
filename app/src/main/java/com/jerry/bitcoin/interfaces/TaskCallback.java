@@ -56,7 +56,7 @@ public interface TaskCallback {
     /**
      * 出售下单
      */
-    void saleOrder(ListenerService service, CoinBean coinBean, EndCallback endCallback);
+    void sellOrder(ListenerService service, CoinBean coinBean, EndCallback endCallback);
 
     /**
      * 划转

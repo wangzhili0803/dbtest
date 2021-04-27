@@ -247,7 +247,7 @@ public class HuobiTask extends BaseTask {
     }
 
     @Override
-    public void saleOrder(final ListenerService service, CoinBean coinBean, final EndCallback endCallback) {
+    public void sellOrder(final ListenerService service, CoinBean coinBean, final EndCallback endCallback) {
         if (errorCount >= 3) {
             errorCount = 0;
             taskStep = 0;
@@ -292,7 +292,7 @@ public class HuobiTask extends BaseTask {
         if (tempStep == taskStep) {
             errorCount++;
         }
-        service.postDelayed(() -> saleOrder(service, coinBean, endCallback));
+        service.postDelayed(() -> sellOrder(service, coinBean, endCallback));
     }
 
     @Override

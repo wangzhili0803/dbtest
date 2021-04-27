@@ -123,7 +123,7 @@ public class CoinColaTask extends BaseTask {
     }
 
     @Override
-    public void saleOrder(final ListenerService service, CoinBean coinBean, final EndCallback endCallback) {
+    public void sellOrder(final ListenerService service, CoinBean coinBean, final EndCallback endCallback) {
 
     }
 
@@ -344,9 +344,8 @@ public class CoinColaTask extends BaseTask {
                     .replace("CNY", Key.NIL).trim();
                 double marketPrice = ParseUtil.parseDouble(marketPriceStr);
                 if (marketPrice > 0) {
-                    double priceMarket = MathUtil.halfEven(marketPrice);
-                    double highestMargin = MathUtil.halfEven((higestPrice / priceMarket - 1) * 100);
-                    premiumRate = highestMargin + 0.01;
+                    double highestMargin = (higestPrice / marketPrice - 1) * 100;
+                    premiumRate = MathUtil.halfEven(highestMargin + 0.01);
                     if (service.input(getPackageName() + "et_margin", String.valueOf(premiumRate))) {
                         taskStep++;
                     }
@@ -367,6 +366,25 @@ public class CoinColaTask extends BaseTask {
             errorCount++;
         }
         service.postDelayed(() -> getPremiumRate(service, higestPrice, endCallback));
+    }
+
+    public void sellByCurrentPage(final ListenerService service, final OnDataCallback<CoinOrder> endCallback) {
+        String title = service.getNodeText(getPackageName() + "tv_title");
+        String nickname = service.getNodeText(getPackageName() + "tv_opposite_name");
+        double amount = getNumberFromStr(service.getNodeText(getPackageName() + "tv_trade_amount"));
+        double qty = getNumberFromStr(service.getNodeText(getPackageName() + "tv_trade_qty"));
+        String orderId = service.getNodeText(getPackageName() + "tv_trade_no");
+        double price = getNumberFromStr(service.getNodeText(getPackageName() + "tv_trade_price"));
+        double fee = getNumberFromStr(service.getNodeText(getPackageName() + "tv_trade_fee"));
+        CoinOrder cOrder = new CoinOrder();
+        cOrder.setOrderId(orderId);
+        cOrder.setCoinType(title.replace("购买", "").trim().toLowerCase() + "usdt");
+        cOrder.setName(nickname);
+        cOrder.setAmount(amount);
+        cOrder.setQuantity(qty);
+        cOrder.setPrice(price);
+        cOrder.setFee(fee);
+        endCallback.onDataCallback(cOrder);
     }
 
     public void listenOrder(final ListenerService service, final OnDataCallback<Integer> endCallback) {
@@ -438,13 +456,17 @@ public class CoinColaTask extends BaseTask {
                             cOrder.setTransInfo(transInfo);
                             CoinOrder finalOrder = cOrder;
                             sendMsgToBuyer(service, "OK", result -> {
-                                service.back();
-                                onDataCallback.onDataCallback(finalOrder);
+                                service.postDelayed(() -> {
+                                    service.back();
+                                    onDataCallback.onDataCallback(finalOrder);
+                                });
                             });
                         } else {
                             sendMsgToBuyer(service, "您好，请提供一下您的支付信息：姓名+银行卡号+银行名称", result -> {
-                                service.back();
-                                onDataCallback.onDataCallback(null);
+                                service.postDelayed(() -> {
+                                    service.back();
+                                    onDataCallback.onDataCallback(null);
+                                });
                             });
                         }
                         return;
@@ -465,13 +487,17 @@ public class CoinColaTask extends BaseTask {
                                 cOrder.setTransInfo(transInfo);
                                 CoinOrder finalOrder = cOrder;
                                 sendMsgToBuyer(service, "OK", result -> {
-                                    service.back();
-                                    onDataCallback.onDataCallback(finalOrder);
+                                    service.postDelayed(() -> {
+                                        service.back();
+                                        onDataCallback.onDataCallback(finalOrder);
+                                    });
                                 });
                             } else {
                                 sendMsgToBuyer(service, "您好，请提供一下您的支付信息：姓名+银行卡号+银行名称", result -> {
-                                    service.back();
-                                    onDataCallback.onDataCallback(null);
+                                    service.postDelayed(() -> {
+                                        service.back();
+                                        onDataCallback.onDataCallback(null);
+                                    });
                                 });
                             }
                             return;

@@ -8,7 +8,10 @@ import com.huobi.client.TradeClient;
 import com.huobi.client.req.trade.CreateOrderRequest;
 import com.huobi.constant.HuobiOptions;
 import com.huobi.model.account.Account;
-import com.huobi.model.trade.MatchResult;
+import com.jerry.baselib.common.asyctask.AppTask;
+import com.jerry.baselib.common.asyctask.BackgroundTask;
+import com.jerry.baselib.common.asyctask.WhenTaskDone;
+import com.jerry.baselib.common.util.OnDataCallback;
 import com.jerry.bitcoin.Constants;
 
 import androidx.annotation.NonNull;
@@ -46,21 +49,22 @@ public class HuobiTradeHelper {
         return mInstance;
     }
 
-    public void createOrder(String symbol, double price, double amount) {
-        long accountId = 0;
-        // /v1/account/accounts
-        List<Account> accounts = accountClient.getAccounts();
-        for (Account account : accounts) {
-            if ("spot".equals(account.getType())) {
-                accountId = account.getId();
-                break;
+    public void createOrder(String symbol, double price, double amount, OnDataCallback<Long> dataCallback) {
+        AppTask.withoutContext().assign((BackgroundTask<Long>) () -> {
+            long accountId = 0;
+            // /v1/account/accounts
+            List<Account> accounts = accountClient.getAccounts();
+            for (Account account : accounts) {
+                if ("spot".equals(account.getType())) {
+                    accountId = account.getId();
+                    break;
+                }
             }
-        }
+            // 下单
+            return tradeClient.createOrder(CreateOrderRequest.spotBuyLimit(accountId, symbol, new BigDecimal(price), new BigDecimal(amount)));
+        }).whenDone((WhenTaskDone<Long>) dataCallback::onDataCallback).whenBroken(t -> dataCallback.onDataCallback(-1L)).execute();
 
-        // 下单
-        long orderId = tradeClient.createOrder(CreateOrderRequest.spotBuyLimit(accountId, symbol, new BigDecimal(price), new BigDecimal(amount)));
-
-        // 查询成交明细
-        List<MatchResult> matchResults = tradeClient.getMatchResult(orderId);
+//        // 查询成交明细
+//        List<MatchResult> matchResults = tradeClient.getMatchResult(orderId);
     }
 }

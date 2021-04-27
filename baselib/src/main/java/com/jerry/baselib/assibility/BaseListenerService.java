@@ -266,7 +266,7 @@ public abstract class BaseListenerService extends AccessibilityService {
     }
 
     public void swipToClickText(String text, int rate, EndCallback endCallback) {
-        if (errorCount > 3) {
+        if (errorCount > 5) {
             errorCount = 0;
             endCallback.onEnd(false);
             return;

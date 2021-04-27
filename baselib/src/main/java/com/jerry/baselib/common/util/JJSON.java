@@ -1,11 +1,14 @@
 package com.jerry.baselib.common.util;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.Feature;
+
+import androidx.annotation.NonNull;
 
 /**
  * @author Jerry
@@ -39,11 +42,23 @@ public class JJSON {
         }
     }
 
+    @NonNull
     public static List<String> parseArray(final String content) {
         try {
-            return JSON.parseArray(content, String.class);
+            List<String> list = JSON.parseArray(content, String.class);
+            return list == null ? new ArrayList<>() : list;
         } catch (Exception e) {
-            return null;
+            return new ArrayList<>();
+        }
+    }
+
+    @NonNull
+    public static <T> List<T> parseArray(final String content, Class<T> clazz) {
+        try {
+            List<T> list = JSON.parseArray(content, clazz);
+            return list == null ? new ArrayList<>() : list;
+        } catch (Exception e) {
+            return new ArrayList<>();
         }
     }
 }
