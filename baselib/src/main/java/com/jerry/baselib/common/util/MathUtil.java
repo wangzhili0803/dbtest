@@ -2,6 +2,7 @@ package com.jerry.baselib.common.util;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Map;
 import java.util.Random;
 
 public class MathUtil {
@@ -151,6 +152,14 @@ public class MathUtil {
             }
             index--;
         }
+    }
+
+    public static double safeGet(final Map<String, Double> premiumRateMap, final String symbol) {
+        Double price = premiumRateMap.get(symbol);
+        if (price != null) {
+            return price;
+        }
+        return 0;
     }
 
     /**

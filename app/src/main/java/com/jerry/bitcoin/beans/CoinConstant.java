@@ -17,6 +17,7 @@ public class CoinConstant {
     public static final String ETH = "ETH";
     public static final String EOS = "EOS";
     public static final String XRP = "XRP";
+    public static final String BCH = "BCH";
     public static final String LTC = "LTC";
 
     public static final String XRP_USDT = "xrpusdt";

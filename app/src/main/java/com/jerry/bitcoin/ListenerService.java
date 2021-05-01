@@ -1,6 +1,5 @@
 package com.jerry.bitcoin;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -86,7 +85,6 @@ public class ListenerService extends BaseListenerService {
      */
     private static final int MSG_DO_TASK = 101;
     private static final int MSG_TEST = 102;
-    private ArrayMap<String, BigDecimal> priceMap = new ArrayMap<>();
 
     private static final SubCandlestickRequest CANDLESTICK_RESQUEST = new SubCandlestickRequest();
     private HuobiWebSocketConnection mHuobiWebSocketConnection;
@@ -99,6 +97,7 @@ public class ListenerService extends BaseListenerService {
     private FloatLogoMenu menu;
     private WebLoader webLoader;
     public static ArrayMap<String, Double> usdtPrices = new ArrayMap<>();
+    public static ArrayMap<String, Double> priceMap = new ArrayMap<>();
 
     private final FloatItem startItem = new FloatItem("开始", 0x99000000, 0x99000000,
         BitmapFactory.decodeResource(BaseApp.getInstance().getResources(), R.drawable.play), "0");
@@ -136,10 +135,10 @@ public class ListenerService extends BaseListenerService {
                             double lowestPrice = getLowestClose(symbol, coinOrder.getAmount(), coinOrder.getPrice());
                             getHuobiMarket(symbol, result -> {
                                 // 当前市场价
-                                BigDecimal currentPrice = priceMap.get(symbol);
+                                Double currentPrice = priceMap.get(symbol);
                                 if (currentPrice != null) {
                                     LogUtils.d("lowestPrice:" + lowestPrice + ",currentPrice:" + currentPrice);
-                                    double finalPrice = Math.max(lowestPrice, currentPrice.doubleValue());
+                                    double finalPrice = Math.max(lowestPrice, currentPrice);
                                     LogUtils.d("finalPrice:" + finalPrice);
                                     HuobiTradeHelper.getInstance().createOrder(symbol, finalPrice, coinOrder.getQuantity() - coinOrder.getFee(),
                                         data -> {
@@ -309,9 +308,9 @@ public class ListenerService extends BaseListenerService {
             mHuobiWebSocketConnection = marketClient.subCandlestick(CANDLESTICK_RESQUEST, response -> {
                 Candlestick candlestick = response.getCandlestick();
                 if (response.getCh().contains(CoinConstant.BCH_USDT)) {
-                    priceMap.put(CoinConstant.BCH_USDT, candlestick.getClose());
+                    priceMap.put(CoinConstant.BCH_USDT, candlestick.getClose().doubleValue());
                 } else if (response.getCh().contains(CoinConstant.XRP_USDT)) {
-                    priceMap.put(CoinConstant.XRP_USDT, candlestick.getClose());
+                    priceMap.put(CoinConstant.XRP_USDT, candlestick.getClose().doubleValue());
                 }
             });
         } else if (mHuobiWebSocketConnection.getState() != ConnectionStateEnum.CONNECTED) {
@@ -349,9 +348,9 @@ public class ListenerService extends BaseListenerService {
             mHuobiWebSocketConnection = marketClient.subCandlestick(CANDLESTICK_RESQUEST, response -> {
                 Candlestick candlestick = response.getCandlestick();
                 if (response.getCh().contains(CoinConstant.BCH_USDT)) {
-                    priceMap.put(CoinConstant.BCH_USDT, candlestick.getClose());
+                    priceMap.put(CoinConstant.BCH_USDT, candlestick.getClose().doubleValue());
                 } else if (response.getCh().contains(CoinConstant.XRP_USDT)) {
-                    priceMap.put(CoinConstant.XRP_USDT, candlestick.getClose());
+                    priceMap.put(CoinConstant.XRP_USDT, candlestick.getClose().doubleValue());
                 }
                 if (response.getCh().contains(symbol)) {
                     mHuobiWebSocketConnection.close();
@@ -393,13 +392,19 @@ public class ListenerService extends BaseListenerService {
         if (!AppUtils.playing) {
             return;
         }
-        pullRefresh(t -> mCoinColaTask.listenLists(this, result -> {
-            if (result) {
-                mWeakHandler.postDelayed(this::listenOrder, TIME_LONG);
-            } else {
-                mWeakHandler.postDelayed(this::listenLists, TIME_LONGLONG);
+        mCoinColaTask.exchangeCoin(this, result -> {
+            if (AppUtils.playing) {
+                pullRefresh(t -> mCoinColaTask.listenLists(this, result1 -> {
+                    if (AppUtils.playing) {
+                        if (result1) {
+                            mWeakHandler.postDelayed(this::listenOrder, TIME_LONG);
+                        } else {
+                            mWeakHandler.postDelayed(this::listenLists, TIME_LONG);
+                        }
+                    }
+                }));
             }
-        }));
+        });
     }
 
     private void listenOrder() {
@@ -417,10 +422,10 @@ public class ListenerService extends BaseListenerService {
                         // 接受的最低价
                         double lowestPrice = getLowestClose(symbol, coinOrder.getAmount(), coinOrder.getPrice());
                         // 当前市场价
-                        BigDecimal currentPrice = priceMap.get(symbol);
+                        Double currentPrice = priceMap.get(symbol);
                         if (currentPrice != null) {
                             LogUtils.d("lowestPrice:" + lowestPrice + ",currentPrice:" + currentPrice);
-                            double finalPrice = Math.max(lowestPrice, currentPrice.doubleValue());
+                            double finalPrice = Math.max(lowestPrice, currentPrice);
                             HuobiTradeHelper.getInstance().createOrder(symbol, finalPrice, coinOrder.getQuantity() - coinOrder.getFee(),
                                 data -> {
                                     List<Long> orderList = JJSON.parseArray(ListCacheUtil.getValueFromJsonFile(Key.ORDER), Long.class);

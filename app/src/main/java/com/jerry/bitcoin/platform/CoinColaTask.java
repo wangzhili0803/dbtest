@@ -1,5 +1,6 @@
 package com.jerry.bitcoin.platform;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import android.graphics.Rect;
@@ -25,6 +26,7 @@ import com.jerry.bitcoin.beans.CoinConstant;
 import com.jerry.bitcoin.beans.TransformInfo;
 
 import androidx.annotation.NonNull;
+import androidx.collection.ArrayMap;
 
 /**
  * @author Jerry
@@ -34,10 +36,16 @@ import androidx.annotation.NonNull;
 public class CoinColaTask extends BaseTask {
 
     private static volatile CoinColaTask mInstance;
-    private double premiumRate;
+    private ArrayMap<String, Double> premiumRateMap = new ArrayMap<>();
+
+    private List<String> listenCoins = new ArrayList<>();
+
+    private int listenIndex;
 
     private CoinColaTask() {
         coinType = PreferenceHelp.getString(ListenerService.TYPE_COINS, CoinConstant.USDT);
+        listenCoins.add(CoinConstant.XRP);
+        listenCoins.add(CoinConstant.BCH);
         openConversation(null);
     }
 
@@ -268,6 +276,19 @@ public class CoinColaTask extends BaseTask {
         return "";
     }
 
+    public void exchangeCoin(final ListenerService service, final EndCallback endCallback) {
+        if (listenIndex < listenCoins.size() - 1) {
+            listenIndex++;
+        } else {
+            listenIndex = 0;
+        }
+        if (service.exeClickText(listenCoins.get(listenIndex))) {
+            service.postDelayed(() -> endCallback.onEnd(true));
+        } else {
+            endCallback.onEnd(false);
+        }
+    }
+
     public void listenLists(final ListenerService service, final EndCallback endCallback) {
         AccessibilityNodeInfo accessibilityNodeInfo = service.getRootInActiveWindow();
         AccessibilityNodeInfo floatingOrderMenu = service.findFirstById(accessibilityNodeInfo, getPackageName() + "floating_order_menu");
@@ -276,55 +297,90 @@ public class CoinColaTask extends BaseTask {
             return;
         }
         AccessibilityNodeInfo targetRecyclerView = null;
-        List<AccessibilityNodeInfo> recyclerViews = accessibilityNodeInfo.findAccessibilityNodeInfosByViewId(getPackageName() + "recycler_view_ad");
+        List<AccessibilityNodeInfo> recyclerViews = accessibilityNodeInfo
+            .findAccessibilityNodeInfosByViewId(getPackageName() + "recycler_view_ad");
         for (AccessibilityNodeInfo recyclerView : recyclerViews) {
             if (recyclerView.isFocused()) {
                 targetRecyclerView = recyclerView;
                 break;
             }
         }
-        if (targetRecyclerView == null) {
+        if (targetRecyclerView == null || targetRecyclerView.getChildCount() <= 1) {
             endCallback.onEnd(false);
             return;
         }
+        AccessibilityNodeInfo headItem = targetRecyclerView.getChild(0);
+        AccessibilityNodeInfo headTv = service.findFirstByText(headItem, "0手续费出售");
+        if (headTv == null) {
+            endCallback.onEnd(false);
+            return;
+        }
+        String symbol = getSelectedSymbol(service);
+        double premiumRate = MathUtil.safeGet(premiumRateMap, symbol);
         AccessibilityNodeInfo firstItem = targetRecyclerView.getChild(1);
         String nickname = service.getNodeText(firstItem, getPackageName() + "tv_nickname");
         if ("jerrywonder".equals(nickname)) {
             AccessibilityNodeInfo secondItem = targetRecyclerView.getChild(2);
-            String priceSecondStr = service.getNodeText(secondItem, getPackageName() + "tv_price").replace(Key.COMMA, Key.NIL).replace("CNY", Key.NIL)
+            String priceSecondStr = service.getNodeText(secondItem, getPackageName() + "tv_price").replace(Key.COMMA, Key.NIL)
+                .replace("CNY", Key.NIL)
                 .trim();
             double priceSecond = ParseUtil.parse2Double(priceSecondStr);
             if (premiumRate == 0 && service.exeClickId(firstItem, getPackageName() + "tv_operator")) {
-                service.postDelayed(() -> getPremiumRate(service, priceSecond, endCallback));
+                service.postDelayed(() -> getPremiumRate(service, symbol, priceSecond, endCallback));
                 return;
             }
-            String priceMeStr = service.getNodeText(firstItem, getPackageName() + "tv_price").replace(Key.COMMA, Key.NIL).replace("CNY", Key.NIL)
+            String priceMeStr = service.getNodeText(firstItem, getPackageName() + "tv_price").replace(Key.COMMA, Key.NIL)
+                .replace("CNY", Key.NIL)
                 .trim();
             double priceMe = ParseUtil.parse2Double(priceMeStr);
-            // 原价
-            double origin = priceMe / (1 + premiumRate / 100);
-            double secondRate = MathUtil.halfEven((priceSecond / origin - 1) * 100);
-            if (premiumRate > secondRate + 0.01 && service.exeClickId(firstItem, getPackageName() + "tv_operator")) {
-                service.postDelayed(() -> getPremiumRate(service, priceSecond, endCallback));
-            } else {
-                endCallback.onEnd(false);
+            if (priceMe <= priceSecond || priceSecond + 0.01 < priceMe) {
+                if (priceSecond + 0.01 > priceMe && service.exeClickId(firstItem, getPackageName() + "tv_operator")) {
+                    service.postDelayed(() -> getPremiumRate(service, symbol, priceSecond, endCallback));
+                    return;
+                }
+                // 原价
+                double origin = priceMe / (1 + premiumRate / 100);
+                double fdsfs = MathUtil.halfEven(((premiumRate - 0.01) / 100 + 1) * origin);
+                if (priceSecond < fdsfs && service.exeClickId(firstItem, getPackageName() + "tv_operator")) {
+                    service.postDelayed(() -> getPremiumRate(service, symbol, priceSecond, endCallback));
+                    return;
+                }
             }
         } else {
-            String highestPriceStr = service.getNodeText(firstItem, getPackageName() + "tv_price").replace(Key.COMMA, Key.NIL).replace("CNY", Key.NIL)
+            String highestPriceStr = service.getNodeText(firstItem, getPackageName() + "tv_price").replace(Key.COMMA, Key.NIL)
+                .replace("CNY", Key.NIL)
                 .trim();
             double highestPrice = ParseUtil.parse2Double(highestPriceStr);
-
-            service.swipToClickText("jerrywonder", result -> {
-                if (result) {
-                    service.postDelayed(() -> getPremiumRate(service, highestPrice, endCallback));
-                } else {
-                    endCallback.onEnd(false);
-                }
-            });
+            double lowestClose = getLowestClose(symbol, highestPrice);
+            if (lowestClose > MathUtil.safeGet(ListenerService.priceMap, symbol)) {
+                service.swipToClickText("jerrywonder", result -> {
+                    if (result) {
+                        service.postDelayed(() -> getPremiumRate(service, symbol, highestPrice, endCallback));
+                    } else {
+                        endCallback.onEnd(false);
+                    }
+                });
+                return;
+            }
         }
+        endCallback.onEnd(false);
     }
 
-    private void getPremiumRate(final ListenerService service, final double higestPrice, final EndCallback endCallback) {
+
+    private double getLowestClose(final String symbol, final double highestPrice) {
+        final double amount = 5000;
+        Double fee = CoinConstant.FEEMAP.get(symbol);
+        if (fee != null) {
+            double c1 = amount / highestPrice * 0.993 - fee;
+            Double usdtPrice = ListenerService.usdtPrices.get(CoinConstant.HUOBI);
+            if (usdtPrice != null) {
+                return amount / (c1 * 0.998 * usdtPrice);
+            }
+        }
+        return Integer.MAX_VALUE;
+    }
+
+    private void getPremiumRate(final ListenerService service, final String symbol, final double higestPrice, final EndCallback endCallback) {
         if (errorCount >= 3 || !AppUtils.playing) {
             taskStep = 0;
             errorCount = 0;
@@ -344,17 +400,31 @@ public class CoinColaTask extends BaseTask {
                     .replace("CNY", Key.NIL).trim();
                 double marketPrice = ParseUtil.parseDouble(marketPriceStr);
                 if (marketPrice > 0) {
-                    double highestMargin = (higestPrice / marketPrice - 1) * 100;
-                    premiumRate = MathUtil.halfEven(highestMargin + 0.01);
-                    if (service.input(getPackageName() + "et_margin", String.valueOf(premiumRate))) {
+                    double premiumRate = MathUtil.halfEven((higestPrice / marketPrice - 1) * 100) + 0.01;
+                    while (MathUtil.halfEven(marketPrice * ((1 + premiumRate / 100))) <= higestPrice) {
+                        premiumRate = premiumRate + 0.01;
+                    }
+                    if (service.input(getPackageName() + "et_margin", String.valueOf(MathUtil.halfEven(premiumRate)))) {
+                        premiumRateMap.put(symbol, premiumRate);
                         taskStep++;
                     }
                 }
                 break;
             case 2:
+                if (ParseUtil.parseDouble(service.getNodeText(getPackageName() + "et_margin")) == 0) {
+                    taskStep--;
+                } else {
+                    taskStep++;
+                }
+                break;
+            case 3:
                 if (service.exeClickId(service.getRootInActiveWindow(), getPackageName() + "btn_commit")) {
                     taskStep++;
                 }
+                break;
+            case 4:
+                service.exeSwipUp();
+                taskStep++;
                 break;
             default:
                 taskStep = 0;
@@ -365,7 +435,7 @@ public class CoinColaTask extends BaseTask {
         if (tempStep == taskStep) {
             errorCount++;
         }
-        service.postDelayed(() -> getPremiumRate(service, higestPrice, endCallback));
+        service.postDelayed(() -> getPremiumRate(service, symbol, higestPrice, endCallback));
     }
 
     public void sellByCurrentPage(final ListenerService service, final OnDataCallback<CoinOrder> endCallback) {

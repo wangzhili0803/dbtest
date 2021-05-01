@@ -266,7 +266,7 @@ public abstract class BaseListenerService extends AccessibilityService {
     }
 
     public void swipToClickText(String text, int rate, EndCallback endCallback) {
-        if (errorCount > 5) {
+        if (errorCount > 5 || !AppUtils.playing) {
             errorCount = 0;
             endCallback.onEnd(false);
             return;
@@ -482,22 +482,26 @@ public abstract class BaseListenerService extends AccessibilityService {
     }
 
     @SuppressLint("DefaultLocale")
-    public void exeClick(int x, int y) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            if (mGlobalActionAutomator == null) {
-                mGlobalActionAutomator = new GlobalActionAutomator(this);
-            }
-            try {
-                if (!mGlobalActionAutomator.click(x, y)) {
-                    ToastUtil.showShortText("辅助停止喽 重启试试");
+    public boolean exeClick(int x, int y) {
+        if (x >= 0 && x <= mWidth && y >= 0 && y <= mHeight) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                if (mGlobalActionAutomator == null) {
+                    mGlobalActionAutomator = new GlobalActionAutomator(this);
                 }
-            } catch (Throwable e) {
-                LogUtils.e(e.getLocalizedMessage());
+                try {
+                    if (!mGlobalActionAutomator.click(x, y)) {
+                        ToastUtil.showShortText("辅助停止喽 重启试试");
+                    }
+                } catch (Throwable e) {
+                    LogUtils.e(e.getLocalizedMessage());
+                }
+            } else {
+                String click = "input tap %d %d";
+                execShellCmd(String.format(click, x, y));
             }
-        } else {
-            String click = "input tap %d %d";
-            execShellCmd(String.format(click, x, y));
+            return true;
         }
+        return false;
     }
 
     @SuppressLint("DefaultLocale")
@@ -520,8 +524,7 @@ public abstract class BaseListenerService extends AccessibilityService {
         int x = (rect.left + rect.right) >> 1;
         int y = (rect.top + rect.bottom) >> 1;
         if (rect.left >= left && rect.right <= right && rect.top >= top && rect.bottom <= bottom) {
-            exeClick(x, y);
-            return true;
+            return exeClick(x, y);
         }
         return false;
     }
@@ -592,8 +595,10 @@ public abstract class BaseListenerService extends AccessibilityService {
         AccessibilityNodeInfo newRootNode = getRootInActiveWindow();
         if (newRootNode != null) {
             List<AccessibilityNodeInfo> nodes = newRootNode.findAccessibilityNodeInfosByText(text);
-            if (!CollectionUtils.isEmpty(nodes)) {
-                return exeClick(nodes.get(nodes.size() - 1), left, top, right, bottom);
+            if (nodes != null) {
+                for (AccessibilityNodeInfo node : nodes) {
+                    return exeClick(node, left, top, right, bottom);
+                }
             }
         }
         return false;
