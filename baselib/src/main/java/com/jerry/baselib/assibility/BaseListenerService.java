@@ -125,7 +125,7 @@ public abstract class BaseListenerService extends AccessibilityService {
             AppUtils.playing = false;
             errorCount = 0;
             taskIndex = 0;
-            pause();
+            removeAllMessages();
         }
     }
 
@@ -201,13 +201,6 @@ public abstract class BaseListenerService extends AccessibilityService {
         } else {
             this.mWeakHandler.postDelayed(this::handleWxLogin, TIME_MIDDLE);
         }
-    }
-
-    /**
-     * 暂停任务
-     */
-    public void pause() {
-        removeAllMessages();
     }
 
     protected void backToHome(EndCallback endCallback) {

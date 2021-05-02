@@ -402,9 +402,9 @@ public class CoinColaTask extends BaseTask {
                 if (marketPrice > 0) {
                     double premiumRate = MathUtil.halfEven((higestPrice / marketPrice - 1) * 100) + 0.01;
                     while (MathUtil.halfEven(marketPrice * ((1 + premiumRate / 100))) <= higestPrice) {
-                        premiumRate = premiumRate + 0.01;
+                        premiumRate = MathUtil.halfEven(premiumRate + 0.01);
                     }
-                    if (service.input(getPackageName() + "et_margin", String.valueOf(MathUtil.halfEven(premiumRate)))) {
+                    if (service.input(getPackageName() + "et_margin", String.valueOf(premiumRate))) {
                         premiumRateMap.put(symbol, premiumRate);
                         taskStep++;
                     }

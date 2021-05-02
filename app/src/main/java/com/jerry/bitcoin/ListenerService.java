@@ -275,6 +275,12 @@ public class ListenerService extends BaseListenerService {
         return hasText("首页", "币币", "场外", "钱包", "我的");
     }
 
+    @Override
+    protected void stopScript() {
+        super.stopScript();
+        mHuobiWebSocketConnection.close();
+    }
+
     /**
      * 清理msg
      */
