@@ -597,7 +597,9 @@ public abstract class BaseListenerService extends AccessibilityService {
             List<AccessibilityNodeInfo> nodes = newRootNode.findAccessibilityNodeInfosByText(text);
             if (nodes != null) {
                 for (AccessibilityNodeInfo node : nodes) {
-                    return exeClick(node, left, top, right, bottom);
+                    if (exeClick(node, left, top, right, bottom)) {
+                        return true;
+                    }
                 }
             }
         }

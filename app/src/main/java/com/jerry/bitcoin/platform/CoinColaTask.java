@@ -352,7 +352,7 @@ public class CoinColaTask extends BaseTask {
                 .trim();
             double highestPrice = ParseUtil.parse2Double(highestPriceStr);
             double lowestClose = getLowestClose(symbol, highestPrice);
-            if (lowestClose > MathUtil.safeGet(ListenerService.priceMap, symbol)) {
+            if (lowestClose < MathUtil.safeGet(ListenerService.priceMap, symbol)) {
                 service.swipToClickText("jerrywonder", result -> {
                     if (result) {
                         service.postDelayed(() -> getPremiumRate(service, symbol, highestPrice, endCallback));

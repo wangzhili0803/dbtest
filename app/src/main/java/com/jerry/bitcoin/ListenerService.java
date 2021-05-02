@@ -84,7 +84,8 @@ public class ListenerService extends BaseListenerService {
      * 擦亮
      */
     private static final int MSG_DO_TASK = 101;
-    private static final int MSG_TEST = 102;
+    private static final int MSG_TRANS = 102;
+    private static final int MSG_ORDER = 103;
 
     private static final SubCandlestickRequest CANDLESTICK_RESQUEST = new SubCandlestickRequest();
     private HuobiWebSocketConnection mHuobiWebSocketConnection;
@@ -101,9 +102,9 @@ public class ListenerService extends BaseListenerService {
 
     private final FloatItem startItem = new FloatItem("开始", 0x99000000, 0x99000000,
         BitmapFactory.decodeResource(BaseApp.getInstance().getResources(), R.drawable.play), "0");
-    private final FloatItem moneyItem = new FloatItem("下单", 0x99000000, 0x99000000,
+    private final FloatItem transItem = new FloatItem("搬运", 0x99000000, 0x99000000,
         BitmapFactory.decodeResource(BaseApp.getInstance().getResources(), R.drawable.play), "0");
-    private final FloatItem caculItem = new FloatItem("计算", 0x99000000, 0x99000000,
+    private final FloatItem moneyItem = new FloatItem("下单", 0x99000000, 0x99000000,
         BitmapFactory.decodeResource(BaseApp.getInstance().getResources(), R.drawable.play), "0");
     private final FloatItem stopItem = new FloatItem("暂停", 0x99000000, 0x99000000,
         BitmapFactory.decodeResource(BaseApp.getInstance().getResources(), R.drawable.pause), "0");
@@ -125,7 +126,15 @@ public class ListenerService extends BaseListenerService {
                     requestTickers();
                     listenLists();
                     return true;
-                case MSG_TEST:
+                case MSG_TRANS:
+                    mCoinColaTask.transferXrp(this, new EndCallback() {
+                        @Override
+                        public void onEnd(final boolean result) {
+
+                        }
+                    });
+                    return true;
+                case MSG_ORDER:
                     mCoinColaTask.sellByCurrentPage(this, coinOrder -> {
                         if (coinOrder != null) {
                             LogUtils.d(coinOrder.toString());
@@ -186,8 +195,8 @@ public class ListenerService extends BaseListenerService {
         ToastUtil.showShortText("服务已开启\n屏幕宽：" + ListenerService.mWidth + "\n屏幕高：" + ListenerService.mHeight);
         itemList.clear();
         itemList.add(startItem);
+        itemList.add(transItem);
         itemList.add(moneyItem);
-        itemList.add(caculItem);
         if (menu == null) {
             menu = new FloatLogoMenu.Builder()
                 .withContext(
@@ -207,8 +216,8 @@ public class ListenerService extends BaseListenerService {
                             stopScript();
                             itemList.clear();
                             itemList.add(startItem);
+                            itemList.add(transItem);
                             itemList.add(moneyItem);
-                            itemList.add(caculItem);
                             menu.updateFloatItemList(itemList);
                             menu.hide();
                             return;
@@ -229,15 +238,22 @@ public class ListenerService extends BaseListenerService {
                                 menu.hide();
                                 break;
                             case 1:
-                                start(MSG_TEST);
+                                start(MSG_TRANS);
                                 itemList.clear();
                                 itemList.add(stopItem);
                                 menu.updateFloatItemList(itemList);
                                 menu.hide();
                                 break;
                             case 2:
+                                start(MSG_ORDER);
+                                itemList.clear();
+                                itemList.add(stopItem);
+                                menu.updateFloatItemList(itemList);
+                                menu.hide();
+                                break;
+                            case 3:
                                 AppUtils.playing = false;
-                                cacul(null);
+                                cacul();
                                 break;
                             default:
                                 break;
@@ -266,7 +282,8 @@ public class ListenerService extends BaseListenerService {
     protected void removeAllMessages() {
         super.removeAllMessages();
         mWeakHandler.removeMessages(MSG_DO_TASK);
-        mWeakHandler.removeMessages(MSG_TEST);
+        mWeakHandler.removeMessages(MSG_TRANS);
+        mWeakHandler.removeMessages(MSG_ORDER);
     }
 
     public void postDelayed(Runnable runnable) {
@@ -318,7 +335,7 @@ public class ListenerService extends BaseListenerService {
         }
     }
 
-    private void cacul(EndCallback endCallback) {
+    private void cacul() {
         webLoader.load(URL_GWEB, data -> {
             LogUtils.d(data);
             Document doc = Jsoup.parse(data);
@@ -338,7 +355,10 @@ public class ListenerService extends BaseListenerService {
                 }
             }
             String symbol = mCoinColaTask.getSelectedSymbol(this);
-            getHuobiMarket(symbol, endCallback);
+            getHuobiMarket(symbol, result -> {
+                double lowestClose = getLowestClose(symbol, 5000, mCoinColaTask.getHighestPrice(ListenerService.this));
+                ToastUtil.showShortText("最低价：" + lowestClose);
+            });
         });
     }
 
@@ -354,25 +374,13 @@ public class ListenerService extends BaseListenerService {
                 }
                 if (response.getCh().contains(symbol)) {
                     mHuobiWebSocketConnection.close();
-                    pullRefresh(t -> {
-                        double lowestClose = getLowestClose(symbol, 3001, mCoinColaTask.getHighestPrice(this));
-                        ToastUtil.showShortText("最低价：" + lowestClose);
-                        if (endCallback != null) {
-                            endCallback.onEnd(true);
-                        }
-                    });
+                    endCallback.onEnd(true);
                 }
             });
         } else if (mHuobiWebSocketConnection.getState() != ConnectionStateEnum.CONNECTED) {
             mHuobiWebSocketConnection.reConnect();
         } else {
-            pullRefresh(t -> {
-                double lowestClose = getLowestClose(symbol, 3000, mCoinColaTask.getHighestPrice(this));
-                ToastUtil.showShortText("最低价：" + lowestClose);
-                if (endCallback != null) {
-                    endCallback.onEnd(true);
-                }
-            });
+            endCallback.onEnd(true);
         }
     }
 
@@ -395,6 +403,7 @@ public class ListenerService extends BaseListenerService {
         mCoinColaTask.exchangeCoin(this, result -> {
             if (AppUtils.playing) {
                 pullRefresh(t -> mCoinColaTask.listenLists(this, result1 -> {
+                    cacul();
                     if (AppUtils.playing) {
                         if (result1) {
                             mWeakHandler.postDelayed(this::listenOrder, TIME_LONG);
