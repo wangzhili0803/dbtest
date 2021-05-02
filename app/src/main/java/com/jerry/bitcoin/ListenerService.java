@@ -140,7 +140,7 @@ public class ListenerService extends BaseListenerService {
                                     LogUtils.d("lowestPrice:" + lowestPrice + ",currentPrice:" + currentPrice);
                                     double finalPrice = Math.max(lowestPrice, currentPrice);
                                     LogUtils.d("finalPrice:" + finalPrice);
-                                    HuobiTradeHelper.getInstance().createOrder(symbol, finalPrice, coinOrder.getQuantity() - coinOrder.getFee(),
+                                    HuobiTradeHelper.getInstance().sell(symbol, finalPrice, coinOrder.getQuantity() - coinOrder.getFee(),
                                         data -> {
                                             List<Long> orderList = JJSON.parseArray(ListCacheUtil.getValueFromJsonFile(Key.ORDER), Long.class);
                                             orderList.add(data);
@@ -426,7 +426,7 @@ public class ListenerService extends BaseListenerService {
                         if (currentPrice != null) {
                             LogUtils.d("lowestPrice:" + lowestPrice + ",currentPrice:" + currentPrice);
                             double finalPrice = Math.max(lowestPrice, currentPrice);
-                            HuobiTradeHelper.getInstance().createOrder(symbol, finalPrice, coinOrder.getQuantity() - coinOrder.getFee(),
+                            HuobiTradeHelper.getInstance().sell(symbol, finalPrice, coinOrder.getQuantity() - coinOrder.getFee(),
                                 data -> {
                                     List<Long> orderList = JJSON.parseArray(ListCacheUtil.getValueFromJsonFile(Key.ORDER), Long.class);
                                     orderList.add(data);

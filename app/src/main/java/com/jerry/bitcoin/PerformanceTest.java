@@ -20,13 +20,7 @@ public class PerformanceTest {
     public static void main(String[] args) {
 
         ConnectionFactory.setLatencyDebug();
-
-        for (int i = 0; i < 10; i++) {
-
-            testCase();
-            System.out.println("======================================");
-        }
-
+        testCase();
     }
 
 

@@ -49,7 +49,7 @@ public class HuobiTradeHelper {
         return mInstance;
     }
 
-    public void createOrder(String symbol, double price, double amount, OnDataCallback<Long> dataCallback) {
+    public void buy(String symbol, double price, double amount, OnDataCallback<Long> dataCallback) {
         AppTask.withoutContext().assign((BackgroundTask<Long>) () -> {
             long accountId = 0;
             // /v1/account/accounts
@@ -63,8 +63,22 @@ public class HuobiTradeHelper {
             // 下单
             return tradeClient.createOrder(CreateOrderRequest.spotBuyLimit(accountId, symbol, new BigDecimal(price), new BigDecimal(amount)));
         }).whenDone((WhenTaskDone<Long>) dataCallback::onDataCallback).whenBroken(t -> dataCallback.onDataCallback(-1L)).execute();
+    }
 
-//        // 查询成交明细
-//        List<MatchResult> matchResults = tradeClient.getMatchResult(orderId);
+
+    public void sell(String symbol, double price, double amount, OnDataCallback<Long> dataCallback) {
+        AppTask.withoutContext().assign((BackgroundTask<Long>) () -> {
+            long accountId = 0;
+            // /v1/account/accounts
+            List<Account> accounts = accountClient.getAccounts();
+            for (Account account : accounts) {
+                if ("spot".equals(account.getType())) {
+                    accountId = account.getId();
+                    break;
+                }
+            }
+            // 下单
+            return tradeClient.createOrder(CreateOrderRequest.spotSellLimit(accountId, symbol, new BigDecimal(price), new BigDecimal(amount)));
+        }).whenDone((WhenTaskDone<Long>) dataCallback::onDataCallback).whenBroken(t -> dataCallback.onDataCallback(-1L)).execute();
     }
 }
