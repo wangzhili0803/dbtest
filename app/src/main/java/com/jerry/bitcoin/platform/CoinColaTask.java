@@ -428,7 +428,7 @@ public class CoinColaTask extends BaseTask {
             double priceMe = ParseUtil.parse2Double(priceMeStr);
             double lowestClose = getLowestClose(symbol, priceMe);
             double marketPrice = MathUtil.safeGet(ListenerService.priceMap, symbol);
-            if (lowestClose < marketPrice) {
+            if (lowestClose > marketPrice) {
                 Double usdtPrice = ListenerService.usdtPrices.get(CoinConstant.HUOBI);
                 if (usdtPrice != null) {
                     service.postDelayed(() -> getPremiumRate(service, symbol, marketPrice * usdtPrice, endCallback));
@@ -497,7 +497,8 @@ public class CoinColaTask extends BaseTask {
         switch (taskStep) {
             case 0:
                 LogUtils.d("当前最高价：higestPrice:" + higestPrice);
-                if (service.exeClickId(service.getRootInActiveWindow(), getPackageName() + "btn_edit")) {
+                String title = service.getNodeText(getPackageName() + "tv_title");
+                if (title.startsWith("购买") && service.exeClickId(service.getRootInActiveWindow(), getPackageName() + "btn_edit")) {
                     taskStep++;
                 }
                 break;
@@ -507,10 +508,11 @@ public class CoinColaTask extends BaseTask {
                     .replace("CNY", Key.NIL).trim();
                 double marketPrice = ParseUtil.parseDouble(marketPriceStr);
                 if (marketPrice > 0) {
-                    double premiumRate = MathUtil.halfEven((higestPrice / marketPrice - 1) * 100) + 0.01;
+                    double premiumRate = (higestPrice / marketPrice - 1) * 100 + 0.01;
                     while (MathUtil.halfEven(marketPrice * ((1 + premiumRate / 100))) <= higestPrice) {
-                        premiumRate = MathUtil.halfEven(premiumRate + 0.01);
+                        premiumRate = premiumRate + 0.01;
                     }
+                    premiumRate = MathUtil.halfEven(premiumRate);
                     if (service.input(getPackageName() + "et_margin", String.valueOf(premiumRate))) {
                         premiumRateMap.put(symbol, premiumRate);
                         taskStep++;
@@ -796,7 +798,7 @@ public class CoinColaTask extends BaseTask {
     private double getNumberFromStr(final String text) {
         int i1 = text.indexOf(Key.SPACE);
         if (i1 > -1) {
-            return ParseUtil.parse2Double(text.substring(0, i1).replace(Key.COMMA, ""));
+            return ParseUtil.parseDouble(text.substring(0, i1).replace(Key.COMMA, ""));
         }
         return 0;
     }

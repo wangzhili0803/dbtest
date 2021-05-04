@@ -157,17 +157,20 @@ public class ListenerService extends BaseListenerService {
                                 double currentPrice = MathUtil.safeGet(ListenerService.priceMap, symbol);
                                 double finalPrice = Math.max(lowestPrice, currentPrice);
                                 LogUtils.d("lowestPrice:" + lowestPrice + ",currentPrice:" + currentPrice);
-                                HuobiTradeHelper.getInstance().sell(symbol, finalPrice, coinOrder.getQuantity() - coinOrder.getFee(),
-                                    data -> {
-                                        if (data == null) {
-                                            LogUtils.e("下单失败");
-                                            ToastUtil.showShortText("下单失败");
-                                            return;
-                                        }
-                                        List<Long> orderList = JJSON.parseArray(ListCacheUtil.getValueFromJsonFile(Key.ORDER), Long.class);
-                                        orderList.add(data);
-                                        ListCacheUtil.saveValueToJsonFile(Key.ORDER, JSON.toJSONString(orderList));
-                                    });
+                                Double fee = CoinConstant.FEEMAP.get(symbol);
+                                if (fee != null) {
+                                    HuobiTradeHelper.getInstance().sell(symbol, finalPrice, coinOrder.getQuantity() - coinOrder.getFee() - fee,
+                                        data -> {
+                                            if (data == null) {
+                                                LogUtils.e("下单失败");
+                                                ToastUtil.showShortText("下单失败");
+                                                return;
+                                            }
+                                            List<Long> orderList = JJSON.parseArray(ListCacheUtil.getValueFromJsonFile(Key.ORDER), Long.class);
+                                            orderList.add(data);
+                                            ListCacheUtil.saveValueToJsonFile(Key.ORDER, JSON.toJSONString(orderList));
+                                        });
+                                }
                             }));
                         }
                     });
@@ -290,6 +293,7 @@ public class ListenerService extends BaseListenerService {
         mHuobiTask.release();
         if (mHuobiWebSocketConnection != null) {
             mHuobiWebSocketConnection.close();
+            mHuobiWebSocketConnection = null;
         }
     }
 
@@ -349,6 +353,7 @@ public class ListenerService extends BaseListenerService {
                 }
                 if (endCallback != null && response.getCh().contains(symbol)) {
                     mHuobiWebSocketConnection.close();
+                    mHuobiWebSocketConnection = null;
                     endCallback.onEnd(true);
                 }
             });
@@ -408,17 +413,20 @@ public class ListenerService extends BaseListenerService {
                         double currentPrice = MathUtil.safeGet(ListenerService.priceMap, symbol);
                         double finalPrice = Math.max(lowestPrice, currentPrice);
                         LogUtils.d("lowestPrice:" + lowestPrice + ",currentPrice:" + currentPrice);
-                        HuobiTradeHelper.getInstance().sell(symbol, finalPrice, coinOrder.getQuantity() - coinOrder.getFee(), data -> {
-                            if (data == null) {
-                                LogUtils.e("下单失败");
-                                ToastUtil.showShortText("下单失败");
-                                return;
-                            }
-                            List<Long> orderList = JJSON.parseArray(ListCacheUtil.getValueFromJsonFile(Key.ORDER), Long.class);
-                            orderList.add(data);
-                            ListCacheUtil.saveValueToJsonFile(Key.ORDER, JSON.toJSONString(orderList));
-                        });
-                        // TODO发消息去控制端
+                        Double fee = CoinConstant.FEEMAP.get(symbol);
+                        if (fee != null) {
+                            HuobiTradeHelper.getInstance().sell(symbol, finalPrice, coinOrder.getQuantity() - coinOrder.getFee() - fee, data -> {
+                                if (data == null) {
+                                    LogUtils.e("下单失败");
+                                    ToastUtil.showShortText("下单失败");
+                                    return;
+                                }
+                                List<Long> orderList = JJSON.parseArray(ListCacheUtil.getValueFromJsonFile(Key.ORDER), Long.class);
+                                orderList.add(data);
+                                ListCacheUtil.saveValueToJsonFile(Key.ORDER, JSON.toJSONString(orderList));
+                            });
+                            // TODO发消息去控制端
+                        }
                     }
                 });
             } else if (result == 1) {

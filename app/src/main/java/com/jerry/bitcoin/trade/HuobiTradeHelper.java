@@ -34,11 +34,17 @@ public class HuobiTradeHelper {
     @NonNull
     private final TradeClient tradeClient;
 
-    public static final ArrayMap<String, Integer> EXACT_MAP = new ArrayMap<>();
+    public static final ArrayMap<String, Integer> PRICE_EXACT_MAP = new ArrayMap<>();
+    public static final ArrayMap<String, Integer> AMOUNT_EXACT_MAP = new ArrayMap<>();
 
     static {
-        EXACT_MAP.put(CoinConstant.XRP_USDT, 5);
-        EXACT_MAP.put(CoinConstant.BCH_USDT, 2);
+        PRICE_EXACT_MAP.put(CoinConstant.XRP_USDT, 5);
+        PRICE_EXACT_MAP.put(CoinConstant.BCH_USDT, 2);
+    }
+
+    static {
+        AMOUNT_EXACT_MAP.put(CoinConstant.XRP_USDT, 2);
+        AMOUNT_EXACT_MAP.put(CoinConstant.BCH_USDT, 4);
     }
 
     private HuobiTradeHelper() {
@@ -88,11 +94,14 @@ public class HuobiTradeHelper {
                     break;
                 }
             }
-            Integer exact = EXACT_MAP.get(symbol);
-            if (exact != null) {
-                double finalPrice = MathUtil.halfEven(price, exact);
+            Integer priceExact = PRICE_EXACT_MAP.get(symbol);
+            Integer amountExact = AMOUNT_EXACT_MAP.get(symbol);
+            if (priceExact != null && amountExact != null) {
+                double finalPrice = MathUtil.halfEven(price, priceExact);
+                double finalAmount = MathUtil.halfEven(amount, amountExact);
                 return tradeClient
-                    .createOrder(CreateOrderRequest.spotSellLimit(accountId, symbol, BigDecimal.valueOf(finalPrice), BigDecimal.valueOf(amount)));
+                    .createOrder(
+                        CreateOrderRequest.spotSellLimit(accountId, symbol, BigDecimal.valueOf(finalPrice), BigDecimal.valueOf(finalAmount)));
             }
             return null;
             // 下单
