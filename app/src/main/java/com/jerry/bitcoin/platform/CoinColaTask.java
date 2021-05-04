@@ -393,7 +393,7 @@ public class CoinColaTask extends BaseTask {
         List<AccessibilityNodeInfo> recyclerViews = accessibilityNodeInfo
             .findAccessibilityNodeInfosByViewId(getPackageName() + "recycler_view_ad");
         for (AccessibilityNodeInfo recyclerView : recyclerViews) {
-            if (recyclerView.isFocused()) {
+            if (recyclerView.isVisibleToUser()) {
                 targetRecyclerView = recyclerView;
                 break;
             }
