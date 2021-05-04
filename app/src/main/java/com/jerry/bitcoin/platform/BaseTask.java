@@ -91,6 +91,11 @@ public abstract class BaseTask implements TaskCallback {
         return coinType + (buyType == TYPE_SELL ? "购买" : "出售");
     }
 
+    public void release() {
+        taskStep = 0;
+        errorCount = 0;
+    }
+
     @Override
     public AVIMConversation getAvimConversation() {
         return mAvimConversation;

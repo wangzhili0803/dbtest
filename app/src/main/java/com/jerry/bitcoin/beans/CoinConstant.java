@@ -25,9 +25,15 @@ public class CoinConstant {
     public static final String SUB_CANDLE = XRP_USDT + "," + BCH_USDT;
 
     public static final ArrayMap<String, Double> FEEMAP = new ArrayMap<>();
+    public static final ArrayMap<String, Double> ACCOUNT_MAP = new ArrayMap<>();
 
     static {
         FEEMAP.put(XRP_USDT, 0.25);
         FEEMAP.put(BCH_USDT, 0.0005);
+    }
+
+    static {
+        ACCOUNT_MAP.put(XRP, 70d);
+        ACCOUNT_MAP.put(BCH, 0.2);
     }
 }

@@ -213,14 +213,19 @@ public abstract class BaseListenerService extends AccessibilityService {
      * 判断是否含有文案
      */
     public boolean hasText(String... texts) {
-        AccessibilityNodeInfo rootNode = getRootInActiveWindow();
-        if (rootNode == null) {
-            return false;
-        }
-        for (String text : texts) {
-            List<AccessibilityNodeInfo> indicators = rootNode.findAccessibilityNodeInfosByText(text);
-            if (CollectionUtils.isEmpty(indicators)) {
-                return false;
+        return hasText(getRootInActiveWindow(), texts);
+    }
+
+    /**
+     * 判断是否含有文案
+     */
+    public boolean hasText(AccessibilityNodeInfo nodeInfo, String... texts) {
+        if (nodeInfo != null) {
+            for (String text : texts) {
+                List<AccessibilityNodeInfo> indicators = nodeInfo.findAccessibilityNodeInfosByText(text);
+                if (CollectionUtils.isEmpty(indicators)) {
+                    return false;
+                }
             }
         }
         return true;
@@ -244,19 +249,48 @@ public abstract class BaseListenerService extends AccessibilityService {
         mSoundPool.setOnLoadCompleteListener((soundPool, sampleId, status) -> soundPool.play(mWinMusic, 0.6F, 0.6F, 0, 0, 1.0F));
     }
 
-    public void exeSwipUp() {
+    public void exeSwipUp(int count, EndCallback endCallback) {
+        if (count <= 0) {
+            endCallback.onEnd(true);
+            return;
+        }
         exeSwip(mWidth >> 1, mHeight >> 2, mWidth >> 1, (int) (mHeight * 0.75));
+        mWeakHandler.postDelayed(() -> exeSwipUp(count - 1, endCallback), TIME_SHORT);
     }
 
-    public void exeSwipDown() {
+    public void exeSwipDown(int count, EndCallback endCallback) {
+        if (count <= 0) {
+            endCallback.onEnd(true);
+            return;
+        }
         exeSwip(mWidth >> 1, (int) (mHeight * 0.75), mWidth >> 1, mHeight >> 2);
+        mWeakHandler.postDelayed(() -> exeSwipDown(count - 1, endCallback), TIME_SHORT);
+    }
+
+    public void swipToGetNodeEqualsText(String id, String text, OnDataCallback<AccessibilityNodeInfo> dataCallback) {
+        if (errorCount > 3 || !AppUtils.playing) {
+            errorCount = 0;
+            dataCallback.onDataCallback(null);
+            return;
+        }
+        AccessibilityNodeInfo newRootNode = getRootInActiveWindow();
+        if (newRootNode != null) {
+            List<AccessibilityNodeInfo> nodes = newRootNode.findAccessibilityNodeInfosByViewId(id);
+            if (nodes != null) {
+                for (AccessibilityNodeInfo node : nodes) {
+                    if (text.equals(node.getText().toString())) {
+                        dataCallback.onDataCallback(node);
+                        return;
+                    }
+                }
+            }
+        }
+        errorCount++;
+        exeSwip(mWidth >> 2, (int) (mHeight * 0.75), mWidth >> 2, mHeight >> 2);
+        this.mWeakHandler.postDelayed(() -> swipToGetNodeEqualsText(id, text, dataCallback), TIME_SHORT);
     }
 
     public void swipToClickText(String text, EndCallback endCallback) {
-        swipToClickText(text, 2, endCallback);
-    }
-
-    public void swipToClickText(String text, int rate, EndCallback endCallback) {
         if (errorCount > 5 || !AppUtils.playing) {
             errorCount = 0;
             endCallback.onEnd(false);
@@ -268,8 +302,8 @@ public abstract class BaseListenerService extends AccessibilityService {
             return;
         }
         errorCount++;
-        exeSwip(mWidth >> rate, (int) (mHeight * 0.75), mWidth >> rate, mHeight >> 2);
-        this.mWeakHandler.postDelayed(() -> swipToClickText(text, rate, endCallback), TIME_SHORT);
+        exeSwip(mWidth >> 2, (int) (mHeight * 0.75), mWidth >> 2, mHeight >> 2);
+        this.mWeakHandler.postDelayed(() -> swipToClickText(text, endCallback), TIME_SHORT);
     }
 
     public void swipToLongClickText(List<String> texts, EndCallback endCallback) {
@@ -550,9 +584,12 @@ public abstract class BaseListenerService extends AccessibilityService {
     public boolean exeClickId(AccessibilityNodeInfo parent, String id) {
         if (parent != null) {
             List<AccessibilityNodeInfo> nodes = parent.findAccessibilityNodeInfosByViewId(id);
-            if (!CollectionUtils.isEmpty(nodes)) {
-                AccessibilityNodeInfo target = nodes.get(0);
-                return exeClick(target);
+            if (nodes != null) {
+                for (AccessibilityNodeInfo node : nodes) {
+                    if (node.isVisibleToUser()) {
+                        return exeClick(node);
+                    }
+                }
             }
         }
         return false;

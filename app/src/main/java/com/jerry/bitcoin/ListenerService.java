@@ -128,10 +128,19 @@ public class ListenerService extends BaseListenerService {
                     listenLists();
                     return true;
                 case MSG_TRANS:
-                    mCoinColaTask.transferXrp(this, new EndCallback() {
-                        @Override
-                        public void onEnd(final boolean result) {
+                    mCoinColaTask.checkCoinNeedTransfer(this, CoinConstant.XRP, result -> {
+                        if (result) {
+                            mCoinColaTask.transferXrp(ListenerService.this, result1 -> {
 
+                            });
+                        } else {
+                            mCoinColaTask.checkCoinNeedTransfer(this, CoinConstant.BCH, result2 -> {
+                                if (result2) {
+                                    mCoinColaTask.transferBch(ListenerService.this, result1 -> {
+
+                                    });
+                                }
+                            });
                         }
                     });
                     return true;
@@ -277,6 +286,8 @@ public class ListenerService extends BaseListenerService {
     @Override
     protected void stopScript() {
         super.stopScript();
+        mCoinColaTask.release();
+        mHuobiTask.release();
         if (mHuobiWebSocketConnection != null) {
             mHuobiWebSocketConnection.close();
         }
@@ -304,7 +315,8 @@ public class ListenerService extends BaseListenerService {
         webLoader.load(URL_GWEB, data -> {
             LogUtils.d(data);
             Document doc = Jsoup.parse(data);
-            Elements allElements = doc.getAllElements();Element sellBody = allElements.select(".layui-card-body").get(0);
+            Elements allElements = doc.getAllElements();
+            Element sellBody = allElements.select(".layui-card-body").get(0);
             String tmp = "";
             for (int i = 0; i < sellBody.childNodeSize(); i++) {
                 Node element = sellBody.childNode(i);

@@ -142,9 +142,8 @@ public class CoinColaTask extends BaseTask {
 
     }
 
-    public void transferXrp(final ListenerService service, final EndCallback endCallback) {
+    public void checkCoinNeedTransfer(final ListenerService service, final String coinType, final EndCallback endCallback) {
         if (errorCount >= 3 || !AppUtils.playing) {
-            taskStep = 0;
             errorCount = 0;
             endCallback.onEnd(false);
             return;
@@ -162,61 +161,153 @@ public class CoinColaTask extends BaseTask {
                 }
                 break;
             case 2:
-                if (service.exeClickText(CoinConstant.XRP)) {
+                if (service.exeClickText(coinType)) {
                     taskStep++;
                 }
                 break;
             case 3:
-                if (service.exeClickText("我知道了")) {
-                    taskStep++;
-                }
+                taskStep++;
+                service.exeClickText("我知道了");
                 break;
             case 4:
+                Double account = CoinConstant.ACCOUNT_MAP.get(coinType);
+                String qtyStr = service.getNodeText(getPackageName() + "tv_total_assets_qty");
+                double qty = ParseUtil.parseDouble(qtyStr.replace(Key.COMMA, Key.NIL).replace(coinType, Key.NIL).trim());
+                if (account != null && qty > account) {
+                    taskStep++;
+                } else {
+                    taskStep = 0;
+                    errorCount = 0;
+                    service.back();
+                    endCallback.onEnd(false);
+                    return;
+                }
+                break;
+            default:
+                taskStep = 0;
+                errorCount = 0;
+                endCallback.onEnd(true);
+                return;
+        }
+        if (tempStep == taskStep) {
+            errorCount++;
+        }
+        service.postDelayed(() -> checkCoinNeedTransfer(service, coinType, endCallback));
+    }
+
+    public void transferXrp(final ListenerService service, final EndCallback endCallback) {
+        if (errorCount >= 3 || !AppUtils.playing) {
+            taskStep = 0;
+            errorCount = 0;
+            endCallback.onEnd(false);
+            return;
+        }
+        int tempStep = taskStep;
+        switch (taskStep) {
+            case 0:
                 if (service.input(getPackageName() + "et_address", "rUNoYkus9ZdvKCDXZiNSLd5EMkby31Bmi6")) {
                     taskStep++;
                 }
                 break;
-            case 5:
+            case 1:
                 if (service.input(getPackageName() + "et_address_tag", "100719")) {
                     taskStep++;
                 }
                 break;
-            case 6:
+            case 2:
                 String priceStr = service.getNodeText(getPackageName() + "tv_total_assets_qty");
                 double dd = ParseUtil.parseDouble(priceStr.replace(CoinConstant.XRP, Key.NIL).trim());
                 if (service.input(getPackageName() + "et_quantity", String.valueOf(dd - 70.25))) {
                     taskStep++;
                 }
                 break;
-            case 7:
-                service.exeSwipDown();
-                taskStep++;
-                break;
-            case 8:
+            case 3:
+                service.exeSwipDown(1, result -> {
+                    taskStep++;
+                    service.postDelayed(() -> transferXrp(service, endCallback));
+                });
+                return;
+            case 4:
                 if (service.clickFirst(getPackageName() + "btn_confirm")) {
                     taskStep++;
                 }
                 break;
-            case 9:
+            case 5:
                 if (service.input(getPackageName() + "et_input", "WZLwzl0705")) {
                     taskStep++;
                 }
                 break;
-            case 10:
+            case 6:
                 if (service.exeClickText("确定")) {
                     taskStep++;
                 }
                 break;
+            //TODO 自动填写验证码
             default:
                 taskStep = 0;
                 errorCount = 0;
-                endCallback.onEnd(false);
+                endCallback.onEnd(true);
                 return;
         }
         if (tempStep == taskStep) {
             errorCount++;
         }
         service.postDelayed(() -> transferXrp(service, endCallback));
+    }
+
+    public void transferBch(final ListenerService service, final EndCallback endCallback) {
+        if (errorCount >= 3 || !AppUtils.playing) {
+            taskStep = 0;
+            errorCount = 0;
+            endCallback.onEnd(false);
+            return;
+        }
+        int tempStep = taskStep;
+        switch (taskStep) {
+            case 0:
+                if (service.input(getPackageName() + "et_address", "1PSc1ABQfCvAv2qKg9pq2drEj6H6C3b6cs")) {
+                    taskStep++;
+                }
+                break;
+            case 1:
+                String priceStr = service.getNodeText(getPackageName() + "tv_total_assets_qty");
+                double dd = ParseUtil.parseDouble(priceStr.replace(CoinConstant.BCH, Key.NIL).trim());
+                if (service.input(getPackageName() + "et_quantity", String.valueOf(MathUtil.halfEven(dd - 0.2005, 8)))) {
+                    taskStep++;
+                }
+                break;
+            case 2:
+                service.exeSwipDown(1, result -> {
+                    taskStep++;
+                    service.postDelayed(() -> transferBch(service, endCallback));
+                });
+                return;
+            case 3:
+                if (service.clickFirst(getPackageName() + "btn_confirm")) {
+                    taskStep++;
+                }
+                break;
+            case 4:
+                if (service.input(getPackageName() + "et_input", "WZLwzl0705")) {
+                    taskStep++;
+                }
+                break;
+            case 5:
+                if (service.exeClickText("确定")) {
+                    taskStep++;
+                }
+                break;
+            //TODO 自动填写验证码
+            default:
+                taskStep = 0;
+                errorCount = 0;
+                endCallback.onEnd(true);
+                return;
+        }
+        if (tempStep == taskStep) {
+            errorCount++;
+        }
+        service.postDelayed(() -> transferBch(service, endCallback));
     }
 
     @Override
@@ -434,9 +525,11 @@ public class CoinColaTask extends BaseTask {
                 }
                 break;
             case 3:
-                service.exeSwipUp();
-                taskStep++;
-                break;
+                service.exeSwipUp(1, result -> {
+                    taskStep++;
+                    service.postDelayed(() -> getPremiumRate(service, symbol, higestPrice, endCallback));
+                });
+                return;
             default:
                 taskStep = 0;
                 errorCount = 0;
