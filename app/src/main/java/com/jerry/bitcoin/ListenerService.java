@@ -44,6 +44,7 @@ import com.jerry.baselib.common.util.DisplayUtil;
 import com.jerry.baselib.common.util.JJSON;
 import com.jerry.baselib.common.util.ListCacheUtil;
 import com.jerry.baselib.common.util.LogUtils;
+import com.jerry.baselib.common.util.MathUtil;
 import com.jerry.baselib.common.util.ParseUtil;
 import com.jerry.baselib.common.util.ToastUtil;
 import com.jerry.baselib.common.util.WeakHandler;
@@ -122,8 +123,8 @@ public class ListenerService extends BaseListenerService {
         mWeakHandler = new WeakHandler(msg -> {
             switch (msg.what) {
                 case MSG_DO_TASK:
-                    getUsdtData();
-                    requestTickers();
+                    getUsdtData(null);
+                    getHuobiMarket(Key.NIL, null);
                     listenLists();
                     return true;
                 case MSG_TRANS:
@@ -138,25 +139,27 @@ public class ListenerService extends BaseListenerService {
                     mCoinColaTask.sellByCurrentPage(this, coinOrder -> {
                         if (coinOrder != null) {
                             LogUtils.d(coinOrder.toString());
-                            giveNotice();
+
                             String symbol = coinOrder.getCoinType();
                             // 接受的最低价
-                            double lowestPrice = getLowestClose(symbol, coinOrder.getAmount(), coinOrder.getPrice());
-                            getHuobiMarket(symbol, result -> {
+                            getUsdtData(data1 -> getHuobiMarket(symbol, result -> {
                                 // 当前市场价
-                                Double currentPrice = priceMap.get(symbol);
-                                if (currentPrice != null) {
-                                    LogUtils.d("lowestPrice:" + lowestPrice + ",currentPrice:" + currentPrice);
-                                    double finalPrice = Math.max(lowestPrice, currentPrice);
-                                    LogUtils.d("finalPrice:" + finalPrice);
-                                    HuobiTradeHelper.getInstance().sell(symbol, finalPrice, coinOrder.getQuantity() - coinOrder.getFee(),
-                                        data -> {
-                                            List<Long> orderList = JJSON.parseArray(ListCacheUtil.getValueFromJsonFile(Key.ORDER), Long.class);
-                                            orderList.add(data);
-                                            ListCacheUtil.saveValueToJsonFile(Key.ORDER, JSON.toJSONString(orderList));
-                                        });
-                                }
-                            });
+                                double lowestPrice = getLowestClose(symbol, coinOrder.getAmount(), coinOrder.getPrice());
+                                double currentPrice = MathUtil.safeGet(ListenerService.priceMap, symbol);
+                                double finalPrice = Math.max(lowestPrice, currentPrice);
+                                LogUtils.d("lowestPrice:" + lowestPrice + ",currentPrice:" + currentPrice);
+                                HuobiTradeHelper.getInstance().sell(symbol, finalPrice, coinOrder.getQuantity() - coinOrder.getFee(),
+                                    data -> {
+                                        if (data == null) {
+                                            LogUtils.e("下单失败");
+                                            ToastUtil.showShortText("下单失败");
+                                            return;
+                                        }
+                                        List<Long> orderList = JJSON.parseArray(ListCacheUtil.getValueFromJsonFile(Key.ORDER), Long.class);
+                                        orderList.add(data);
+                                        ListCacheUtil.saveValueToJsonFile(Key.ORDER, JSON.toJSONString(orderList));
+                                    });
+                            }));
                         }
                     });
                     return true;
@@ -251,10 +254,6 @@ public class ListenerService extends BaseListenerService {
                                 menu.updateFloatItemList(itemList);
                                 menu.hide();
                                 break;
-                            case 3:
-                                AppUtils.playing = false;
-                                cacul();
-                                break;
                             default:
                                 break;
                         }
@@ -278,7 +277,9 @@ public class ListenerService extends BaseListenerService {
     @Override
     protected void stopScript() {
         super.stopScript();
-        mHuobiWebSocketConnection.close();
+        if (mHuobiWebSocketConnection != null) {
+            mHuobiWebSocketConnection.close();
+        }
     }
 
     /**
@@ -296,15 +297,14 @@ public class ListenerService extends BaseListenerService {
         mWeakHandler.postDelayed(runnable, TIME_LONG);
     }
 
-    public void getUsdtData() {
-        if (!AppUtils.playing) {
+    public void getUsdtData(EndCallback endCallback) {
+        if (!AppUtils.playing && endCallback == null) {
             return;
         }
         webLoader.load(URL_GWEB, data -> {
             LogUtils.d(data);
             Document doc = Jsoup.parse(data);
-            Elements allElements = doc.getAllElements();
-            Element sellBody = allElements.select(".layui-card-body").get(0);
+            Elements allElements = doc.getAllElements();Element sellBody = allElements.select(".layui-card-body").get(0);
             String tmp = "";
             for (int i = 0; i < sellBody.childNodeSize(); i++) {
                 Node element = sellBody.childNode(i);
@@ -312,59 +312,16 @@ public class ListenerService extends BaseListenerService {
                     tmp = ((Element) element).text().replace("：", "");
                 } else if (element instanceof TextNode) {
                     if (!TextUtils.isEmpty(tmp)) {
-                        usdtPrices.put(tmp, ParseUtil.parseDouble(((TextNode) element).text(), 6.6));
+                        usdtPrices.put(tmp.toLowerCase(), ParseUtil.parseDouble(((TextNode) element).text(), 6.6));
                     }
                 } else if (element instanceof Comment) {
                     LogUtils.d(element.baseUri());
                 }
             }
-            mWeakHandler.postDelayed(ListenerService.this::getUsdtData, 60000);
-        });
-    }
-
-    private void requestTickers() {
-        if (!AppUtils.playing) {
-            return;
-        }
-        if (mHuobiWebSocketConnection == null) {
-            MarketClient marketClient = MarketClient.create(new HuobiOptions());
-            mHuobiWebSocketConnection = marketClient.subCandlestick(CANDLESTICK_RESQUEST, response -> {
-                Candlestick candlestick = response.getCandlestick();
-                if (response.getCh().contains(CoinConstant.BCH_USDT)) {
-                    priceMap.put(CoinConstant.BCH_USDT, candlestick.getClose().doubleValue());
-                } else if (response.getCh().contains(CoinConstant.XRP_USDT)) {
-                    priceMap.put(CoinConstant.XRP_USDT, candlestick.getClose().doubleValue());
-                }
-            });
-        } else if (mHuobiWebSocketConnection.getState() != ConnectionStateEnum.CONNECTED) {
-            mHuobiWebSocketConnection.reConnect();
-        }
-    }
-
-    private void cacul() {
-        webLoader.load(URL_GWEB, data -> {
-            LogUtils.d(data);
-            Document doc = Jsoup.parse(data);
-            Elements allElements = doc.getAllElements();
-            Element sellBody = allElements.select(".layui-card-body").get(0);
-            String tmp = "";
-            for (int i = 0; i < sellBody.childNodeSize(); i++) {
-                Node element = sellBody.childNode(i);
-                if (element instanceof Element) {
-                    tmp = ((Element) element).text().replace("：", "").toLowerCase().trim();
-                } else if (element instanceof TextNode) {
-                    if (!TextUtils.isEmpty(tmp)) {
-                        usdtPrices.put(tmp, ParseUtil.parseDouble(((TextNode) element).text(), 6.6));
-                    }
-                } else if (element instanceof Comment) {
-                    LogUtils.d(element.baseUri());
-                }
+            if (endCallback != null) {
+                endCallback.onEnd(true);
             }
-            String symbol = mCoinColaTask.getSelectedSymbol(this);
-            getHuobiMarket(symbol, result -> {
-                double lowestClose = getLowestClose(symbol, 5000, mCoinColaTask.getHighestPrice(ListenerService.this));
-                ToastUtil.showShortText("最低价：" + lowestClose);
-            });
+            mWeakHandler.postDelayed(() -> getUsdtData(null), 60000);
         });
     }
 
@@ -378,14 +335,14 @@ public class ListenerService extends BaseListenerService {
                 } else if (response.getCh().contains(CoinConstant.XRP_USDT)) {
                     priceMap.put(CoinConstant.XRP_USDT, candlestick.getClose().doubleValue());
                 }
-                if (response.getCh().contains(symbol)) {
+                if (endCallback != null && response.getCh().contains(symbol)) {
                     mHuobiWebSocketConnection.close();
                     endCallback.onEnd(true);
                 }
             });
         } else if (mHuobiWebSocketConnection.getState() != ConnectionStateEnum.CONNECTED) {
             mHuobiWebSocketConnection.reConnect();
-        } else {
+        } else if (endCallback != null) {
             endCallback.onEnd(true);
         }
     }
@@ -409,7 +366,6 @@ public class ListenerService extends BaseListenerService {
         mCoinColaTask.exchangeCoin(this, result -> {
             if (AppUtils.playing) {
                 pullRefresh(t -> mCoinColaTask.listenLists(this, result1 -> {
-                    cacul();
                     if (AppUtils.playing) {
                         if (result1) {
                             mWeakHandler.postDelayed(this::listenOrder, TIME_LONG);
@@ -437,19 +393,20 @@ public class ListenerService extends BaseListenerService {
                         // 接受的最低价
                         double lowestPrice = getLowestClose(symbol, coinOrder.getAmount(), coinOrder.getPrice());
                         // 当前市场价
-                        Double currentPrice = priceMap.get(symbol);
-                        if (currentPrice != null) {
-                            LogUtils.d("lowestPrice:" + lowestPrice + ",currentPrice:" + currentPrice);
-                            double finalPrice = Math.max(lowestPrice, currentPrice);
-                            HuobiTradeHelper.getInstance().sell(symbol, finalPrice, coinOrder.getQuantity() - coinOrder.getFee(),
-                                data -> {
-                                    List<Long> orderList = JJSON.parseArray(ListCacheUtil.getValueFromJsonFile(Key.ORDER), Long.class);
-                                    orderList.add(data);
-                                    ListCacheUtil.saveValueToJsonFile(Key.ORDER, JSON.toJSONString(orderList));
-                                });
-                            // TODO发消息去控制端
-
-                        }
+                        double currentPrice = MathUtil.safeGet(ListenerService.priceMap, symbol);
+                        double finalPrice = Math.max(lowestPrice, currentPrice);
+                        LogUtils.d("lowestPrice:" + lowestPrice + ",currentPrice:" + currentPrice);
+                        HuobiTradeHelper.getInstance().sell(symbol, finalPrice, coinOrder.getQuantity() - coinOrder.getFee(), data -> {
+                            if (data == null) {
+                                LogUtils.e("下单失败");
+                                ToastUtil.showShortText("下单失败");
+                                return;
+                            }
+                            List<Long> orderList = JJSON.parseArray(ListCacheUtil.getValueFromJsonFile(Key.ORDER), Long.class);
+                            orderList.add(data);
+                            ListCacheUtil.saveValueToJsonFile(Key.ORDER, JSON.toJSONString(orderList));
+                        });
+                        // TODO发消息去控制端
                     }
                 });
             } else if (result == 1) {

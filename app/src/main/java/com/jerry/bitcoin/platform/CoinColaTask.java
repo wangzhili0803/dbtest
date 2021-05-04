@@ -14,11 +14,13 @@ import com.jerry.baselib.common.retrofit.retrofit.response.Response4Data;
 import com.jerry.baselib.common.util.AppUtils;
 import com.jerry.baselib.common.util.CollectionUtils;
 import com.jerry.baselib.common.util.DisplayUtil;
+import com.jerry.baselib.common.util.LogUtils;
 import com.jerry.baselib.common.util.MathUtil;
 import com.jerry.baselib.common.util.OnDataCallback;
 import com.jerry.baselib.common.util.ParseUtil;
 import com.jerry.baselib.common.util.PreferenceHelp;
 import com.jerry.baselib.common.util.StringUtil;
+import com.jerry.baselib.common.util.ToastUtil;
 import com.jerry.baselib.greendao.CoinOrderDao.Properties;
 import com.jerry.bitcoin.ListenerService;
 import com.jerry.bitcoin.beans.CoinBean;
@@ -239,7 +241,7 @@ public class CoinColaTask extends BaseTask {
                 .findAccessibilityNodeInfosByViewId(getPackageName() + "recycler_view_ad");
             if (!CollectionUtils.isEmpty(recyclerViews)) {
                 for (AccessibilityNodeInfo recyclerView : recyclerViews) {
-                    if (recyclerView.isFocused()) {
+                    if (recyclerView.isVisibleToUser()) {
                         for (int i = 0; i < recyclerView.getChildCount(); i++) {
                             AccessibilityNodeInfo subNode = recyclerView.getChild(i);
                             List<AccessibilityNodeInfo> tvPrices = subNode.findAccessibilityNodeInfosByViewId(getPackageName() + "tv_price");
@@ -333,6 +335,15 @@ public class CoinColaTask extends BaseTask {
                 .replace("CNY", Key.NIL)
                 .trim();
             double priceMe = ParseUtil.parse2Double(priceMeStr);
+            double lowestClose = getLowestClose(symbol, priceMe);
+            double marketPrice = MathUtil.safeGet(ListenerService.priceMap, symbol);
+            if (lowestClose < marketPrice) {
+                Double usdtPrice = ListenerService.usdtPrices.get(CoinConstant.HUOBI);
+                if (usdtPrice != null) {
+                    service.postDelayed(() -> getPremiumRate(service, symbol, marketPrice * usdtPrice, endCallback));
+                    return;
+                }
+            }
             if (priceMe <= priceSecond || priceSecond + 0.01 < priceMe) {
                 if (priceSecond + 0.01 > priceMe && service.exeClickId(firstItem, getPackageName() + "tv_operator")) {
                     service.postDelayed(() -> getPremiumRate(service, symbol, priceSecond, endCallback));
@@ -352,7 +363,8 @@ public class CoinColaTask extends BaseTask {
                 .trim();
             double highestPrice = ParseUtil.parse2Double(highestPriceStr);
             double lowestClose = getLowestClose(symbol, highestPrice);
-            if (lowestClose < MathUtil.safeGet(ListenerService.priceMap, symbol)) {
+            double marketPrice = MathUtil.safeGet(ListenerService.priceMap, symbol);
+            if (lowestClose < marketPrice) {
                 service.swipToClickText("jerrywonder", result -> {
                     if (result) {
                         service.postDelayed(() -> getPremiumRate(service, symbol, highestPrice, endCallback));
@@ -362,7 +374,10 @@ public class CoinColaTask extends BaseTask {
                 });
                 return;
             }
+            ToastUtil.showShortText("marketPrice:" + marketPrice);
         }
+        double lowestClose = getLowestClose(symbol, getHighestPrice(service));
+        ToastUtil.showShortText("最低价：" + lowestClose);
         endCallback.onEnd(false);
     }
 
@@ -390,6 +405,7 @@ public class CoinColaTask extends BaseTask {
         int tempStep = taskStep;
         switch (taskStep) {
             case 0:
+                LogUtils.d("当前最高价：higestPrice:" + higestPrice);
                 if (service.exeClickId(service.getRootInActiveWindow(), getPackageName() + "btn_edit")) {
                     taskStep++;
                 }
@@ -413,16 +429,11 @@ public class CoinColaTask extends BaseTask {
             case 2:
                 if (ParseUtil.parseDouble(service.getNodeText(getPackageName() + "et_margin")) == 0) {
                     taskStep--;
-                } else {
+                } else if (service.exeClickId(service.getRootInActiveWindow(), getPackageName() + "btn_commit")) {
                     taskStep++;
                 }
                 break;
             case 3:
-                if (service.exeClickId(service.getRootInActiveWindow(), getPackageName() + "btn_commit")) {
-                    taskStep++;
-                }
-                break;
-            case 4:
                 service.exeSwipUp();
                 taskStep++;
                 break;

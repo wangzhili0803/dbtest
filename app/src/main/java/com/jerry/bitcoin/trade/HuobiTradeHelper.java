@@ -3,6 +3,8 @@ package com.jerry.bitcoin.trade;
 import java.math.BigDecimal;
 import java.util.List;
 
+import android.util.ArrayMap;
+
 import com.huobi.client.AccountClient;
 import com.huobi.client.TradeClient;
 import com.huobi.client.req.trade.CreateOrderRequest;
@@ -11,8 +13,10 @@ import com.huobi.model.account.Account;
 import com.jerry.baselib.common.asyctask.AppTask;
 import com.jerry.baselib.common.asyctask.BackgroundTask;
 import com.jerry.baselib.common.asyctask.WhenTaskDone;
+import com.jerry.baselib.common.util.MathUtil;
 import com.jerry.baselib.common.util.OnDataCallback;
 import com.jerry.bitcoin.Constants;
+import com.jerry.bitcoin.beans.CoinConstant;
 
 import androidx.annotation.NonNull;
 
@@ -29,6 +33,13 @@ public class HuobiTradeHelper {
     private final AccountClient accountClient;
     @NonNull
     private final TradeClient tradeClient;
+
+    public static final ArrayMap<String, Integer> EXACT_MAP = new ArrayMap<>();
+
+    static {
+        EXACT_MAP.put(CoinConstant.XRP_USDT, 5);
+        EXACT_MAP.put(CoinConstant.BCH_USDT, 2);
+    }
 
     private HuobiTradeHelper() {
         HuobiOptions mHuobiOptions = new HuobiOptions();
@@ -77,8 +88,14 @@ public class HuobiTradeHelper {
                     break;
                 }
             }
+            Integer exact = EXACT_MAP.get(symbol);
+            if (exact != null) {
+                double finalPrice = MathUtil.halfEven(price, exact);
+                return tradeClient
+                    .createOrder(CreateOrderRequest.spotSellLimit(accountId, symbol, BigDecimal.valueOf(finalPrice), BigDecimal.valueOf(amount)));
+            }
+            return null;
             // 下单
-            return tradeClient.createOrder(CreateOrderRequest.spotSellLimit(accountId, symbol, new BigDecimal(price), new BigDecimal(amount)));
         }).whenDone((WhenTaskDone<Long>) dataCallback::onDataCallback).whenBroken(t -> dataCallback.onDataCallback(-1L)).execute();
     }
 }

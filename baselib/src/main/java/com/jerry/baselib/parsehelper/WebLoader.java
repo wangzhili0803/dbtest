@@ -96,7 +96,6 @@ public class WebLoader {
 
     @JavascriptInterface
     public void getSource(String html) {
-        LogUtils.d(html);
         OnDataCallback<String> onDataCallback = mArrayMap.remove(currentUrl);
         if (onDataCallback != null) {
             onDataCallback.onDataCallback(html);

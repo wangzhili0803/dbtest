@@ -33,8 +33,6 @@ import com.jerry.baselib.common.util.OnDataCallback;
 import com.jerry.baselib.common.util.ToastUtil;
 import com.jerry.baselib.common.util.WeakHandler;
 
-import androidx.annotation.NonNull;
-
 /**
  * Created by cxk on 2017/2/4. email:471497226@qq.com
  * <p>
@@ -327,15 +325,17 @@ public abstract class BaseListenerService extends AccessibilityService {
         return getNodeText(getRootInActiveWindow(), id);
     }
 
-    public String getNodeText(@NonNull AccessibilityNodeInfo root, String id) {
-        List<AccessibilityNodeInfo> inputs = root.findAccessibilityNodeInfosByViewId(id);
-        if (!CollectionUtils.isEmpty(inputs)) {
-            AccessibilityNodeInfo node = inputs.get(inputs.size() - 1);
-            CharSequence txt = node.getText();
-            if (txt == null) {
-                txt = Key.NIL;
+    public String getNodeText(AccessibilityNodeInfo root, String id) {
+        if (root != null) {
+            List<AccessibilityNodeInfo> inputs = root.findAccessibilityNodeInfosByViewId(id);
+            if (!CollectionUtils.isEmpty(inputs)) {
+                AccessibilityNodeInfo node = inputs.get(inputs.size() - 1);
+                CharSequence txt = node.getText();
+                if (txt == null) {
+                    txt = Key.NIL;
+                }
+                return txt.toString();
             }
-            return txt.toString();
         }
         return Key.NIL;
     }
