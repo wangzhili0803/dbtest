@@ -426,25 +426,23 @@ public class CoinColaTask extends BaseTask {
                 .replace("CNY", Key.NIL)
                 .trim();
             double priceMe = ParseUtil.parse2Double(priceMeStr);
-            double lowestClose = getLowestClose(symbol, priceMe);
             double marketPrice = MathUtil.safeGet(ListenerService.priceMap, symbol);
-            if (lowestClose > marketPrice) {
-                Double usdtPrice = ListenerService.usdtPrices.get(CoinConstant.HUOBI);
-                if (usdtPrice != null) {
-                    service.postDelayed(() -> getPremiumRate(service, symbol, marketPrice * usdtPrice, endCallback));
-                    return;
-                }
+            Double usdtPrice = ListenerService.usdtPrices.get(CoinConstant.HUOBI);
+            double marketPrice4Cym = 0;
+            if (usdtPrice != null) {
+                marketPrice4Cym = MathUtil.halfEven(marketPrice * usdtPrice);
             }
-            if (priceMe <= priceSecond || priceSecond + 0.01 < priceMe) {
-                if (priceSecond + 0.01 > priceMe && service.exeClickId(firstItem, getPackageName() + "tv_operator")) {
-                    service.postDelayed(() -> getPremiumRate(service, symbol, priceSecond, endCallback));
+            double finalPrice = Math.min(marketPrice4Cym, priceSecond);
+            if (priceMe <= finalPrice || finalPrice + 0.01 < priceMe) {
+                if (finalPrice + 0.01 > priceMe && service.exeClickId(firstItem, getPackageName() + "tv_operator")) {
+                    service.postDelayed(() -> getPremiumRate(service, symbol, finalPrice, endCallback));
                     return;
                 }
                 // 原价
                 double origin = priceMe / (1 + premiumRate / 100);
                 double fdsfs = MathUtil.halfEven(((premiumRate - 0.01) / 100 + 1) * origin);
-                if (priceSecond < fdsfs && service.exeClickId(firstItem, getPackageName() + "tv_operator")) {
-                    service.postDelayed(() -> getPremiumRate(service, symbol, priceSecond, endCallback));
+                if (finalPrice < fdsfs && service.exeClickId(firstItem, getPackageName() + "tv_operator")) {
+                    service.postDelayed(() -> getPremiumRate(service, symbol, finalPrice, endCallback));
                     return;
                 }
             }
