@@ -21,7 +21,7 @@ public class Key {
     public static final String CODE = "code";
     public static final String OK = "ok";
     public static final String ORDER = "order";
-
+    public static final String TIME = "time";
 
     public static final String PASSWORD = "password";
     public static final String WXCODE = "wxCode";

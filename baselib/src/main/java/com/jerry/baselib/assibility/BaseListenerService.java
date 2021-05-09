@@ -397,19 +397,22 @@ public abstract class BaseListenerService extends AccessibilityService {
         if (root != null) {
             List<AccessibilityNodeInfo> inputs = root.findAccessibilityNodeInfosByViewId(id);
             if (!CollectionUtils.isEmpty(inputs)) {
-                input(inputs.get(0), text);
-                return true;
+                return input(inputs.get(0), text);
             }
         }
         return false;
     }
 
-    private void input(AccessibilityNodeInfo node, String text) {
-        //粘贴板
-        Bundle arguments = new Bundle();
-        arguments.putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, text);
-        node.performAction(AccessibilityNodeInfo.ACTION_FOCUS);
-        node.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, arguments);
+    public boolean input(AccessibilityNodeInfo node, String text) {
+        if (node != null && !TextUtils.isEmpty(text)) {
+            //粘贴板
+            Bundle arguments = new Bundle();
+            arguments.putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, text);
+            node.performAction(AccessibilityNodeInfo.ACTION_FOCUS);
+            node.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, arguments);
+            return true;
+        }
+        return false;
     }
 
     public void back() {

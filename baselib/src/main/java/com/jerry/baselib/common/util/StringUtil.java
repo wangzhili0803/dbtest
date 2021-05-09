@@ -3,6 +3,8 @@ package com.jerry.baselib.common.util;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import android.text.TextUtils;
 
@@ -89,5 +91,14 @@ public class StringUtil {
             }
         }
         return count;
+    }
+
+    public static String getValidateCode4Sms(final String content) {
+        Pattern pattern = Pattern.compile("\\d{6}");
+        Matcher matcher = pattern.matcher(content);
+        if (matcher.find()) {
+            return matcher.group();
+        }
+        return null;
     }
 }

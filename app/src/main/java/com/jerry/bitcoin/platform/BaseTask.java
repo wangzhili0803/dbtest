@@ -8,6 +8,7 @@ import android.text.TextUtils;
 import android.view.accessibility.AccessibilityNodeInfo;
 
 import com.jerry.baselib.Key;
+import com.jerry.baselib.assibility.EndCallback;
 import com.jerry.baselib.common.util.OnDataCallback;
 import com.jerry.baselib.common.util.Patterns;
 import com.jerry.baselib.common.util.PreferenceHelp;
@@ -61,6 +62,7 @@ public abstract class BaseTask implements TaskCallback {
      * 转账信息
      */
     protected TransformInfo mTransformInfo;
+    protected EndCallback smsEndCallback;
 
     public String getCoinType() {
         return coinType;
@@ -223,5 +225,9 @@ public abstract class BaseTask implements TaskCallback {
             }
         }
         return null;
+    }
+
+    public void onReceiveSmsMessage(final ListenerService service, final String address, final String content) {
+
     }
 }

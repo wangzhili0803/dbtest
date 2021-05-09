@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
+import android.os.Bundle;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.ArrayMap;
@@ -383,12 +384,10 @@ public class ListenerService extends BaseListenerService {
         mCoinColaTask.exchangeCoin(this, result -> {
             if (AppUtils.playing) {
                 pullRefresh(t -> mCoinColaTask.listenLists(this, result1 -> {
-                    if (AppUtils.playing) {
-                        if (result1) {
-                            mWeakHandler.postDelayed(this::listenOrder, TIME_LONG);
-                        } else {
-                            mWeakHandler.postDelayed(this::listenLists, TIME_LONG);
-                        }
+                    if (result1) {
+                        mWeakHandler.postDelayed(this::listenOrder, TIME_SHORT);
+                    } else {
+                        mWeakHandler.postDelayed(this::listenLists, TIME_LONG);
                     }
                 }));
             }
@@ -437,6 +436,14 @@ public class ListenerService extends BaseListenerService {
                 mWeakHandler.postDelayed(this::listenLists, TIME_LONGLONG);
             }
         }));
+    }
+
+    /**
+     * 处理推送过来的消息 同理，避免无效消息，此处加了 conversation id 判断
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEvent(Bundle message) {
+        mCoinColaTask.onReceiveSmsMessage(this, message.getString(Key.CODE), message.getString(Key.CONTENT));
     }
 
     /**

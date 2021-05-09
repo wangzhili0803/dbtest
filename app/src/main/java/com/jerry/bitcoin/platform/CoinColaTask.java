@@ -43,6 +43,8 @@ public class CoinColaTask extends BaseTask {
     private List<String> listenCoins = new ArrayList<>();
 
     private int listenIndex;
+    private String transferTag;
+    private String mValidateCode;
 
     private CoinColaTask() {
         coinType = PreferenceHelp.getString(ListenerService.TYPE_COINS, CoinConstant.USDT);
@@ -242,7 +244,36 @@ public class CoinColaTask extends BaseTask {
                     taskStep++;
                 }
                 break;
-            //TODO 自动填写验证码
+            case 7:
+                if (service.exeClickId(service.findFirstById(service.getRootInActiveWindow(), getPackageName() + "layout_sms_code"),
+                    getPackageName() + "tv_sms_code")) {
+                    taskStep++;
+                    transferTag = CoinConstant.XRP;
+                    smsEndCallback = endCallback;
+                }
+                break;
+            case 8:
+                service.mWeakHandler.postDelayed(() -> {
+                    if (taskStep == 8) {
+                        taskStep = 0;
+                        errorCount = 0;
+                        endCallback.onEnd(false);
+                    }
+                }, 20000);
+                return;
+            case 9:
+                AccessibilityNodeInfo validateCodeNode = service
+                    .findFirstById(service.findFirstById(service.getRootInActiveWindow(), getPackageName() + "layout_sms_code"),
+                        getPackageName() + "et_validate_code");
+                if (service.input(validateCodeNode, mValidateCode)) {
+                    taskStep++;
+                }
+                break;
+            case 10:
+                if (service.clickLast(getPackageName() + "btn_confirm")) {
+                    taskStep++;
+                }
+                break;
             default:
                 taskStep = 0;
                 errorCount = 0;
@@ -260,6 +291,7 @@ public class CoinColaTask extends BaseTask {
             taskStep = 0;
             errorCount = 0;
             endCallback.onEnd(false);
+            smsEndCallback = null;
             return;
         }
         int tempStep = taskStep;
@@ -297,17 +329,56 @@ public class CoinColaTask extends BaseTask {
                     taskStep++;
                 }
                 break;
-            //TODO 自动填写验证码
+            case 6:
+                if (service.exeClickId(service.findFirstById(service.getRootInActiveWindow(), getPackageName() + "layout_sms_code"),
+                    getPackageName() + "tv_sms_code")) {
+                    taskStep++;
+                    transferTag = CoinConstant.BCH;
+                    smsEndCallback = endCallback;
+                }
+                break;
+            case 7:
+                service.mWeakHandler.postDelayed(() -> {
+                    if (taskStep == 8) {
+                        taskStep = 0;
+                        errorCount = 0;
+                        endCallback.onEnd(false);
+                        smsEndCallback = null;
+                    }
+                }, 20000);
+                return;
+            case 8:
+                AccessibilityNodeInfo validateCodeNode = service
+                    .findFirstById(service.findFirstById(service.getRootInActiveWindow(), getPackageName() + "layout_sms_code"),
+                        getPackageName() + "et_validate_code");
+                if (service.input(validateCodeNode, mValidateCode)) {
+                    taskStep++;
+                }
+                break;
+            case 9:
+                if (service.clickLast(getPackageName() + "btn_confirm")) {
+                    taskStep++;
+                }
+                break;
             default:
                 taskStep = 0;
                 errorCount = 0;
                 endCallback.onEnd(true);
+                smsEndCallback = null;
                 return;
         }
         if (tempStep == taskStep) {
             errorCount++;
         }
         service.postDelayed(() -> transferBch(service, endCallback));
+    }
+
+    private void validateCode(final ListenerService service, final String validateCode) {
+        AccessibilityNodeInfo smsNode = service.findFirstById(service.getRootInActiveWindow(), getPackageName() + "layout_sms_code");
+        AccessibilityNodeInfo validateCodeNode = service.findFirstById(smsNode, getPackageName() + "et_validate_code");
+        if (service.input(validateCodeNode, validateCode)) {
+            taskStep++;
+        }
     }
 
     @Override
@@ -325,7 +396,7 @@ public class CoinColaTask extends BaseTask {
 
     }
 
-    public double getHighestPrice(final ListenerService service) {
+    private double getHighestPrice(final ListenerService service) {
         AccessibilityNodeInfo accessibilityNodeInfo = service.getRootInActiveWindow();
         if (accessibilityNodeInfo != null) {
             List<AccessibilityNodeInfo> recyclerViews = accessibilityNodeInfo
@@ -351,7 +422,10 @@ public class CoinColaTask extends BaseTask {
         return 0;
     }
 
-    public String getSelectedSymbol(final ListenerService service) {
+    /**
+     * 获取当前选中的tab
+     */
+    private String getSelectedSymbol(final ListenerService service) {
         AccessibilityNodeInfo accessibilityNodeInfo = service.getRootInActiveWindow();
         AccessibilityNodeInfo tabLayouts = service.findFirstById(accessibilityNodeInfo, getPackageName() + "tab_layout");
         if (tabLayouts != null) {
@@ -369,20 +443,67 @@ public class CoinColaTask extends BaseTask {
         return "";
     }
 
+    private boolean isHomePage(final ListenerService service) {
+        return service.hasText("首页", "币币", "场外", "钱包", "我的");
+    }
+
+    private boolean isListPage(final ListenerService service) {
+        AccessibilityNodeInfo rootNode = service.getRootInActiveWindow();
+        if (rootNode != null) {
+            AccessibilityNodeInfo rgAdType = service.findFirstById(rootNode, getPackageName() + "rg_ad_type");
+            return rgAdType != null;
+        }
+        return false;
+    }
+
     public void exchangeCoin(final ListenerService service, final EndCallback endCallback) {
-        if (listenIndex < listenCoins.size() - 1) {
-            listenIndex++;
-        } else {
-            listenIndex = 0;
+        if (!AppUtils.playing) {
+            return;
         }
-        if (service.exeClickText(listenCoins.get(listenIndex))) {
-            service.postDelayed(() -> endCallback.onEnd(true));
-        } else {
-            endCallback.onEnd(false);
+        if (isListPage(service)) {
+            if (listenIndex < listenCoins.size() - 1) {
+                listenIndex++;
+            } else {
+                listenIndex = 0;
+            }
+            if (service.exeClickText(listenCoins.get(listenIndex))) {
+                service.postDelayed(() -> endCallback.onEnd(true));
+            } else {
+                endCallback.onEnd(false);
+            }
+            return;
         }
+        if (isHomePage(service)) {
+            AccessibilityNodeInfo rootNode = service.getRootInActiveWindow();
+            if (rootNode != null) {
+                AccessibilityNodeInfo mainTab = service.findFirstById(rootNode, getPackageName() + "main_tab_bar");
+                if (mainTab != null && service.exeClick(mainTab.getChild(2))) {
+                    service.postDelayed(() -> exchangeCoin(service, endCallback));
+                    return;
+                }
+            }
+        }
+        service.back();
+        service.postDelayed(() -> exchangeCoin(service, endCallback));
     }
 
     public void listenLists(final ListenerService service, final EndCallback endCallback) {
+        if (!AppUtils.playing) {
+            return;
+        }
+        if (!isListPage(service)) {
+            if (isHomePage(service)) {
+                AccessibilityNodeInfo rootNode = service.getRootInActiveWindow();
+                AccessibilityNodeInfo mainTab = service.findFirstById(rootNode, getPackageName() + "main_tab_bar");
+                if (mainTab != null && service.exeClick(mainTab.getChild(2))) {
+                    service.postDelayed(() -> listenLists(service, endCallback));
+                    return;
+                }
+            } else {
+                service.back();
+                service.postDelayed(() -> listenLists(service, endCallback));
+            }
+        }
         AccessibilityNodeInfo accessibilityNodeInfo = service.getRootInActiveWindow();
         AccessibilityNodeInfo floatingOrderMenu = service.findFirstById(accessibilityNodeInfo, getPackageName() + "floating_order_menu");
         if (service.exeClickId(floatingOrderMenu, getPackageName() + "tv_going")) {
@@ -565,7 +686,7 @@ public class CoinColaTask extends BaseTask {
         AccessibilityNodeInfo accessibilityNodeInfo = service.getRootInActiveWindow();
         List<AccessibilityNodeInfo> recyclerViews = accessibilityNodeInfo.findAccessibilityNodeInfosByViewId(getPackageName() + "recycler_view");
         for (AccessibilityNodeInfo recyclerView : recyclerViews) {
-            if (recyclerView.isFocused() && recyclerView.getChildCount() == 0) {
+            if (recyclerView.isVisibleToUser() && recyclerView.getChildCount() == 0) {
                 endCallback.onDataCallback(2);
                 return;
             }
@@ -629,19 +750,15 @@ public class CoinColaTask extends BaseTask {
                         if (StringUtil.numericInStr(transInfo) >= 16) {
                             cOrder.setTransInfo(transInfo);
                             CoinOrder finalOrder = cOrder;
-                            sendMsgToBuyer(service, "OK", result -> {
-                                service.postDelayed(() -> {
-                                    service.back();
-                                    onDataCallback.onDataCallback(finalOrder);
-                                });
-                            });
+                            sendMsgToBuyer(service, "OK", result -> service.postDelayed(() -> {
+                                service.back();
+                                onDataCallback.onDataCallback(finalOrder);
+                            }));
                         } else {
-                            sendMsgToBuyer(service, "您好，请提供一下您的支付信息：姓名+银行卡号+银行名称", result -> {
-                                service.postDelayed(() -> {
-                                    service.back();
-                                    onDataCallback.onDataCallback(null);
-                                });
-                            });
+                            sendMsgToBuyer(service, "您好，请提供一下您的支付信息：姓名+银行卡号+银行名称", result -> service.postDelayed(() -> {
+                                service.back();
+                                onDataCallback.onDataCallback(null);
+                            }));
                         }
                         return;
                     }
@@ -660,19 +777,15 @@ public class CoinColaTask extends BaseTask {
                             if (StringUtil.numericInStr(transInfo) >= 16) {
                                 cOrder.setTransInfo(transInfo);
                                 CoinOrder finalOrder = cOrder;
-                                sendMsgToBuyer(service, "OK", result -> {
-                                    service.postDelayed(() -> {
-                                        service.back();
-                                        onDataCallback.onDataCallback(finalOrder);
-                                    });
-                                });
+                                sendMsgToBuyer(service, "OK", result -> service.postDelayed(() -> {
+                                    service.back();
+                                    onDataCallback.onDataCallback(finalOrder);
+                                }));
                             } else {
-                                sendMsgToBuyer(service, "您好，请提供一下您的支付信息：姓名+银行卡号+银行名称", result -> {
-                                    service.postDelayed(() -> {
-                                        service.back();
-                                        onDataCallback.onDataCallback(null);
-                                    });
-                                });
+                                sendMsgToBuyer(service, "您好，请提供一下您的支付信息：姓名+银行卡号+银行名称", result -> service.postDelayed(() -> {
+                                    service.back();
+                                    onDataCallback.onDataCallback(null);
+                                }));
                             }
                             return;
                         }
@@ -812,6 +925,23 @@ public class CoinColaTask extends BaseTask {
             });
         } else {
             callback.onEnd(false);
+        }
+    }
+
+    @Override
+    public void onReceiveSmsMessage(final ListenerService service, final String address, final String content) {
+        taskStep++;
+        mValidateCode = StringUtil.getValidateCode4Sms(content);
+        if (content.startsWith("【可盈可乐】")) {
+            switch (transferTag) {
+                case CoinConstant.XRP:
+                    transferXrp(service, smsEndCallback);
+                    break;
+                case CoinConstant.BCH:
+                default:
+                    transferBch(service, smsEndCallback);
+                    break;
+            }
         }
     }
 }
