@@ -9,7 +9,6 @@ import android.view.accessibility.AccessibilityNodeInfo;
 import com.jerry.baselib.Key;
 import com.jerry.baselib.assibility.EndCallback;
 import com.jerry.baselib.common.bean.CoinOrder;
-import com.jerry.baselib.common.dbhelper.ProManager;
 import com.jerry.baselib.common.retrofit.retrofit.response.Response4Data;
 import com.jerry.baselib.common.util.AppUtils;
 import com.jerry.baselib.common.util.CollectionUtils;
@@ -21,7 +20,6 @@ import com.jerry.baselib.common.util.ParseUtil;
 import com.jerry.baselib.common.util.PreferenceHelp;
 import com.jerry.baselib.common.util.StringUtil;
 import com.jerry.baselib.common.util.ToastUtil;
-import com.jerry.baselib.greendao.CoinOrderDao.Properties;
 import com.jerry.bitcoin.ListenerService;
 import com.jerry.bitcoin.beans.CoinBean;
 import com.jerry.bitcoin.beans.CoinConstant;
@@ -245,23 +243,18 @@ public class CoinColaTask extends BaseTask {
                 }
                 break;
             case 7:
-                if (service.exeClickId(service.findFirstById(service.getRootInActiveWindow(), getPackageName() + "layout_sms_code"),
-                    getPackageName() + "tv_sms_code")) {
-                    taskStep++;
-                    transferTag = CoinConstant.XRP;
-                    smsEndCallback = endCallback;
-                }
-                break;
-            case 8:
                 service.mWeakHandler.postDelayed(() -> {
-                    if (taskStep == 8) {
-                        taskStep = 0;
-                        errorCount = 0;
-                        endCallback.onEnd(false);
+                    if (taskStep == 7) {
+                        if (service.exeClickId(service.findFirstById(service.getRootInActiveWindow(), getPackageName() + "layout_sms_code"),
+                            getPackageName() + "tv_sms_code")) {
+                            taskStep++;
+                            transferTag = CoinConstant.XRP;
+                            smsEndCallback = endCallback;
+                        }
                     }
-                }, 20000);
+                }, 70000);
                 return;
-            case 9:
+            case 8:
                 AccessibilityNodeInfo validateCodeNode = service
                     .findFirstById(service.findFirstById(service.getRootInActiveWindow(), getPackageName() + "layout_sms_code"),
                         getPackageName() + "et_validate_code");
@@ -269,7 +262,7 @@ public class CoinColaTask extends BaseTask {
                     taskStep++;
                 }
                 break;
-            case 10:
+            case 9:
                 if (service.clickLast(getPackageName() + "btn_confirm")) {
                     taskStep++;
                 }
@@ -735,61 +728,26 @@ public class CoinColaTask extends BaseTask {
                 double price = getNumberFromStr(service.getNodeText(getPackageName() + "tv_trade_price"));
                 double fee = getNumberFromStr(service.getNodeText(getPackageName() + "tv_trade_fee"));
                 String transInfo = service.getAllNodeText(getPackageName() + "tv_message_text");
-                CoinOrder cOrder = ProManager.getInstance().queryObj(CoinOrder.class, Properties.Name.eq(nickname));
-                if (cOrder == null) {
-                    cOrder = new CoinOrder();
-                    cOrder.setOrderId(orderId);
-                    cOrder.setCoinType(title.replace("购买", "").trim().toLowerCase() + "usdt");
-                    cOrder.setName(nickname);
-                    cOrder.setStatus(2);
-                    cOrder.setAmount(amount);
-                    cOrder.setQuantity(qty);
-                    cOrder.setPrice(price);
-                    cOrder.setFee(fee);
-                    if (ProManager.getInstance().insertObject(cOrder)) {
-                        if (StringUtil.numericInStr(transInfo) >= 16) {
-                            cOrder.setTransInfo(transInfo);
-                            CoinOrder finalOrder = cOrder;
-                            sendMsgToBuyer(service, "OK", result -> service.postDelayed(() -> {
-                                service.back();
-                                onDataCallback.onDataCallback(finalOrder);
-                            }));
-                        } else {
-                            sendMsgToBuyer(service, "您好，请提供一下您的支付信息：姓名+银行卡号+银行名称", result -> service.postDelayed(() -> {
-                                service.back();
-                                onDataCallback.onDataCallback(null);
-                            }));
-                        }
-                        return;
-                    }
-                } else {
-                    if (StringUtil.numericInStr(transInfo) >= 16) {
-                        cOrder.setOrderId(orderId);
-                        cOrder.setCoinType(title.replace("购买", "").trim().toLowerCase() + "usdt");
-                        cOrder.setName(nickname);
-                        cOrder.setAmount(amount);
-                        cOrder.setQuantity(qty);
-                        cOrder.setPrice(price);
-                        cOrder.setFee(fee);
-                        cOrder.setStatus(2);
-                        cOrder.setTransInfo(transInfo);
-                        if (ProManager.getInstance().update(cOrder)) {
-                            if (StringUtil.numericInStr(transInfo) >= 16) {
-                                cOrder.setTransInfo(transInfo);
-                                CoinOrder finalOrder = cOrder;
-                                sendMsgToBuyer(service, "OK", result -> service.postDelayed(() -> {
-                                    service.back();
-                                    onDataCallback.onDataCallback(finalOrder);
-                                }));
-                            } else {
-                                sendMsgToBuyer(service, "您好，请提供一下您的支付信息：姓名+银行卡号+银行名称", result -> service.postDelayed(() -> {
-                                    service.back();
-                                    onDataCallback.onDataCallback(null);
-                                }));
-                            }
-                            return;
-                        }
-                    }
+                CoinOrder cOrder = new CoinOrder();
+                cOrder.setOrderId(orderId);
+                cOrder.setCoinType(title.replace("购买", "").trim().toLowerCase() + "usdt");
+                cOrder.setName(nickname);
+                cOrder.setStatus(2);
+                cOrder.setAmount(amount);
+                cOrder.setQuantity(qty);
+                cOrder.setPrice(price);
+                cOrder.setFee(fee);
+                if (StringUtil.numericInStr(transInfo) >= 16) {
+                    cOrder.setTransInfo(transInfo);
+                    sendMsgToBuyer(service, "OK", result -> service.postDelayed(() -> {
+                        service.back();
+                        onDataCallback.onDataCallback(cOrder);
+                    }));
+                } else if (!transInfo.contains("姓名+银行卡号+银行名称")) {
+                    sendMsgToBuyer(service, "您好，请提供一下您的支付信息：姓名+银行卡号+银行名称哈", result -> service.postDelayed(() -> {
+                        service.back();
+                        onDataCallback.onDataCallback(null);
+                    }));
                 }
                 break;
             case "已放行":

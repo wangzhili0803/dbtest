@@ -27,6 +27,7 @@ import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
 import com.huobi.client.MarketClient;
+import com.huobi.client.req.market.ReqCandlestickRequest;
 import com.huobi.client.req.market.SubCandlestickRequest;
 import com.huobi.constant.HuobiOptions;
 import com.huobi.constant.enums.CandlestickIntervalEnum;
@@ -45,7 +46,6 @@ import com.jerry.baselib.common.util.DisplayUtil;
 import com.jerry.baselib.common.util.JJSON;
 import com.jerry.baselib.common.util.ListCacheUtil;
 import com.jerry.baselib.common.util.LogUtils;
-import com.jerry.baselib.common.util.MathUtil;
 import com.jerry.baselib.common.util.ParseUtil;
 import com.jerry.baselib.common.util.ToastUtil;
 import com.jerry.baselib.common.util.WeakHandler;
@@ -112,9 +112,9 @@ public class ListenerService extends BaseListenerService {
         BitmapFactory.decodeResource(BaseApp.getInstance().getResources(), R.drawable.pause), "0");
     private final List<FloatItem> itemList = new ArrayList<>();
     /**
-     * task状态，0：买入，1：出售，2，买入下单，3：出售下单
+     * 记录orderId
      */
-    private int taskState;
+    private List<String> orderIds = new ArrayList<>();
     private CoinColaTask mCoinColaTask = CoinColaTask.getInstance();
     private HuobiTask mHuobiTask = HuobiTask.getInstance();
 
@@ -125,54 +125,28 @@ public class ListenerService extends BaseListenerService {
             switch (msg.what) {
                 case MSG_DO_TASK:
                     getUsdtData(null);
-                    getHuobiMarket(Key.NIL, null);
+                    getHuobiMarket();
                     listenLists();
                     return true;
                 case MSG_TRANS:
                     mCoinColaTask.checkCoinNeedTransfer(this, CoinConstant.XRP, result -> {
                         if (result) {
-                            mCoinColaTask.transferXrp(ListenerService.this, result1 -> {
-
-                            });
+                            mCoinColaTask
+                                .transferXrp(ListenerService.this, result1 -> mCoinColaTask.checkCoinNeedTransfer(this, CoinConstant.BCH, result2 -> {
+                                    if (result2) {
+                                        mCoinColaTask.transferBch(ListenerService.this, result3 -> listenLists());
+                                    } else {
+                                        listenLists();
+                                    }
+                                }));
                         } else {
                             mCoinColaTask.checkCoinNeedTransfer(this, CoinConstant.BCH, result2 -> {
                                 if (result2) {
-                                    mCoinColaTask.transferBch(ListenerService.this, result1 -> {
-
-                                    });
+                                    mCoinColaTask.transferBch(ListenerService.this, result1 -> listenLists());
+                                } else {
+                                    listenLists();
                                 }
                             });
-                        }
-                    });
-                    return true;
-                case MSG_ORDER:
-                    mCoinColaTask.sellByCurrentPage(this, coinOrder -> {
-                        if (coinOrder != null) {
-                            LogUtils.d(coinOrder.toString());
-
-                            String symbol = coinOrder.getCoinType();
-                            // 接受的最低价
-                            getUsdtData(data1 -> getHuobiMarket(symbol, result -> {
-                                // 当前市场价
-                                double lowestPrice = getLowestClose(symbol, coinOrder.getAmount(), coinOrder.getPrice());
-                                double currentPrice = MathUtil.safeGet(ListenerService.priceMap, symbol);
-                                double finalPrice = Math.max(lowestPrice, currentPrice);
-                                LogUtils.d("lowestPrice:" + lowestPrice + ",currentPrice:" + currentPrice);
-                                Double fee = CoinConstant.FEEMAP.get(symbol);
-                                if (fee != null) {
-                                    HuobiTradeHelper.getInstance().sell(symbol, finalPrice, coinOrder.getQuantity() - coinOrder.getFee() - fee,
-                                        data -> {
-                                            if (data == null) {
-                                                LogUtils.e("下单失败");
-                                                ToastUtil.showShortText("下单失败");
-                                                return;
-                                            }
-                                            List<Long> orderList = JJSON.parseArray(ListCacheUtil.getValueFromJsonFile(Key.ORDER), Long.class);
-                                            orderList.add(data);
-                                            ListCacheUtil.saveValueToJsonFile(Key.ORDER, JSON.toJSONString(orderList));
-                                        });
-                                }
-                            }));
                         }
                     });
                     return true;
@@ -261,7 +235,7 @@ public class ListenerService extends BaseListenerService {
                                 menu.hide();
                                 break;
                             case 2:
-                                start(MSG_ORDER);
+                                order();
                                 itemList.clear();
                                 itemList.add(stopItem);
                                 menu.updateFloatItemList(itemList);
@@ -292,6 +266,7 @@ public class ListenerService extends BaseListenerService {
         super.stopScript();
         mCoinColaTask.release();
         mHuobiTask.release();
+        orderIds.clear();
         if (mHuobiWebSocketConnection != null) {
             mHuobiWebSocketConnection.close();
             mHuobiWebSocketConnection = null;
@@ -306,7 +281,6 @@ public class ListenerService extends BaseListenerService {
         super.removeAllMessages();
         mWeakHandler.removeMessages(MSG_DO_TASK);
         mWeakHandler.removeMessages(MSG_TRANS);
-        mWeakHandler.removeMessages(MSG_ORDER);
     }
 
     public void postDelayed(Runnable runnable) {
@@ -342,7 +316,7 @@ public class ListenerService extends BaseListenerService {
         });
     }
 
-    private void getHuobiMarket(final String symbol, final EndCallback endCallback) {
+    private void getHuobiMarket() {
         if (mHuobiWebSocketConnection == null) {
             MarketClient marketClient = MarketClient.create(new HuobiOptions());
             mHuobiWebSocketConnection = marketClient.subCandlestick(CANDLESTICK_RESQUEST, response -> {
@@ -352,16 +326,9 @@ public class ListenerService extends BaseListenerService {
                 } else if (response.getCh().contains(CoinConstant.XRP_USDT)) {
                     priceMap.put(CoinConstant.XRP_USDT, candlestick.getClose().doubleValue());
                 }
-                if (endCallback != null && response.getCh().contains(symbol)) {
-                    mHuobiWebSocketConnection.close();
-                    mHuobiWebSocketConnection = null;
-                    endCallback.onEnd(true);
-                }
             });
         } else if (mHuobiWebSocketConnection.getState() != ConnectionStateEnum.CONNECTED) {
             mHuobiWebSocketConnection.reConnect();
-        } else if (endCallback != null) {
-            endCallback.onEnd(true);
         }
     }
 
@@ -405,27 +372,7 @@ public class ListenerService extends BaseListenerService {
                     if (coinOrder != null) {
                         LogUtils.d(coinOrder.toString());
                         giveNotice();
-                        String symbol = coinOrder.getCoinType();
-                        // 接受的最低价
-                        double lowestPrice = getLowestClose(symbol, coinOrder.getAmount(), coinOrder.getPrice());
-                        // 当前市场价
-                        double currentPrice = MathUtil.safeGet(ListenerService.priceMap, symbol);
-                        double finalPrice = Math.max(lowestPrice, currentPrice);
-                        LogUtils.d("lowestPrice:" + lowestPrice + ",currentPrice:" + currentPrice);
-                        Double fee = CoinConstant.FEEMAP.get(symbol);
-                        if (fee != null) {
-                            HuobiTradeHelper.getInstance().sell(symbol, finalPrice, coinOrder.getQuantity() - coinOrder.getFee() - fee, data -> {
-                                if (data == null) {
-                                    LogUtils.e("下单失败");
-                                    ToastUtil.showShortText("下单失败");
-                                    return;
-                                }
-                                List<Long> orderList = JJSON.parseArray(ListCacheUtil.getValueFromJsonFile(Key.ORDER), Long.class);
-                                orderList.add(data);
-                                ListCacheUtil.saveValueToJsonFile(Key.ORDER, JSON.toJSONString(orderList));
-                            });
-                            // TODO发消息去控制端
-                        }
+                        order();
                     }
                 });
             } else if (result == 1) {
@@ -436,6 +383,52 @@ public class ListenerService extends BaseListenerService {
                 mWeakHandler.postDelayed(this::listenLists, TIME_LONGLONG);
             }
         }));
+    }
+
+    private void order() {
+        mCoinColaTask.sellByCurrentPage(this, coinOrder -> {
+            if (coinOrder != null) {
+                LogUtils.d(coinOrder.toString());
+                if (orderIds.contains(coinOrder.getOrderId())) {
+                    LogUtils.e("已下过单");
+                    ToastUtil.showShortText("已下过单");
+                    return;
+                }
+                getUsdtData(data1 -> {
+                    // 接受的最低价
+                    String symbol = coinOrder.getCoinType();
+                    MarketClient marketClient = MarketClient.create(new HuobiOptions());
+                    long now = System.currentTimeMillis() / 1000;
+                    ReqCandlestickRequest reqCandlestickRequest = new ReqCandlestickRequest();
+                    reqCandlestickRequest.setSymbol(symbol);
+                    reqCandlestickRequest.setInterval(CandlestickIntervalEnum.MIN1);
+                    reqCandlestickRequest.setFrom(now - 60);
+                    reqCandlestickRequest.setTo(now);
+                    marketClient.reqCandlestick(reqCandlestickRequest, response -> {
+                        // 当前市场价
+                        double lowestPrice = getLowestClose(symbol, coinOrder.getAmount(), coinOrder.getPrice());
+                        double currentPrice = response.getCandlestickList().get(0).getClose().doubleValue();
+                        double finalPrice = Math.max(lowestPrice, currentPrice);
+                        LogUtils.d("lowestPrice:" + lowestPrice + ",currentPrice:" + currentPrice);
+                        Double fee = CoinConstant.FEEMAP.get(symbol);
+                        if (fee != null) {
+                            HuobiTradeHelper.getInstance().sell(symbol, finalPrice, coinOrder.getQuantity() - coinOrder.getFee() - fee,
+                                data -> {
+                                    if (data == null || data == -1) {
+                                        LogUtils.e("下单失败");
+                                        ToastUtil.showShortText("下单失败");
+                                        return;
+                                    }
+                                    orderIds.add(coinOrder.getOrderId());
+                                    List<Long> orderList = JJSON.parseArray(ListCacheUtil.getValueFromJsonFile(Key.ORDER), Long.class);
+                                    orderList.add(data);
+                                    ListCacheUtil.saveValueToJsonFile(Key.ORDER, JSON.toJSONString(orderList));
+                                });
+                        }
+                    });
+                });
+            }
+        });
     }
 
     /**
