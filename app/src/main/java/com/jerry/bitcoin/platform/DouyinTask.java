@@ -113,12 +113,15 @@ public class DouyinTask {
                 String praise = persons.getChild(0).getChild(0).getText().toString();
                 String follow = persons.getChild(1).getChild(0).getText().toString();
                 String fans = persons.getChild(2).getChild(0).getText().toString();
+                String desc = infoNode.getChild(6).getText().toString();
                 DyUser dyUser = new DyUser();
                 dyUser.setDyId(dyId);
                 dyUser.setName(name);
                 dyUser.setPraise(praise);
                 dyUser.setFollow(follow);
                 dyUser.setFans(fans);
+                dyUser.setDesc(desc);
+                dyUser.setUpdateTime(System.currentTimeMillis());
                 if (ProManager.getInstance().insertObject(dyUser)) {
                     service.back();
                     service.postDelayed(() -> endCallback.onEnd(true));

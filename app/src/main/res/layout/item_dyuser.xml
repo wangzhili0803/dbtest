@@ -23,8 +23,9 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/page_margin"
         android:layout_marginEnd="@dimen/page_margin"        android:singleLine="true"
-        android:textColor="@color/primary_text_color"
-        android:textSize="@dimen/_16sp"
+        android:textColor="@color/second_text_color"
+        android:textSize="@dimen/_15sp"
+        android:layout_marginTop="@dimen/four_dp"
         tools:text="dyid" />
 
     <LinearLayout
@@ -41,7 +42,7 @@
             android:layout_weight="1"
             android:text="@string/praise"
             android:textColor="@color/second_text_color"
-            android:textSize="@dimen/_12sp" />
+            android:textSize="@dimen/_14sp" />
 
         <TextView
             android:id="@+id/tv_follow"
@@ -50,7 +51,7 @@
             android:layout_weight="1"
             android:text="@string/follow"
             android:textColor="@color/second_text_color"
-            android:textSize="@dimen/_12sp" />
+            android:textSize="@dimen/_14sp" />
 
         <TextView
             android:id="@+id/tv_fans"
@@ -59,16 +60,17 @@
             android:layout_weight="1"
             android:text="@string/fans"
             android:textColor="@color/second_text_color"
-            android:textSize="@dimen/_12sp" />
+            android:textSize="@dimen/_14sp" />
     </LinearLayout>
 
     <TextView
-        android:id="@+id/desc"
+        android:id="@+id/tv_desc"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/four_dp"
         android:layout_marginStart="@dimen/page_margin"
         android:layout_marginEnd="@dimen/page_margin"
-        android:textColor="@color/second_text_color"
+        android:textColor="@color/light_text_color"
         android:textSize="@dimen/_12sp" />
 
     <View

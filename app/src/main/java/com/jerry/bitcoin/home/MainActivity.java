@@ -1,13 +1,12 @@
 package com.jerry.bitcoin.home;
 
 import java.io.File;
-import java.util.Calendar;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -37,6 +36,8 @@ import com.jerry.bitcoin.R;
 import com.jerry.bitcoin.interfaces.LoginActionListener;
 import com.tencent.bugly.beta.Beta;
 
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -46,6 +47,7 @@ public class MainActivity extends BaseActivity implements LoginActionListener {
     private static MainActivity mainActivity;
     private static final int INTERVAL = 1000 * 60 * 60 * 24;// 24h
     protected static final int TO_ACCESSIBILITY = 101;
+    private static final int REQUEST_PERMISSION = 102;
     private HomeFragment mHomeFragment;
     private MineFragment mMineFragment;
     private LinearLayout tabBar;
@@ -98,21 +100,33 @@ public class MainActivity extends BaseActivity implements LoginActionListener {
         findViewById(R.id.tv_me).setOnClickListener(this);
         fragmentManager = getSupportFragmentManager();
         setContentFragment(R.id.tv_main);
-        init();
-        initAlarm();
+        initPermission();
     }
 
-    private void initAlarm() {
-        AlarmManager alarmService = (AlarmManager) getSystemService(ALARM_SERVICE);
-        Calendar instance = Calendar.getInstance();
-        instance.set(Calendar.HOUR_OF_DAY, 22);
-        instance.set(Calendar.MINUTE, 24);
-        instance.set(Calendar.SECOND, 0);
-        Intent alarmIntent = new Intent(this, AlarmClockReceive.class);
-        PendingIntent broadcast = PendingIntent.getBroadcast(this, 0, alarmIntent, 0);
-        alarmService.setRepeating(AlarmManager.RTC_WAKEUP, instance.getTimeInMillis(), INTERVAL, broadcast);
-    }
 
+    private void initPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(getApplicationContext())) {
+            //启动Activity让用户授权
+            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
+            intent.setData(Uri.parse("package:" + getPackageName()));
+            startActivity(intent);
+        }
+        PackageManager pkgManager = getPackageManager();
+        // 读写 sd card 权限非常重要, android6.0默认禁止的, 建议初始化之前就弹窗让用户赋予该权限
+        boolean sdCardWritePermission =
+            pkgManager.checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, getPackageName()) == PackageManager.PERMISSION_GRANTED;
+        // read phone state用于获取 imei 设备信息
+        boolean phoneSatePermission =
+            pkgManager.checkPermission(Manifest.permission.READ_PHONE_STATE, getPackageName()) == PackageManager.PERMISSION_GRANTED;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !sdCardWritePermission || !phoneSatePermission) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission
+                .READ_PHONE_STATE}, REQUEST_PERMISSION);
+            toast("——_——|||\n必要权限丫 您一定要同意哦");
+        } else {
+            // SDK初始化，第三方程序启动时，都要进行SDK初始化工作
+            init();
+        }
+    }
 
     private void init() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(getApplicationContext())) {
@@ -227,5 +241,20 @@ public class MainActivity extends BaseActivity implements LoginActionListener {
         });
         bindingDialog.setUser(user);
         bindingDialog.show();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == REQUEST_PERMISSION) {
+            if ((grantResults.length == 2
+                && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                && grantResults[1] == PackageManager.PERMISSION_GRANTED)) {
+                init();
+            } else {
+                toast("请同意权限，否则将无法正常使用");
+            }
+        } else {
+            onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
     }
 }

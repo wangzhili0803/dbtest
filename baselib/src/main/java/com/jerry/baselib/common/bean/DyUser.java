@@ -17,15 +17,17 @@ public class DyUser {
     private String praise;
     private String follow;
     private String fans;
+    private String desc;
     private long updateTime;
-    @Generated(hash = 1541003137)
+    @Generated(hash = 1690764928)
     public DyUser(String dyId, String name, String praise, String follow,
-            String fans, long updateTime) {
+            String fans, String desc, long updateTime) {
         this.dyId = dyId;
         this.name = name;
         this.praise = praise;
         this.follow = follow;
         this.fans = fans;
+        this.desc = desc;
         this.updateTime = updateTime;
     }
     @Generated(hash = 2053461469)
@@ -61,10 +63,17 @@ public class DyUser {
     public void setFans(String fans) {
         this.fans = fans;
     }
+    public String getDesc() {
+        return this.desc;
+    }
+    public void setDesc(String desc) {
+        this.desc = desc;
+    }
     public long getUpdateTime() {
         return this.updateTime;
     }
     public void setUpdateTime(long updateTime) {
         this.updateTime = updateTime;
     }
+
 }

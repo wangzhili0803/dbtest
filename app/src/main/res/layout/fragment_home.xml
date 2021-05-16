@@ -12,15 +12,21 @@
         android:orientation="horizontal">
 
         <TextView
+            android:id="@+id/tv_excel"
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_weight="1"
+            android:background="@drawable/white_bg_selector"
+            android:gravity="center"
             android:text="导出到Excel" />
 
         <TextView
+            android:id="@+id/tv_clear"
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_weight="1"
+            android:background="@drawable/white_bg_selector"
+            android:gravity="center"
             android:text="清除数据" />
 
     </LinearLayout>

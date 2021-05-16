@@ -12,7 +12,12 @@ import com.jerry.baselib.common.base.BaseRecyclerFragment;
 import com.jerry.baselib.common.base.RecyclerViewHolder;
 import com.jerry.baselib.common.bean.DyUser;
 import com.jerry.baselib.common.dbhelper.ProManager;
+import com.jerry.baselib.common.util.CollectionUtils;
+import com.jerry.baselib.common.util.DateUtils;
+import com.jerry.baselib.common.util.FileUtil;
+import com.jerry.baselib.common.weidgt.NoticeDialog;
 import com.jerry.baselib.greendao.DyUserDao.Properties;
+import com.jerry.baselib.parsehelper.ExcelManager;
 import com.jerry.bitcoin.R;
 
 /**
@@ -37,11 +42,13 @@ public class HomeFragment extends BaseRecyclerFragment<DyUser> {
                 TextView tvPraise = holder.getView(R.id.tv_praise);
                 TextView tvFollow = holder.getView(R.id.tv_follow);
                 TextView tvFans = holder.getView(R.id.tv_fans);
+                TextView tvDesc = holder.getView(R.id.tv_desc);
                 tvName.setText(bean.getName());
                 tvDyid.setText(bean.getDyId());
                 tvPraise.setText(getString(R.string.praise_text, bean.getPraise()));
                 tvFollow.setText(getString(R.string.follow_text, bean.getFollow()));
                 tvFans.setText(getString(R.string.fans_text, bean.getFans()));
+                tvDesc.setText(bean.getDesc());
             }
         };
     }
@@ -54,8 +61,10 @@ public class HomeFragment extends BaseRecyclerFragment<DyUser> {
     @Override
     protected void initView(final View view) {
         mPtrRecyclerView = view.findViewById(R.id.ptrRecyclerView);
+        view.findViewById(R.id.tv_excel).setOnClickListener(this);
+        view.findViewById(R.id.tv_clear).setOnClickListener(this);
         mPtrRecyclerView.setAdapter(mAdapter);
-        mPtrRecyclerView.setOnRefreshListener(() -> reload());
+        mPtrRecyclerView.setOnRefreshListener(this::reload);
     }
 
     @Override
@@ -70,7 +79,43 @@ public class HomeFragment extends BaseRecyclerFragment<DyUser> {
 
     @Override
     public void onClick(final View v) {
-
+        switch (v.getId()) {
+            case R.id.tv_excel:
+                AppTask.withoutContext().assign(() -> {
+                    String path =
+                        FileUtil.getAppExternalPath() + "ex_" + DateUtils.getDateTimeByLong(System.currentTimeMillis()) + ".xls";
+                    return ExcelManager.createExcel(mData, path);
+                }).whenDone((WhenTaskDone<Boolean>) result -> {
+                    if (result) {
+                        toast("导出成功");
+                    } else {
+                        toast("导出失败");
+                    }
+                }).whenTaskEnd(this::onAfterRefresh).execute();
+                break;
+            case R.id.tv_clear:
+                if (CollectionUtils.isEmpty(mData)) {
+                    toast("暂无采集数据");
+                    return;
+                }
+                NoticeDialog noticeDialog = new NoticeDialog(mActivity);
+                noticeDialog.setPositiveText(R.string.confirm);
+                noticeDialog.setTitleText("确定清除所有用户数据吗");
+                noticeDialog.setPositiveListener(view -> {
+                    AppTask.withoutContext().assign(() -> ProManager.getInstance().deleteAll(DyUser.class))
+                        .whenDone((WhenTaskDone<Boolean>) result -> {
+                            if (result) {
+                                mData.clear();
+                                mAdapter.notifyDataSetChanged();
+                            }
+                        }).whenTaskEnd(this::onAfterRefresh).execute();
+                });
+                noticeDialog.show();
+                break;
+            default:
+                super.onClick(v);
+                break;
+        }
     }
 
     @Override

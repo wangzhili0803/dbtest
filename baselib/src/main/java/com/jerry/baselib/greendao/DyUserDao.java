@@ -29,7 +29,8 @@ public class DyUserDao extends AbstractDao<DyUser, Void> {
         public final static Property Praise = new Property(2, String.class, "praise", false, "PRAISE");
         public final static Property Follow = new Property(3, String.class, "follow", false, "FOLLOW");
         public final static Property Fans = new Property(4, String.class, "fans", false, "FANS");
-        public final static Property UpdateTime = new Property(5, long.class, "updateTime", false, "UPDATE_TIME");
+        public final static Property Desc = new Property(5, String.class, "desc", false, "DESC");
+        public final static Property UpdateTime = new Property(6, long.class, "updateTime", false, "UPDATE_TIME");
     }
 
 
@@ -50,7 +51,8 @@ public class DyUserDao extends AbstractDao<DyUser, Void> {
                 "\"PRAISE\" TEXT," + // 2: praise
                 "\"FOLLOW\" TEXT," + // 3: follow
                 "\"FANS\" TEXT," + // 4: fans
-                "\"UPDATE_TIME\" INTEGER NOT NULL );"); // 5: updateTime
+                "\"DESC\" TEXT," + // 5: desc
+                "\"UPDATE_TIME\" INTEGER NOT NULL );"); // 6: updateTime
     }
 
     /** Drops the underlying database table. */
@@ -87,7 +89,12 @@ public class DyUserDao extends AbstractDao<DyUser, Void> {
         if (fans != null) {
             stmt.bindString(5, fans);
         }
-        stmt.bindLong(6, entity.getUpdateTime());
+ 
+        String desc = entity.getDesc();
+        if (desc != null) {
+            stmt.bindString(6, desc);
+        }
+        stmt.bindLong(7, entity.getUpdateTime());
     }
 
     @Override
@@ -118,7 +125,12 @@ public class DyUserDao extends AbstractDao<DyUser, Void> {
         if (fans != null) {
             stmt.bindString(5, fans);
         }
-        stmt.bindLong(6, entity.getUpdateTime());
+ 
+        String desc = entity.getDesc();
+        if (desc != null) {
+            stmt.bindString(6, desc);
+        }
+        stmt.bindLong(7, entity.getUpdateTime());
     }
 
     @Override
@@ -134,7 +146,8 @@ public class DyUserDao extends AbstractDao<DyUser, Void> {
             cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2), // praise
             cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3), // follow
             cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4), // fans
-            cursor.getLong(offset + 5) // updateTime
+            cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5), // desc
+            cursor.getLong(offset + 6) // updateTime
         );
         return entity;
     }
@@ -146,7 +159,8 @@ public class DyUserDao extends AbstractDao<DyUser, Void> {
         entity.setPraise(cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2));
         entity.setFollow(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
         entity.setFans(cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4));
-        entity.setUpdateTime(cursor.getLong(offset + 5));
+        entity.setDesc(cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5));
+        entity.setUpdateTime(cursor.getLong(offset + 6));
      }
     
     @Override
