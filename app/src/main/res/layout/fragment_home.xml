@@ -4,65 +4,30 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <include layout="@layout/layout_header"/>
+    <include layout="@layout/layout_header" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
-        <TextView
-            style="@style/menu_label"
-            android:text="单笔金额" />
 
-        <com.jerry.baselib.common.weidgt.MyEditText
-            android:id="@+id/et_money"
-            style="@style/menu_input"
-            android:inputType="number" />
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:text="导出到Excel" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:text="清除数据" />
+
     </LinearLayout>
 
-    <View style="@style/horizontal_line_style" />
-
-    <LinearLayout
+    <com.jerry.baselib.common.ptrlib.widget.PtrRecyclerView
+        android:id="@+id/ptrRecyclerView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-        <TextView
-            style="@style/menu_label"
-            android:text="资金密码" />
+        android:layout_height="match_parent" />
 
-        <com.jerry.baselib.common.weidgt.MyEditText
-            android:id="@+id/et_passwd"
-            style="@style/menu_input"
-            android:inputType="textPassword" />
-    </LinearLayout>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="买入平台" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_platform_buy"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="出售平台" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_platform_sale"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="币种" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_coins"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
 </LinearLayout>

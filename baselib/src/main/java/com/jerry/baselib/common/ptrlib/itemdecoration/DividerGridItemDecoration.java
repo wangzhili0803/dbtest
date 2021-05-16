@@ -16,7 +16,7 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 /**
  * @author Jerry
  * @createDate 2019/4/11
- * @copyright www.aniu.tv
+ * @copyright www.axiang.com
  * @description RecyclerView Grid分割线
  */
 public class DividerGridItemDecoration extends RecyclerView.ItemDecoration {

@@ -22,25 +22,27 @@ public class DaoMaster extends AbstractDaoMaster {
     /** Creates underlying database table using DAOs. */
     public static void createAllTables(Database db, boolean ifNotExists) {
         XyUserDao.createTable(db, ifNotExists);
+        OrderDao.createTable(db, ifNotExists);
         PraiserDao.createTable(db, ifNotExists);
         LinkDao.createTable(db, ifNotExists);
         ProductDao.createTable(db, ifNotExists);
         XyProductDao.createTable(db, ifNotExists);
-        LookUrlDao.createTable(db, ifNotExists);
-        OrderDao.createTable(db, ifNotExists);
         CoinOrderDao.createTable(db, ifNotExists);
+        LookUrlDao.createTable(db, ifNotExists);
+        DyUserDao.createTable(db, ifNotExists);
     }
 
     /** Drops underlying database table using DAOs. */
     public static void dropAllTables(Database db, boolean ifExists) {
         XyUserDao.dropTable(db, ifExists);
+        OrderDao.dropTable(db, ifExists);
         PraiserDao.dropTable(db, ifExists);
         LinkDao.dropTable(db, ifExists);
         ProductDao.dropTable(db, ifExists);
         XyProductDao.dropTable(db, ifExists);
-        LookUrlDao.dropTable(db, ifExists);
-        OrderDao.dropTable(db, ifExists);
         CoinOrderDao.dropTable(db, ifExists);
+        LookUrlDao.dropTable(db, ifExists);
+        DyUserDao.dropTable(db, ifExists);
     }
 
     /**
@@ -60,13 +62,14 @@ public class DaoMaster extends AbstractDaoMaster {
     public DaoMaster(Database db) {
         super(db, SCHEMA_VERSION);
         registerDaoClass(XyUserDao.class);
+        registerDaoClass(OrderDao.class);
         registerDaoClass(PraiserDao.class);
         registerDaoClass(LinkDao.class);
         registerDaoClass(ProductDao.class);
         registerDaoClass(XyProductDao.class);
-        registerDaoClass(LookUrlDao.class);
-        registerDaoClass(OrderDao.class);
         registerDaoClass(CoinOrderDao.class);
+        registerDaoClass(LookUrlDao.class);
+        registerDaoClass(DyUserDao.class);
     }
 
     public DaoSession newSession() {

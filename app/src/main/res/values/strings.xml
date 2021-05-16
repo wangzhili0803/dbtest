@@ -1,4 +1,10 @@
 <resources>
-    <string name="app_name">比特阿翔</string>
-    <string name="accessibility_service_description">运行比特阿翔助手</string>
+    <string name="app_name">抖音阿翔</string>
+    <string name="accessibility_service_description">运行抖音阿翔助手</string>
+    <string name="praise">获赞</string>
+    <string name="praise_text">获赞：%1$s</string>
+    <string name="follow">关注</string>
+    <string name="follow_text">关注：%1$s</string>
+    <string name="fans">粉丝</string>
+    <string name="fans_text">粉丝：%1$s</string>
 </resources>

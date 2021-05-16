@@ -29,7 +29,6 @@ android {
         versionName packer.VERSION_NAME
         multiDexEnabled = true
 
-        buildConfigField("String", "TO_APP_ID", packer.TO_APP_ID)
         buildConfigField("String", "BUGLY_APP_ID", packer.BUGLY_APP_ID)
         buildConfigField("String", "AVOS_APP_ID", packer.AVOS_APP_ID)
         buildConfigField("String", "AVOS_APP_KEY", packer.AVOS_APP_KEY)
@@ -118,8 +117,6 @@ android {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation project(path: ':baselib')
-    implementation project(':lchat')
-    implementation project(':huobi')
 }
 
 andResGuard {

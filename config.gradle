@@ -23,7 +23,7 @@ ext {
 //            FILE_PROVIDER : '"com.jerry.bobo.fileProvider"',
 
             // liubo
-            APPLICATION_ID: "com.jerry.bitcoin",
+            APPLICATION_ID: "com.axiang.douyin",
             SRC_DIR       : "bitcoin",
             VERSION_CODE  : 10000,
             VERSION_NAME  : "1.0",
@@ -31,6 +31,5 @@ ext {
             AVOS_APP_ID   : '"74kS56hHebxhvPaW2vqqK24V-MdYXbMMI"',
             AVOS_APP_KEY  : '"ldxw4KNVCQ1IQydJgN5pV3xk"',
             FILE_PROVIDER : '"com.jerry.dddk.fileProvider"',
-            TO_APP_ID     : '"pro.huobi"',
     ]
 }
