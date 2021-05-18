@@ -15,7 +15,7 @@ import com.jerry.baselib.common.bean.DyUser;
 /** 
  * DAO for table "DY_USER".
 */
-public class DyUserDao extends AbstractDao<DyUser, Void> {
+public class DyUserDao extends AbstractDao<DyUser, String> {
 
     public static final String TABLENAME = "DY_USER";
 
@@ -24,13 +24,14 @@ public class DyUserDao extends AbstractDao<DyUser, Void> {
      * Can be used for QueryBuilder and for referencing column names.
      */
     public static class Properties {
-        public final static Property DyId = new Property(0, String.class, "dyId", false, "DY_ID");
+        public final static Property DyId = new Property(0, String.class, "dyId", true, "DY_ID");
         public final static Property Name = new Property(1, String.class, "name", false, "NAME");
         public final static Property Praise = new Property(2, String.class, "praise", false, "PRAISE");
         public final static Property Follow = new Property(3, String.class, "follow", false, "FOLLOW");
         public final static Property Fans = new Property(4, String.class, "fans", false, "FANS");
         public final static Property Desc = new Property(5, String.class, "desc", false, "DESC");
-        public final static Property UpdateTime = new Property(6, long.class, "updateTime", false, "UPDATE_TIME");
+        public final static Property Phones = new Property(6, String.class, "phones", false, "PHONES");
+        public final static Property UpdateTime = new Property(7, long.class, "updateTime", false, "UPDATE_TIME");
     }
 
 
@@ -46,13 +47,14 @@ public class DyUserDao extends AbstractDao<DyUser, Void> {
     public static void createTable(Database db, boolean ifNotExists) {
         String constraint = ifNotExists? "IF NOT EXISTS ": "";
         db.execSQL("CREATE TABLE " + constraint + "\"DY_USER\" (" + //
-                "\"DY_ID\" TEXT," + // 0: dyId
+                "\"DY_ID\" TEXT PRIMARY KEY NOT NULL ," + // 0: dyId
                 "\"NAME\" TEXT," + // 1: name
                 "\"PRAISE\" TEXT," + // 2: praise
                 "\"FOLLOW\" TEXT," + // 3: follow
                 "\"FANS\" TEXT," + // 4: fans
                 "\"DESC\" TEXT," + // 5: desc
-                "\"UPDATE_TIME\" INTEGER NOT NULL );"); // 6: updateTime
+                "\"PHONES\" TEXT," + // 6: phones
+                "\"UPDATE_TIME\" INTEGER NOT NULL );"); // 7: updateTime
     }
 
     /** Drops the underlying database table. */
@@ -94,7 +96,12 @@ public class DyUserDao extends AbstractDao<DyUser, Void> {
         if (desc != null) {
             stmt.bindString(6, desc);
         }
-        stmt.bindLong(7, entity.getUpdateTime());
+ 
+        String phones = entity.getPhones();
+        if (phones != null) {
+            stmt.bindString(7, phones);
+        }
+        stmt.bindLong(8, entity.getUpdateTime());
     }
 
     @Override
@@ -130,12 +137,17 @@ public class DyUserDao extends AbstractDao<DyUser, Void> {
         if (desc != null) {
             stmt.bindString(6, desc);
         }
-        stmt.bindLong(7, entity.getUpdateTime());
+ 
+        String phones = entity.getPhones();
+        if (phones != null) {
+            stmt.bindString(7, phones);
+        }
+        stmt.bindLong(8, entity.getUpdateTime());
     }
 
     @Override
-    public Void readKey(Cursor cursor, int offset) {
-        return null;
+    public String readKey(Cursor cursor, int offset) {
+        return cursor.isNull(offset + 0) ? null : cursor.getString(offset + 0);
     }    
 
     @Override
@@ -147,7 +159,8 @@ public class DyUserDao extends AbstractDao<DyUser, Void> {
             cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3), // follow
             cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4), // fans
             cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5), // desc
-            cursor.getLong(offset + 6) // updateTime
+            cursor.isNull(offset + 6) ? null : cursor.getString(offset + 6), // phones
+            cursor.getLong(offset + 7) // updateTime
         );
         return entity;
     }
@@ -160,24 +173,27 @@ public class DyUserDao extends AbstractDao<DyUser, Void> {
         entity.setFollow(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
         entity.setFans(cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4));
         entity.setDesc(cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5));
-        entity.setUpdateTime(cursor.getLong(offset + 6));
+        entity.setPhones(cursor.isNull(offset + 6) ? null : cursor.getString(offset + 6));
+        entity.setUpdateTime(cursor.getLong(offset + 7));
      }
     
     @Override
-    protected final Void updateKeyAfterInsert(DyUser entity, long rowId) {
-        // Unsupported or missing PK type
-        return null;
+    protected final String updateKeyAfterInsert(DyUser entity, long rowId) {
+        return entity.getDyId();
     }
     
     @Override
-    public Void getKey(DyUser entity) {
-        return null;
+    public String getKey(DyUser entity) {
+        if(entity != null) {
+            return entity.getDyId();
+        } else {
+            return null;
+        }
     }
 
     @Override
     public boolean hasKey(DyUser entity) {
-        // TODO
-        return false;
+        return entity.getDyId() != null;
     }
 
     @Override

@@ -64,6 +64,16 @@
     </LinearLayout>
 
     <TextView
+        android:id="@+id/tv_phone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/four_dp"
+        android:layout_marginStart="@dimen/page_margin"
+        android:layout_marginEnd="@dimen/page_margin"
+        android:textColor="@color/light_text_color"
+        android:textSize="@dimen/_12sp" />
+
+    <TextView
         android:id="@+id/tv_desc"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

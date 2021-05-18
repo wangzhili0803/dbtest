@@ -49,6 +49,10 @@ public class AxUser extends AVBaseObject {
      * 金额
      */
     private double amount;
+    /**
+     * 交易时间
+     */
+    private long tradeTime;
 
     public int getLevel() {
         return level;
@@ -128,5 +132,13 @@ public class AxUser extends AVBaseObject {
 
     public void setAmount(final double amount) {
         this.amount = amount;
+    }
+
+    public long getTradeTime() {
+        return tradeTime;
+    }
+
+    public void setTradeTime(final long tradeTime) {
+        this.tradeTime = tradeTime;
     }
 }

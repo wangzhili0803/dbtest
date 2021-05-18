@@ -2,9 +2,11 @@ package com.jerry.bitcoin.home;
 
 import java.util.List;
 
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
 
+import com.jerry.baselib.Key;
 import com.jerry.baselib.common.asyctask.AppTask;
 import com.jerry.baselib.common.asyctask.WhenTaskDone;
 import com.jerry.baselib.common.base.BaseRecyclerAdapter;
@@ -15,6 +17,8 @@ import com.jerry.baselib.common.dbhelper.ProManager;
 import com.jerry.baselib.common.util.CollectionUtils;
 import com.jerry.baselib.common.util.DateUtils;
 import com.jerry.baselib.common.util.FileUtil;
+import com.jerry.baselib.common.util.PreferenceHelp;
+import com.jerry.baselib.common.util.UserManager;
 import com.jerry.baselib.common.weidgt.NoticeDialog;
 import com.jerry.baselib.greendao.DyUserDao.Properties;
 import com.jerry.baselib.parsehelper.ExcelManager;
@@ -42,13 +46,44 @@ public class HomeFragment extends BaseRecyclerFragment<DyUser> {
                 TextView tvPraise = holder.getView(R.id.tv_praise);
                 TextView tvFollow = holder.getView(R.id.tv_follow);
                 TextView tvFans = holder.getView(R.id.tv_fans);
+                TextView tvPhone = holder.getView(R.id.tv_phone);
                 TextView tvDesc = holder.getView(R.id.tv_desc);
                 tvName.setText(bean.getName());
-                tvDyid.setText(bean.getDyId());
+                String dyId = bean.getDyId();
+                String phones = bean.getPhones();
+                StringBuilder dyidSb = new StringBuilder();
+                StringBuilder phoneSb = new StringBuilder();
+                if (!UserManager.getInstance().isLogined() || !PreferenceHelp.getBoolean("follow_try")) {
+                    if (dyId.length() > 5) {
+                        dyidSb.append(dyId.substring(0, 5)).append("***");
+                    }
+                    if (phones != null && phones.length() > 3) {
+                        phoneSb.append(phones.substring(0, 3)).append("***");
+                    }
+                } else {
+                    dyidSb.append(dyId);
+                    if (phones != null) {
+                        phones = phones.replace(Key.COMMA, Key.SPACE);
+                        phoneSb.append(phones);
+                    }
+                }
+                tvDyid.setText(dyidSb.toString());
                 tvPraise.setText(getString(R.string.praise_text, bean.getPraise()));
                 tvFollow.setText(getString(R.string.follow_text, bean.getFollow()));
                 tvFans.setText(getString(R.string.fans_text, bean.getFans()));
-                tvDesc.setText(bean.getDesc());
+                if (TextUtils.isEmpty(phoneSb)) {
+                    tvPhone.setVisibility(View.GONE);
+                } else {
+                    tvPhone.setVisibility(View.VISIBLE);
+                    tvPhone.setText(getString(R.string.contact_text, phoneSb.toString()));
+                }
+                String desc = bean.getDesc();
+                if (TextUtils.isEmpty(desc)) {
+                    tvDesc.setVisibility(View.GONE);
+                } else {
+                    tvDesc.setVisibility(View.VISIBLE);
+                    tvDesc.setText(desc);
+                }
             }
         };
     }
@@ -81,6 +116,9 @@ public class HomeFragment extends BaseRecyclerFragment<DyUser> {
     public void onClick(final View v) {
         switch (v.getId()) {
             case R.id.tv_excel:
+                if (!UserManager.getInstance().isLogined()) {
+                    return;
+                }
                 AppTask.withoutContext().assign(() -> {
                     String path =
                         FileUtil.getAppExternalPath() + "ex_" + DateUtils.getDateTimeByLong(System.currentTimeMillis()) + ".xls";
@@ -108,7 +146,10 @@ public class HomeFragment extends BaseRecyclerFragment<DyUser> {
                                 mData.clear();
                                 mAdapter.notifyDataSetChanged();
                             }
-                        }).whenTaskEnd(this::onAfterRefresh).execute();
+                        }).whenTaskEnd(() -> {
+                        noticeDialog.dismiss();
+                        onAfterRefresh();
+                    }).execute();
                 });
                 noticeDialog.show();
                 break;

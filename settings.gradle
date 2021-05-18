@@ -1,2 +1,2 @@
-include ':app', ':baselib'
+include ':app', ':baselib', ':antifake'
 rootProject.name = "jerryPro"

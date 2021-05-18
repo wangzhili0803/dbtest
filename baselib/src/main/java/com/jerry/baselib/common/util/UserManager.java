@@ -14,6 +14,11 @@ import com.jerry.baselib.Key;
 import com.jerry.baselib.R;
 import com.jerry.baselib.common.bean.AVObjQuery;
 import com.jerry.baselib.common.bean.AxUser;
+import com.jerry.baselib.common.retrofit.RetrofitHelper;
+import com.jerry.baselib.parsehelper.HttpApi;
+
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 public class UserManager {
 
@@ -153,5 +158,23 @@ public class UserManager {
         if (dataChangedListener != null) {
             dataChangedListener.onDataCallback(user);
         }
+    }
+
+    /**
+     * 是否为代理商
+     */
+    public boolean isActive() {
+        return user.getLevel() > 0;
+    }
+
+    public void checkDate(OnDataCallback<Boolean> onDataCallback) {
+        RetrofitHelper.getInstance().getApi(HttpApi.class).getTimestamp()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(result -> {
+                Long time = result.getJSONObject(Key.DATA).getLong("t");
+                String dayout = UserManager.getInstance().getUser().getExpire();
+                onDataCallback.onDataCallback(time < DateUtils.getLongByDateTime(dayout));
+            });
     }
 }

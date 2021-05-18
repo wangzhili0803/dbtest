@@ -19,7 +19,9 @@ import com.jerry.baselib.common.weidgt.NoticeDialog;
 import com.jerry.bitcoin.ListenerService;
 import com.jerry.bitcoin.R;
 import com.jerry.bitcoin.interfaces.LoginActionListener;
+import com.jerry.bitcoin.proxy.ProxyActivity;
 import com.jerry.bitcoin.setting.SettingActivity;
+import com.snail.antifake.jni.EmulatorDetectUtil;
 
 import androidx.fragment.app.Fragment;
 
@@ -28,6 +30,7 @@ import androidx.fragment.app.Fragment;
  */
 public class MineFragment extends BaseFragment {
 
+    private View btnProxy;
     private View llLogin;
     private TextView tvUser;
     private LoginActionListener mLoginActionListener;
@@ -48,12 +51,19 @@ public class MineFragment extends BaseFragment {
         view.findViewById(R.id.iv_user).setOnClickListener(this);
         tvUser = view.findViewById(R.id.tv_user);
         tvUser.setOnClickListener(this);
+        btnProxy = view.findViewById(R.id.tv_myproxy);
+        btnProxy.setOnClickListener(this);
         llLogin = view.findViewById(R.id.ll_login);
         view.findViewById(R.id.tv_setting).setOnClickListener(this);
         View btnDevice = view.findViewById(R.id.btn_device);
-        btnDevice.setVisibility(View.GONE);
+        if (EmulatorDetectUtil.isEmulator()) {
+            btnDevice.setVisibility(View.GONE);
+        } else {
+            btnDevice.setOnClickListener(this);
+            btnDevice.setVisibility(View.VISIBLE);
+        }
         view.findViewById(R.id.btn_wechat).setOnClickListener(this);
-        updateUi();
+        UserManager.getInstance().requestUser(data -> updateUi());
     }
 
     @Override
@@ -87,6 +97,12 @@ public class MineFragment extends BaseFragment {
             EventBus.getDefault().post(map);
         } else if (i == R.id.tv_setting) {
             startActivity(new Intent(mActivity, SettingActivity.class));
+        } else if (i == R.id.tv_myproxy) {
+            if (UserManager.getInstance().isLogined()) {
+                startActivity(new Intent(mActivity, ProxyActivity.class));
+            } else {
+                ((MainActivity) mActivity).showLogin();
+            }
         }
     }
 
@@ -94,8 +110,14 @@ public class MineFragment extends BaseFragment {
         if (UserManager.getInstance().isLogined()) {
             tvUser.setText(UserManager.getInstance().getPhone());
             llLogin.setVisibility(View.GONE);
+            if (UserManager.getInstance().isproxy()) {
+                btnProxy.setVisibility(View.VISIBLE);
+            } else {
+                btnProxy.setVisibility(View.GONE);
+            }
         } else {
             tvUser.setText("请登录");
+            btnProxy.setVisibility(View.GONE);
             llLogin.setVisibility(View.VISIBLE);
         }
     }

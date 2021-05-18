@@ -7,4 +7,7 @@
     <string name="follow_text">关注：%1$s</string>
     <string name="fans">粉丝</string>
     <string name="fans_text">粉丝：%1$s</string>
+    <string name="myproxy">代理列表</string>
+    <string name="add">添加</string>
+    <string name="contact_text">联系方式：%1$s</string>
 </resources>

@@ -24,12 +24,12 @@ ext {
 
             // liubo
             APPLICATION_ID: "com.axiang.douyin",
-            SRC_DIR       : "bitcoin",
+            SRC_DIR       : "douyin",
             VERSION_CODE  : 10000,
             VERSION_NAME  : "1.0",
             BUGLY_APP_ID  : '"3d0b640817"',
-            AVOS_APP_ID   : '"74kS56hHebxhvPaW2vqqK24V-MdYXbMMI"',
-            AVOS_APP_KEY  : '"ldxw4KNVCQ1IQydJgN5pV3xk"',
-            FILE_PROVIDER : '"com.jerry.dddk.fileProvider"',
+            AVOS_APP_ID   : '"FvFzpwoFnVQCGaGJyS9jRj88-MdYXbMMI"',
+            AVOS_APP_KEY  : '"87MscIedMIwqJa23p2uXUG6e"',
+            FILE_PROVIDER : '"com.axiang.douyin.fileProvider"',
     ]
 }

@@ -53,7 +53,7 @@ public class DateUtils {
      */
     public static synchronized long getLongByDateTime(String dateTimeStr) {
         try {
-            return FORMAT_DATE_TIME_SS.parse(dateTimeStr).getTime();
+            return FORMAT_DATETIME.parse(dateTimeStr).getTime();
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -18,8 +18,11 @@ import com.jerry.baselib.common.flow.FloatItem;
 import com.jerry.baselib.common.flow.FloatLogoMenu;
 import com.jerry.baselib.common.flow.FloatMenuView;
 import com.jerry.baselib.common.util.AppUtils;
+import com.jerry.baselib.common.util.DateUtils;
 import com.jerry.baselib.common.util.DisplayUtil;
+import com.jerry.baselib.common.util.PreferenceHelp;
 import com.jerry.baselib.common.util.ToastUtil;
+import com.jerry.baselib.common.util.UserManager;
 import com.jerry.baselib.common.util.WeakHandler;
 import com.jerry.baselib.parsehelper.WebLoader;
 import com.jerry.bitcoin.home.MainActivity;
@@ -109,32 +112,43 @@ public class ListenerService extends BaseListenerService {
                 .showWithListener(new FloatMenuView.SimpleMenuClickListener() {
                     @Override
                     public void onItemClick(int position, String title) {
-                        if (AppUtils.playing) {
-                            stopScript();
-                            itemList.clear();
-                            itemList.add(startItem);
-                            menu.updateFloatItemList(itemList);
-                            menu.hide();
-                            return;
-                        }
                         if (AppUtils.isAccessibilitySettingsOff(ListenerService.this)) {
                             Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
                             ListenerService.this.startActivity(intent);
                             ToastUtil.showLongText("请先开启辅助哦");
                             return;
                         }
-                        AppUtils.playing = true;
-                        switch (position) {
-                            case 0:
-                                start(MSG_DO_TASK);
-                                itemList.clear();
-                                itemList.add(stopItem);
-                                menu.updateFloatItemList(itemList);
-                                menu.hide();
-                                break;
-                            default:
-                                break;
+                        if (AppUtils.playing) {
+                            stopScript();
+                            return;
                         }
+                        UserManager.getInstance().requestUser(data -> {
+                            if (!PreferenceHelp.getBoolean("follow_try") || !PreferenceHelp.getBoolean("search_try")) {
+                                AppUtils.playing = true;
+                                start(MSG_DO_TASK);
+                                return;
+                            }
+                            if (!UserManager.getInstance().isLogined()) {
+                                ToastUtil.showLongText("请先登录哦！");
+                                return;
+                            }
+                            if (!UserManager.getInstance().isActive()) {
+                                ToastUtil.showLongText("您的账户尚未激活 找客服小哥哥帮忙吧");
+                                return;
+                            }
+                            UserManager.getInstance().checkDate(data1 -> {
+                                if (!data1) {
+                                    ToastUtil.showLongText("您的使用时间已用完咯 找客服小哥哥续期吧");
+                                    return;
+                                }
+                                String dayout = UserManager.getInstance().getUser().getExpire();
+                                if (dayout != null && dayout.length() == DateUtils.YYYYMMDDHHMMSS.length()) {
+                                    ToastUtil.showLongText("到期时间：" + dayout.substring(0, 8));
+                                }
+                                AppUtils.playing = true;
+                                start(MSG_DO_TASK);
+                            });
+                        });
 
                     }
                 });
@@ -148,8 +162,26 @@ public class ListenerService extends BaseListenerService {
     }
 
     @Override
-    public boolean isHomePage() {
-        return hasText("首页", "币币", "场外", "钱包", "我的");
+    protected boolean isHomePage() {
+        return false;
+    }
+
+    @Override
+    protected void start(final int start) {
+        super.start(start);
+        itemList.clear();
+        itemList.add(stopItem);
+        menu.updateFloatItemList(itemList);
+        menu.hide();
+    }
+
+    @Override
+    public void stopScript() {
+        super.stopScript();
+        itemList.clear();
+        itemList.add(startItem);
+        menu.updateFloatItemList(itemList);
+        menu.hide();
     }
 
     /**
@@ -162,6 +194,10 @@ public class ListenerService extends BaseListenerService {
     }
 
     public void postDelayed(Runnable runnable) {
-        mWeakHandler.postDelayed(runnable, TIME_MIDDLE);
+        postDelayed(runnable, TIME_MIDDLE);
+    }
+
+    public void postDelayed(Runnable runnable, long delay) {
+        mWeakHandler.postDelayed(runnable, delay);
     }
 }

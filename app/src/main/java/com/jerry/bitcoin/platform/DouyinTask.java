@@ -7,12 +7,16 @@ import java.util.List;
 import android.graphics.Rect;
 import android.view.accessibility.AccessibilityNodeInfo;
 
+import com.jerry.baselib.Key;
 import com.jerry.baselib.assibility.EndCallback;
 import com.jerry.baselib.common.bean.DyUser;
 import com.jerry.baselib.common.dbhelper.ProManager;
 import com.jerry.baselib.common.util.AppUtils;
+import com.jerry.baselib.common.util.CollectionUtils;
 import com.jerry.baselib.common.util.LogUtils;
+import com.jerry.baselib.common.util.PreferenceHelp;
 import com.jerry.baselib.common.util.ToastUtil;
+import com.jerry.baselib.common.util.UserManager;
 import com.jerry.bitcoin.ListenerService;
 
 /**
@@ -22,6 +26,8 @@ import com.jerry.bitcoin.ListenerService;
  */
 public class DouyinTask {
 
+    private static int tryCount;
+    private static final int TRY_TOTAL = 10;
     private static volatile DouyinTask mInstance;
     private static final String PACKAGE_NAME = "com.ss.android.ugc.aweme:id/";
 
@@ -97,19 +103,21 @@ public class DouyinTask {
                     myAccessibilityNodeInfo.setY((rect.top + rect.bottom) >> 1);
                     myAccessibilityNodeInfos.add(myAccessibilityNodeInfo);
                 }
-                getInfo4SearchResult(service, myAccessibilityNodeInfos, 0, result -> {
-                    Rect rectTop = new Rect();
-                    Rect rectBottom = new Rect();
-                    myAccessibilityNodeInfos.get(0).getAccessibilityNodeInfo().getBoundsInScreen(rectTop);
-                    myAccessibilityNodeInfos.get(myAccessibilityNodeInfos.size() - 1).getAccessibilityNodeInfo().getBoundsInScreen(rectBottom);
-                    service.exeSwip(ListenerService.mWidth >> 1,
-                        rectBottom.top,
-                        ListenerService.mWidth >> 1,
-                        rectTop.top - rectTop.height()
-                    );
-                    service.postDelayed(() -> doTask(service));
-                });
-                return;
+                if (!CollectionUtils.isEmpty(myAccessibilityNodeInfos)) {
+                    getInfo4SearchResult(service, myAccessibilityNodeInfos, 0, result -> {
+                        Rect rectTop = new Rect();
+                        Rect rectBottom = new Rect();
+                        myAccessibilityNodeInfos.get(0).getAccessibilityNodeInfo().getBoundsInScreen(rectTop);
+                        myAccessibilityNodeInfos.get(myAccessibilityNodeInfos.size() - 1).getAccessibilityNodeInfo().getBoundsInScreen(rectBottom);
+                        service.exeSwip(ListenerService.mWidth >> 1,
+                            rectBottom.top,
+                            ListenerService.mWidth >> 1,
+                            rectTop.top - rectTop.height()
+                        );
+                        service.postDelayed(() -> doTask(service));
+                    });
+                    return;
+                }
             }
         }
         ToastUtil.showShortText("该页面不可采集");
@@ -127,8 +135,18 @@ public class DouyinTask {
         }
         MyAccessibilityNodeInfo myAccessibilityNodeInfo = myAccessibilityNodeInfos.get(index);
         if (service.exeClick(ListenerService.mWidth >> 1, myAccessibilityNodeInfo.getY())) {
-            service.postDelayed(() -> getHomePageInfo(service, myAccessibilityNodeInfos, index,
-                result -> getInfo4FollowList(service, myAccessibilityNodeInfos, index + 1, endCallback)));
+            service.postDelayed(() -> getHomePageInfo(service, myAccessibilityNodeInfos, index, result -> {
+                if (!UserManager.getInstance().isLogined() || !PreferenceHelp.getBoolean("follow_try")) {
+                    tryCount++;
+                    if (tryCount >= 10) {
+                        PreferenceHelp.putBoolean("follow_try", true);
+                        ToastUtil.showShortText("未登录或试用只搜集10条数据");
+                        service.stopScript();
+                        return;
+                    }
+                }
+                getInfo4FollowList(service, myAccessibilityNodeInfos, index + 1, endCallback);
+            }));
         }
     }
 
@@ -155,13 +173,40 @@ public class DouyinTask {
                     if (decsNode != null && decsNode.getClassName().toString().contains("TextView")) {
                         dyUser.setDesc(infoNode.getChild(6).getText().toString());
                     }
+                    AccessibilityNodeInfo phoneNode = service.findFirstByText(infoNode, "联系电话");
+                    if (phoneNode != null && "[label] 联系电话".equals(phoneNode.getText().toString()) && service.exeClick(phoneNode)) {
+                        service.postDelayed(() -> {
+                            AccessibilityNodeInfo popWindow = service.getRootInActiveWindow();
+                            if (popWindow != null) {
+                                List<AccessibilityNodeInfo> items = popWindow.findAccessibilityNodeInfosByText("呼叫");
+                                StringBuilder sb = new StringBuilder();
+                                for (AccessibilityNodeInfo item : items) {
+                                    sb.append(item.getText().toString().replace("呼叫", Key.NIL).trim()).append(Key.COMMA);
+                                }
+                                if (sb.length() > 0) {
+                                    sb.deleteCharAt(sb.length() - 1);
+                                }
+                                dyUser.setPhones(sb.toString());
+                                dyUser.setUpdateTime(System.currentTimeMillis());
+                                ProManager.getInstance().insertObject(dyUser);
+                                service.back();
+                                service.postDelayed(() -> {
+                                    service.back();
+                                    service.postDelayed(() -> endCallback.onEnd(true));
+                                }, 300);
+                                return;
+                            }
+                            service.back();
+                            service.postDelayed(() -> getHomePageInfo(service, myAccessibilityNodeInfos, index, endCallback));
+                        });
+                        return;
+                    }
                 }
                 dyUser.setUpdateTime(System.currentTimeMillis());
-                if (ProManager.getInstance().insertObject(dyUser)) {
-                    service.back();
-                    service.postDelayed(() -> endCallback.onEnd(true));
-                    return;
-                }
+                ProManager.getInstance().insertObject(dyUser);
+                service.back();
+                service.postDelayed(() -> endCallback.onEnd(true));
+                return;
             } catch (Throwable e) {
                 LogUtils.e(e.getLocalizedMessage());
             }
@@ -180,8 +225,18 @@ public class DouyinTask {
         }
         MyAccessibilityNodeInfo myAccessibilityNodeInfo = myAccessibilityNodeInfos.get(index);
         if (service.exeClick(ListenerService.mWidth >> 1, myAccessibilityNodeInfo.getY())) {
-            service.postDelayed(() -> getHomePageInfo(service, myAccessibilityNodeInfos, index,
-                result -> getInfo4FollowList(service, myAccessibilityNodeInfos, index + 1, endCallback)));
+            service.postDelayed(() -> getHomePageInfo(service, myAccessibilityNodeInfos, index, result -> {
+                if (!UserManager.getInstance().isLogined() || !PreferenceHelp.getBoolean("search_try")) {
+                    tryCount++;
+                    if (tryCount >= 10) {
+                        PreferenceHelp.putBoolean("search_try", true);
+                        ToastUtil.showShortText("未登录或试用只搜集10条数据");
+                        service.stopScript();
+                        return;
+                    }
+                }
+                getInfo4FollowList(service, myAccessibilityNodeInfos, index + 1, endCallback);
+            }));
         }
     }
 
