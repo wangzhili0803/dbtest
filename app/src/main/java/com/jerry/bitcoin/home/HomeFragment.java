@@ -2,6 +2,10 @@ package com.jerry.bitcoin.home;
 
 import java.util.List;
 
+import android.Manifest;
+import android.Manifest.permission;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
@@ -23,6 +27,9 @@ import com.jerry.baselib.common.weidgt.NoticeDialog;
 import com.jerry.baselib.greendao.DyUserDao.Properties;
 import com.jerry.baselib.parsehelper.ExcelManager;
 import com.jerry.bitcoin.R;
+import com.jerry.bitcoin.helper.ContactHelper;
+
+import androidx.core.app.ActivityCompat;
 
 /**
  * @author Jerry
@@ -97,6 +104,7 @@ public class HomeFragment extends BaseRecyclerFragment<DyUser> {
     protected void initView(final View view) {
         mPtrRecyclerView = view.findViewById(R.id.ptrRecyclerView);
         view.findViewById(R.id.tv_excel).setOnClickListener(this);
+        view.findViewById(R.id.tv_contact).setOnClickListener(this);
         view.findViewById(R.id.tv_clear).setOnClickListener(this);
         mPtrRecyclerView.setAdapter(mAdapter);
         mPtrRecyclerView.setOnRefreshListener(this::reload);
@@ -131,6 +139,21 @@ public class HomeFragment extends BaseRecyclerFragment<DyUser> {
                     }
                 }).whenTaskEnd(this::onAfterRefresh).execute();
                 break;
+            case R.id.tv_contact:
+                if (!UserManager.getInstance().isLogined()) {
+                    return;
+                }
+                PackageManager pkgManager = mActivity.getPackageManager();
+                // 读写 sd card 权限非常重要, android6.0默认禁止的, 建议初始化之前就弹窗让用户赋予该权限
+                boolean contactsWritePermission =
+                    pkgManager.checkPermission(permission.WRITE_CONTACTS, mActivity.getPackageName()) == PackageManager.PERMISSION_GRANTED;
+                if (contactsWritePermission || Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+                    export2Contacts();
+                } else {
+                    ActivityCompat
+                        .requestPermissions(mActivity, new String[]{Manifest.permission.WRITE_CONTACTS}, MainActivity.REQUEST_PERMISSION_CONTACT);
+                }
+                break;
             case R.id.tv_clear:
                 if (CollectionUtils.isEmpty(mData)) {
                     toast("暂无采集数据");
@@ -157,6 +180,23 @@ public class HomeFragment extends BaseRecyclerFragment<DyUser> {
                 super.onClick(v);
                 break;
         }
+    }
+
+    public void export2Contacts() {
+        AppTask.withoutContext().assign(() -> {
+            try {
+                return ContactHelper.BatchAddContact(mActivity, mData);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return false;
+        }).whenDone((WhenTaskDone<Boolean>) result -> {
+            if (result) {
+                toast("导出成功");
+            } else {
+                toast("导出失败");
+            }
+        }).whenTaskEnd(this::onAfterRefresh).execute();
     }
 
     @Override

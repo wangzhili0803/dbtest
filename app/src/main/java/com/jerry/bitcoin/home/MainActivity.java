@@ -48,6 +48,7 @@ public class MainActivity extends BaseActivity implements LoginActionListener {
     private static final int INTERVAL = 1000 * 60 * 60 * 24;// 24h
     protected static final int TO_ACCESSIBILITY = 101;
     private static final int REQUEST_PERMISSION = 102;
+    public static final int REQUEST_PERMISSION_CONTACT = 103;
     private HomeFragment mHomeFragment;
     private MineFragment mMineFragment;
     private LinearLayout tabBar;
@@ -252,6 +253,11 @@ public class MainActivity extends BaseActivity implements LoginActionListener {
                 init();
             } else {
                 toast("请同意权限，否则将无法正常使用");
+            }
+        } else if (requestCode == REQUEST_PERMISSION_CONTACT) {
+            if ((grantResults.length == 1
+                && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                mHomeFragment.export2Contacts();
             }
         } else {
             onRequestPermissionsResult(requestCode, permissions, grantResults);

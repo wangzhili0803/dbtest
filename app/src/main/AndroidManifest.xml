@@ -63,6 +63,7 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.SYSTEM_OVERLAY_WINDOW" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
 
     <uses-permission android:name="android.permission.WRITE_EBIND_ACCESSIBILITY_SERVICEXTERNAL_STORAGE" />
 
