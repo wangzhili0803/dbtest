@@ -217,7 +217,7 @@ public class CoinColaTask extends BaseTask {
             case 2:
                 String priceStr = service.getNodeText(getPackageName() + "tv_total_assets_qty");
                 double dd = ParseUtil.parseDouble(priceStr.replace(CoinConstant.XRP, Key.NIL).trim());
-                if (service.input(getPackageName() + "et_quantity", String.valueOf(dd - 70.25))) {
+                if (service.input(getPackageName() + "et_quantity", String.valueOf(MathUtil.halfEven(dd - 70.25, 6)))) {
                     taskStep++;
                 }
                 break;
@@ -677,13 +677,6 @@ public class CoinColaTask extends BaseTask {
 
     public void listenOrder(final ListenerService service, final OnDataCallback<Integer> endCallback) {
         AccessibilityNodeInfo accessibilityNodeInfo = service.getRootInActiveWindow();
-        List<AccessibilityNodeInfo> recyclerViews = accessibilityNodeInfo.findAccessibilityNodeInfosByViewId(getPackageName() + "recycler_view");
-        for (AccessibilityNodeInfo recyclerView : recyclerViews) {
-            if (recyclerView.isVisibleToUser() && recyclerView.getChildCount() == 0) {
-                endCallback.onDataCallback(2);
-                return;
-            }
-        }
         AccessibilityNodeInfo tabLayout = service.findFirstById(accessibilityNodeInfo, getPackageName() + "tab_layout");
         AccessibilityNodeInfo complete = service.findFirstByText(tabLayout, "已完成");
         if (complete != null) {
@@ -701,15 +694,22 @@ public class CoinColaTask extends BaseTask {
                 return;
             }
         }
-        deleteUnusedMsg(service, result -> {
-            AccessibilityNodeInfo recyclerView = service.findFirstById(accessibilityNodeInfo, getPackageName() + "recycler_view");
-            AccessibilityNodeInfo ivDot = service.findFirstById(recyclerView, getPackageName() + "iv_dot");
-            if (ivDot != null && service.exeClick(ivDot)) {
-                service.postDelayed(() -> endCallback.onDataCallback(0));
-                return;
+        List<AccessibilityNodeInfo> recyclerViews = accessibilityNodeInfo.findAccessibilityNodeInfosByViewId(getPackageName() + "recycler_view");
+        for (AccessibilityNodeInfo recyclerView : recyclerViews) {
+            if (recyclerView.isVisibleToUser()) {
+                if (recyclerView.getChildCount() == 0) {
+                    endCallback.onDataCallback(2);
+                    return;
+                } else {
+                    AccessibilityNodeInfo ivDot = service.findFirstById(recyclerView, getPackageName() + "iv_dot");
+                    if (ivDot != null && service.exeClick(ivDot)) {
+                        service.postDelayed(() -> endCallback.onDataCallback(0));
+                        return;
+                    }
+                }
             }
-            endCallback.onDataCallback(1);
-        });
+        }
+        deleteUnusedMsg(service, result -> endCallback.onDataCallback(1));
     }
 
     /**

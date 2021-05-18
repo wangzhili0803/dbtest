@@ -388,12 +388,6 @@ public class ListenerService extends BaseListenerService {
     private void order() {
         mCoinColaTask.sellByCurrentPage(this, coinOrder -> {
             if (coinOrder != null) {
-                LogUtils.d(coinOrder.toString());
-                if (orderIds.contains(coinOrder.getOrderId())) {
-                    LogUtils.e("已下过单");
-                    ToastUtil.showShortText("已下过单");
-                    return;
-                }
                 getUsdtData(data1 -> {
                     // 接受的最低价
                     String symbol = coinOrder.getCoinType();
@@ -405,6 +399,12 @@ public class ListenerService extends BaseListenerService {
                     reqCandlestickRequest.setFrom(now - 60);
                     reqCandlestickRequest.setTo(now);
                     marketClient.reqCandlestick(reqCandlestickRequest, response -> {
+                        LogUtils.d(coinOrder.toString());
+                        if (orderIds.contains(coinOrder.getOrderId())) {
+                            LogUtils.e("已下过单");
+                            ToastUtil.showShortText("已下过单");
+                            return;
+                        }
                         // 当前市场价
                         double lowestPrice = getLowestClose(symbol, coinOrder.getAmount(), coinOrder.getPrice());
                         double currentPrice = response.getCandlestickList().get(0).getClose().doubleValue();

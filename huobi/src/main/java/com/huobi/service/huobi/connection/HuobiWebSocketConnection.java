@@ -269,10 +269,10 @@ public class HuobiWebSocketConnection extends WebSocketListener implements WebSo
                 } else if (op.equals("auth")) {
                     send(commandList);
                 } else if (op.equals("req")) {
-                    onReceive(jsonObject);
+                    onReceiveAndClose(jsonObject);
                 }
             } else if (jsonObject.containsKey("ch") || jsonObject.containsKey("rep")) {
-                onReceive(jsonObject);
+                onReceiveAndClose(jsonObject);
             } else if (jsonObject.containsKey("ping")) {
                 processPingOnMarketLine(jsonObject, webSocket);
             } else if (jsonObject.containsKey("subbed")) {
