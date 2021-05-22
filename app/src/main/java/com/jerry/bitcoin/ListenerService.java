@@ -266,7 +266,6 @@ public class ListenerService extends BaseListenerService {
         super.stopScript();
         mCoinColaTask.release();
         mHuobiTask.release();
-        orderIds.clear();
         if (mHuobiWebSocketConnection != null) {
             mHuobiWebSocketConnection.close();
             mHuobiWebSocketConnection = null;
@@ -303,7 +302,7 @@ public class ListenerService extends BaseListenerService {
                     tmp = ((Element) element).text().replace("：", "");
                 } else if (element instanceof TextNode) {
                     if (!TextUtils.isEmpty(tmp)) {
-                        usdtPrices.put(tmp.toLowerCase(), ParseUtil.parseDouble(((TextNode) element).text(), 6.6));
+                        usdtPrices.put(tmp.toLowerCase(), ParseUtil.parseDouble(((TextNode) element).text(), 6.5) - 0.02d);
                     }
                 } else if (element instanceof Comment) {
                     LogUtils.d(element.baseUri());
