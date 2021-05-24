@@ -1,6 +1,5 @@
 package com.jerry.bitcoin.platform;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import android.graphics.Rect;
@@ -38,16 +37,14 @@ public class CoinColaTask extends BaseTask {
     private static volatile CoinColaTask mInstance;
     private ArrayMap<String, Double> premiumRateMap = new ArrayMap<>();
 
-    private List<String> listenCoins = new ArrayList<>();
-
     private int listenIndex;
     private String transferTag;
     private String mValidateCode;
 
     private CoinColaTask() {
         coinType = PreferenceHelp.getString(ListenerService.TYPE_COINS, CoinConstant.USDT);
-        listenCoins.add(CoinConstant.XRP);
-        listenCoins.add(CoinConstant.BCH);
+        CoinConstant.LISTEN_COINS.add(CoinConstant.XRP);
+        CoinConstant.LISTEN_COINS.add(CoinConstant.BCH);
         openConversation(null);
     }
 
@@ -453,13 +450,17 @@ public class CoinColaTask extends BaseTask {
         if (!AppUtils.playing) {
             return;
         }
+        if (CoinConstant.LISTEN_COINS.size() > 1) {
+            service.postDelayed(() -> endCallback.onEnd(true));
+            return;
+        }
         if (isListPage(service)) {
-            if (listenIndex < listenCoins.size() - 1) {
+            if (listenIndex < CoinConstant.LISTEN_COINS.size() - 1) {
                 listenIndex++;
             } else {
                 listenIndex = 0;
             }
-            if (service.exeClickText(listenCoins.get(listenIndex))) {
+            if (service.exeClickText(CoinConstant.LISTEN_COINS.get(listenIndex))) {
                 service.postDelayed(() -> endCallback.onEnd(true));
             } else {
                 endCallback.onEnd(false);
@@ -700,12 +701,11 @@ public class CoinColaTask extends BaseTask {
                 if (recyclerView.getChildCount() == 0) {
                     endCallback.onDataCallback(2);
                     return;
-                } else {
-                    AccessibilityNodeInfo ivDot = service.findFirstById(recyclerView, getPackageName() + "iv_dot");
-                    if (ivDot != null && service.exeClick(ivDot)) {
-                        service.postDelayed(() -> endCallback.onDataCallback(0));
-                        return;
-                    }
+                }
+                AccessibilityNodeInfo ivDot = service.findFirstById(recyclerView, getPackageName() + "iv_dot");
+                if (ivDot != null && service.exeClick(ivDot)) {
+                    service.postDelayed(() -> endCallback.onDataCallback(0));
+                    return;
                 }
             }
         }
@@ -743,11 +743,14 @@ public class CoinColaTask extends BaseTask {
                         service.back();
                         onDataCallback.onDataCallback(cOrder);
                     }));
-                } else if (!transInfo.contains("姓名+银行卡号+银行名称")) {
+                    return;
+                }
+                if (!transInfo.contains("姓名+银行卡号+银行名称")) {
                     sendMsgToBuyer(service, "您好，请提供一下您的支付信息：姓名+银行卡号+银行名称哈", result -> service.postDelayed(() -> {
                         service.back();
                         onDataCallback.onDataCallback(null);
                     }));
+                    return;
                 }
                 break;
             case "已放行":

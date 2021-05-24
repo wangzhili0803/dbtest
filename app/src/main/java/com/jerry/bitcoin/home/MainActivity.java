@@ -1,11 +1,8 @@
 package com.jerry.bitcoin.home;
 
 import java.io.File;
-import java.util.Calendar;
 
 import android.annotation.SuppressLint;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -34,7 +31,6 @@ import com.jerry.baselib.common.weidgt.BindingDialog;
 import com.jerry.baselib.common.weidgt.LoginDialog;
 import com.jerry.baselib.common.weidgt.NoticeDialog;
 import com.jerry.bitcoin.R;
-import com.jerry.bitcoin.analyze.AnalyzeFragment;
 import com.jerry.bitcoin.interfaces.LoginActionListener;
 import com.tencent.bugly.beta.Beta;
 
@@ -45,10 +41,12 @@ public class MainActivity extends BaseActivity implements LoginActionListener {
 
     @SuppressLint("StaticFieldLeak")
     private static MainActivity mainActivity;
-    private static final int INTERVAL = 1000 * 60 * 60 * 24;// 24h
+    /**
+     * 24h
+     */
+    private static final int INTERVAL = 1000 * 60 * 60 * 24;
     protected static final int TO_ACCESSIBILITY = 101;
     private HomeFragment mHomeFragment;
-    private AnalyzeFragment mAnalyzeFragment;
     private MineFragment mMineFragment;
     private LinearLayout tabBar;
 
@@ -97,25 +95,11 @@ public class MainActivity extends BaseActivity implements LoginActionListener {
         mainActivity = this;
         tabBar = findViewById(R.id.tab_bar);
         findViewById(R.id.tv_main).setOnClickListener(this);
-        findViewById(R.id.tv_analyze).setOnClickListener(this);
         findViewById(R.id.tv_me).setOnClickListener(this);
         fragmentManager = getSupportFragmentManager();
         setContentFragment(R.id.tv_main);
         init();
-        initAlarm();
     }
-
-    private void initAlarm() {
-        AlarmManager alarmService = (AlarmManager) getSystemService(ALARM_SERVICE);
-        Calendar instance = Calendar.getInstance();
-        instance.set(Calendar.HOUR_OF_DAY, 22);
-        instance.set(Calendar.MINUTE, 24);
-        instance.set(Calendar.SECOND, 0);
-        Intent alarmIntent = new Intent(this, AlarmClockReceive.class);
-        PendingIntent broadcast = PendingIntent.getBroadcast(this, 0, alarmIntent, 0);
-        alarmService.setRepeating(AlarmManager.RTC_WAKEUP, instance.getTimeInMillis(), INTERVAL, broadcast);
-    }
-
 
     private void init() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(getApplicationContext())) {
@@ -164,13 +148,6 @@ public class MainActivity extends BaseActivity implements LoginActionListener {
             } else {
                 transaction.show(mHomeFragment);
             }
-        } else if (viewId == R.id.tv_analyze) {
-            if (mAnalyzeFragment == null) {
-                mAnalyzeFragment = new AnalyzeFragment();
-                transaction.add(R.id.content, mAnalyzeFragment);
-            } else {
-                transaction.show(mAnalyzeFragment);
-            }
         } else if (viewId == R.id.tv_me) {
             if (mMineFragment == null) {
                 mMineFragment = new MineFragment();
@@ -190,9 +167,6 @@ public class MainActivity extends BaseActivity implements LoginActionListener {
     private void hideFragments(FragmentTransaction transaction) {
         if (mHomeFragment != null) {
             transaction.hide(mHomeFragment);
-        }
-        if (mAnalyzeFragment != null) {
-            transaction.hide(mAnalyzeFragment);
         }
         if (mMineFragment != null) {
             transaction.hide(mMineFragment);

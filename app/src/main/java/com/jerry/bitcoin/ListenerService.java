@@ -127,6 +127,12 @@ public class ListenerService extends BaseListenerService {
                     getUsdtData(null);
                     getHuobiMarket();
                     listenLists();
+                    mWeakHandler.postDelayed(() -> {
+                        if (priceMap.isEmpty()) {
+                            stopScript();
+                            ToastUtil.showShortText("检查代理是否开启");
+                        }
+                    }, 15000);
                     return true;
                 case MSG_TRANS:
                     mCoinColaTask.checkCoinNeedTransfer(this, CoinConstant.XRP, result -> {
@@ -302,7 +308,7 @@ public class ListenerService extends BaseListenerService {
                     tmp = ((Element) element).text().replace("：", "");
                 } else if (element instanceof TextNode) {
                     if (!TextUtils.isEmpty(tmp)) {
-                        usdtPrices.put(tmp.toLowerCase(), ParseUtil.parseDouble(((TextNode) element).text(), 6.5) - 0.02d);
+                        usdtPrices.put(tmp.toLowerCase(), ParseUtil.parseDouble(((TextNode) element).text(), 6.2) - 0.02d);
                     }
                 } else if (element instanceof Comment) {
                     LogUtils.d(element.baseUri());
@@ -372,14 +378,16 @@ public class ListenerService extends BaseListenerService {
                         LogUtils.d(coinOrder.toString());
                         giveNotice();
                         order();
+                    } else {
+                        mWeakHandler.postDelayed(this::listenOrder, TIME_LONG);
                     }
                 });
             } else if (result == 1) {
                 ToastUtil.showShortText("暂无消息");
-                mWeakHandler.postDelayed(this::listenOrder, TIME_LONGLONG);
+                mWeakHandler.postDelayed(this::listenOrder, TIME_LONG);
             } else {
                 back();
-                mWeakHandler.postDelayed(this::listenLists, TIME_LONGLONG);
+                mWeakHandler.postDelayed(this::listenLists, TIME_LONG);
             }
         }));
     }

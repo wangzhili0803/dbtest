@@ -1,5 +1,8 @@
 package com.jerry.bitcoin.beans;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.util.ArrayMap;
 
 /**
@@ -23,7 +26,7 @@ public class CoinConstant {
     public static final String XRP_USDT = "xrpusdt";
     public static final String BCH_USDT = "bchusdt";
     public static final String SUB_CANDLE = XRP_USDT + "," + BCH_USDT;
-
+    public static final List<String> LISTEN_COINS = new ArrayList<>();
     public static final ArrayMap<String, Double> FEEMAP = new ArrayMap<>();
     public static final ArrayMap<String, Double> ACCOUNT_MAP = new ArrayMap<>();
 
