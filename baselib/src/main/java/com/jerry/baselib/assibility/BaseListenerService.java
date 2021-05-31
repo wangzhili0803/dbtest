@@ -234,7 +234,7 @@ public abstract class BaseListenerService extends AccessibilityService {
     /**
      * 震动发声提示
      */
-    protected void giveNotice() {
+    public void giveNotice() {
         Vibrator vibrator = (Vibrator) getApplication().getSystemService(Service.VIBRATOR_SERVICE);
         if (vibrator != null) {
             vibrator.vibrate(new long[]{500, 1000, 500, 1000}, -1);

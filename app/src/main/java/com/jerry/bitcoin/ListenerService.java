@@ -88,6 +88,7 @@ public class ListenerService extends BaseListenerService {
     private static final int MSG_DO_TASK = 101;
     private static final int MSG_TRANS = 102;
     private static final int MSG_ORDER = 103;
+    private static final int MSG_LISTEN_LIST = 201;
 
     private static final SubCandlestickRequest CANDLESTICK_RESQUEST = new SubCandlestickRequest();
     private HuobiWebSocketConnection mHuobiWebSocketConnection;
@@ -126,11 +127,12 @@ public class ListenerService extends BaseListenerService {
                 case MSG_DO_TASK:
                     getUsdtData(null);
                     getHuobiMarket();
-                    listenLists();
+                    mWeakHandler.sendEmptyMessageDelayed(MSG_LISTEN_LIST, TIME_MIDDLE);
                     mWeakHandler.postDelayed(() -> {
                         if (priceMap.isEmpty()) {
                             stopScript();
                             ToastUtil.showShortText("检查代理是否开启");
+                            giveNotice();
                         }
                     }, 15000);
                     return true;
@@ -140,21 +142,36 @@ public class ListenerService extends BaseListenerService {
                             mCoinColaTask
                                 .transferXrp(ListenerService.this, result1 -> mCoinColaTask.checkCoinNeedTransfer(this, CoinConstant.BCH, result2 -> {
                                     if (result2) {
-                                        mCoinColaTask.transferBch(ListenerService.this, result3 -> listenLists());
+                                        mCoinColaTask.transferBch(ListenerService.this, result3 -> {
+                                            if (!mWeakHandler.hasMessages(MSG_LISTEN_LIST)) {
+                                                mWeakHandler.sendEmptyMessageDelayed(MSG_LISTEN_LIST, TIME_LONG);
+                                            }
+                                        });
                                     } else {
-                                        listenLists();
+                                        if (!mWeakHandler.hasMessages(MSG_LISTEN_LIST)) {
+                                            mWeakHandler.sendEmptyMessageDelayed(MSG_LISTEN_LIST, TIME_LONG);
+                                        }
                                     }
                                 }));
                         } else {
                             mCoinColaTask.checkCoinNeedTransfer(this, CoinConstant.BCH, result2 -> {
                                 if (result2) {
-                                    mCoinColaTask.transferBch(ListenerService.this, result1 -> listenLists());
+                                    mCoinColaTask.transferBch(ListenerService.this, result1 -> {
+                                        if (!mWeakHandler.hasMessages(MSG_LISTEN_LIST)) {
+                                            mWeakHandler.sendEmptyMessageDelayed(MSG_LISTEN_LIST, TIME_LONG);
+                                        }
+                                    });
                                 } else {
-                                    listenLists();
+                                    if (!mWeakHandler.hasMessages(MSG_LISTEN_LIST)) {
+                                        mWeakHandler.sendEmptyMessageDelayed(MSG_LISTEN_LIST, TIME_LONG);
+                                    }
                                 }
                             });
                         }
                     });
+                    return true;
+                case MSG_LISTEN_LIST:
+                    listenLists();
                     return true;
                 default:
                     return false;
@@ -288,8 +305,16 @@ public class ListenerService extends BaseListenerService {
         mWeakHandler.removeMessages(MSG_TRANS);
     }
 
+    public void sendEmptyMessageDelayed(int what, long time) {
+        mWeakHandler.sendEmptyMessageDelayed(what, time);
+    }
+
     public void postDelayed(Runnable runnable) {
-        mWeakHandler.postDelayed(runnable, TIME_LONG);
+        postDelayed(runnable, TIME_LONG);
+    }
+
+    public void postDelayed(Runnable runnable, long time) {
+        mWeakHandler.postDelayed(runnable, time);
     }
 
     public void getUsdtData(EndCallback endCallback) {
@@ -353,43 +378,25 @@ public class ListenerService extends BaseListenerService {
         if (!AppUtils.playing) {
             return;
         }
-        mCoinColaTask.exchangeCoin(this, result -> {
-            if (AppUtils.playing) {
-                pullRefresh(t -> mCoinColaTask.listenLists(this, result1 -> {
-                    if (result1) {
-                        mWeakHandler.postDelayed(this::listenOrder, TIME_SHORT);
-                    } else {
-                        mWeakHandler.postDelayed(this::listenLists, TIME_LONG);
+        mCoinColaTask.checkHasOrder(this, result -> {
+            if (!AppUtils.playing) {
+                return;
+            }
+            if (result) {
+                mCoinColaTask.listenOrder(this, result1 -> order());
+                return;
+            }
+            mCoinColaTask.exchangeCoin(this, result1 -> {
+                if (!AppUtils.playing) {
+                    return;
+                }
+                pullRefresh(t -> mCoinColaTask.listenLists(this, result2 -> {
+                    if (!mWeakHandler.hasMessages(MSG_LISTEN_LIST)) {
+                        mWeakHandler.sendEmptyMessageDelayed(MSG_LISTEN_LIST, TIME_LONG);
                     }
                 }));
-            }
+            });
         });
-    }
-
-    private void listenOrder() {
-        if (!AppUtils.playing) {
-            return;
-        }
-        pullRefresh(t -> mCoinColaTask.listenOrder(this, result -> {
-            if (result == 0) {
-                // 进入聊天界面
-                mCoinColaTask.handleMsg(this, coinOrder -> {
-                    if (coinOrder != null) {
-                        LogUtils.d(coinOrder.toString());
-                        giveNotice();
-                        order();
-                    } else {
-                        mWeakHandler.postDelayed(this::listenOrder, TIME_LONG);
-                    }
-                });
-            } else if (result == 1) {
-                ToastUtil.showShortText("暂无消息");
-                mWeakHandler.postDelayed(this::listenOrder, TIME_LONG);
-            } else {
-                back();
-                mWeakHandler.postDelayed(this::listenLists, TIME_LONG);
-            }
-        }));
     }
 
     private void order() {

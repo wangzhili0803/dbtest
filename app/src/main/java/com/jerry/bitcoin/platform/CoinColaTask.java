@@ -363,14 +363,6 @@ public class CoinColaTask extends BaseTask {
         service.postDelayed(() -> transferBch(service, endCallback));
     }
 
-    private void validateCode(final ListenerService service, final String validateCode) {
-        AccessibilityNodeInfo smsNode = service.findFirstById(service.getRootInActiveWindow(), getPackageName() + "layout_sms_code");
-        AccessibilityNodeInfo validateCodeNode = service.findFirstById(smsNode, getPackageName() + "et_validate_code");
-        if (service.input(validateCodeNode, validateCode)) {
-            taskStep++;
-        }
-    }
-
     @Override
     public void pay(final ListenerService listenerService, final EndCallback endCallback) {
 
@@ -424,8 +416,11 @@ public class CoinColaTask extends BaseTask {
                 for (int i = 0; i < tablayout.getChildCount(); i++) {
                     AccessibilityNodeInfo tab = tablayout.getChild(i);
                     if (tab.isSelected()) {
-                        String coin = tab.getChild(0).getText().toString();
-                        return coin.toLowerCase() + "usdt";
+                        AccessibilityNodeInfo tab0 = tab.getChild(0);
+                        if (tab0 != null) {
+                            String coin = tab0.getText().toString();
+                            return coin.toLowerCase() + "usdt";
+                        }
                     }
                 }
             }
@@ -444,6 +439,15 @@ public class CoinColaTask extends BaseTask {
             return rgAdType != null;
         }
         return false;
+    }
+
+    public void checkHasOrder(final ListenerService service, final EndCallback endCallback) {
+        AccessibilityNodeInfo floatingOrderMenu = service.findFirstById(service.getRootInActiveWindow(), getPackageName() + "floating_order_menu");
+        if (service.exeClickId(floatingOrderMenu, getPackageName() + "tv_going")) {
+            service.postDelayed(() -> endCallback.onEnd(true));
+        } else {
+            endCallback.onEnd(false);
+        }
     }
 
     public void exchangeCoin(final ListenerService service, final EndCallback endCallback) {
@@ -498,14 +502,8 @@ public class CoinColaTask extends BaseTask {
                 service.postDelayed(() -> listenLists(service, endCallback));
             }
         }
-        AccessibilityNodeInfo accessibilityNodeInfo = service.getRootInActiveWindow();
-        AccessibilityNodeInfo floatingOrderMenu = service.findFirstById(accessibilityNodeInfo, getPackageName() + "floating_order_menu");
-        if (service.exeClickId(floatingOrderMenu, getPackageName() + "tv_going")) {
-            service.postDelayed(() -> endCallback.onEnd(true));
-            return;
-        }
         AccessibilityNodeInfo targetRecyclerView = null;
-        List<AccessibilityNodeInfo> recyclerViews = accessibilityNodeInfo
+        List<AccessibilityNodeInfo> recyclerViews = service.getRootInActiveWindow()
             .findAccessibilityNodeInfosByViewId(getPackageName() + "recycler_view_ad");
         for (AccessibilityNodeInfo recyclerView : recyclerViews) {
             if (recyclerView.isVisibleToUser()) {
@@ -676,7 +674,7 @@ public class CoinColaTask extends BaseTask {
         endCallback.onDataCallback(cOrder);
     }
 
-    public void listenOrder(final ListenerService service, final OnDataCallback<Integer> endCallback) {
+    public void listenOrder(final ListenerService service, final EndCallback endCallback) {
         AccessibilityNodeInfo accessibilityNodeInfo = service.getRootInActiveWindow();
         AccessibilityNodeInfo tabLayout = service.findFirstById(accessibilityNodeInfo, getPackageName() + "tab_layout");
         AccessibilityNodeInfo complete = service.findFirstByText(tabLayout, "已完成");
@@ -687,29 +685,47 @@ public class CoinColaTask extends BaseTask {
                 service.postDelayed(() -> {
                     if (service.clickFirst(getPackageName() + "iv_dot")) {
                         //有待评价的订单
-                        handleEvaluation(service, result -> endCallback.onDataCallback(1));
+                        handleEvaluation(service, result -> listenOrder(service, endCallback));
                     } else {
-                        endCallback.onDataCallback(1);
+                        listenOrder(service, endCallback);
                     }
                 });
                 return;
             }
         }
+        AccessibilityNodeInfo currentRecyclerViews = null;
         List<AccessibilityNodeInfo> recyclerViews = accessibilityNodeInfo.findAccessibilityNodeInfosByViewId(getPackageName() + "recycler_view");
         for (AccessibilityNodeInfo recyclerView : recyclerViews) {
             if (recyclerView.isVisibleToUser()) {
-                if (recyclerView.getChildCount() == 0) {
-                    endCallback.onDataCallback(2);
-                    return;
-                }
-                AccessibilityNodeInfo ivDot = service.findFirstById(recyclerView, getPackageName() + "iv_dot");
-                if (ivDot != null && service.exeClick(ivDot)) {
-                    service.postDelayed(() -> endCallback.onDataCallback(0));
-                    return;
-                }
+                currentRecyclerViews = recyclerView;
+                break;
             }
         }
-        deleteUnusedMsg(service, result -> endCallback.onDataCallback(1));
+        if (currentRecyclerViews == null || currentRecyclerViews.getChildCount() == 0) {
+            if (errorCount > 3) {
+                service.back();
+                listenLists(service, endCallback);
+                errorCount = 0;
+            } else {
+                errorCount++;
+                service.postDelayed(() -> listenOrder(service, endCallback), 1000);
+            }
+            return;
+        }
+        AccessibilityNodeInfo ivDot = service.findFirstById(currentRecyclerViews, getPackageName() + "iv_dot");
+        if (ivDot != null && service.exeClick(ivDot)) {
+            service.postDelayed(() -> handleMsg(service, coinOrder -> {
+                if (coinOrder != null) {
+                    LogUtils.d(coinOrder.toString());
+                    service.giveNotice();
+                    endCallback.onEnd(true);
+                } else {
+                    service.postDelayed(() -> listenOrder(service, endCallback));
+                }
+            }));
+            return;
+        }
+        deleteUnusedMsg(service, result -> listenOrder(service, endCallback));
     }
 
     /**
