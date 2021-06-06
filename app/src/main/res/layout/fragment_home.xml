@@ -20,4 +20,11 @@
         android:padding="@dimen/page_margin"
         android:text="BCH" />
 
+    <CheckBox
+        android:id="@+id/cb_order_right_now"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/page_margin"
+        android:text="当即下单" />
+
 </LinearLayout>

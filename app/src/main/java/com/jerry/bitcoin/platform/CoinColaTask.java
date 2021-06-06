@@ -35,6 +35,7 @@ import androidx.collection.ArrayMap;
 public class CoinColaTask extends BaseTask {
 
     private static volatile CoinColaTask mInstance;
+    private static final String USER_NAME = "jerrywonder";
     private ArrayMap<String, Double> premiumRateMap = new ArrayMap<>();
 
     private int listenIndex;
@@ -522,10 +523,29 @@ public class CoinColaTask extends BaseTask {
             return;
         }
         String symbol = getSelectedSymbol(service);
-        double premiumRate = MathUtil.safeGet(premiumRateMap, symbol);
+        double marketPrice = MathUtil.safeGet(ListenerService.priceMap, symbol);
+        AccessibilityNodeInfo itemMe = service.findFirstByText(targetRecyclerView, USER_NAME).getParent();
+        String minePriceStr = service.getNodeText(itemMe, getPackageName() + "tv_price").replace(Key.COMMA, Key.NIL)
+            .replace("CNY", Key.NIL)
+            .trim();
+        double minePrice = ParseUtil.parse2Double(minePriceStr);
+        double highestGuadanPrice = getLowestguadanClose(symbol, marketPrice);
+        if (minePrice > highestGuadanPrice) {
+            ToastUtil.showShortText("最高挂价：" + highestGuadanPrice);
+            service.swipToClickText(USER_NAME, result -> {
+                if (result) {
+                    service.postDelayed(() -> getPremiumRate(service, symbol, highestGuadanPrice, endCallback));
+                } else {
+                    endCallback.onEnd(false);
+                }
+            });
+            return;
+        }
+
         AccessibilityNodeInfo firstItem = targetRecyclerView.getChild(1);
         String nickname = service.getNodeText(firstItem, getPackageName() + "tv_nickname");
-        if ("jerrywonder".equals(nickname)) {
+        if (USER_NAME.equals(nickname)) {
+            double premiumRate = MathUtil.safeGet(premiumRateMap, symbol);
             AccessibilityNodeInfo secondItem = targetRecyclerView.getChild(2);
             String priceSecondStr = service.getNodeText(secondItem, getPackageName() + "tv_price").replace(Key.COMMA, Key.NIL)
                 .replace("CNY", Key.NIL)
@@ -539,7 +559,6 @@ public class CoinColaTask extends BaseTask {
                 .replace("CNY", Key.NIL)
                 .trim();
             double priceMe = ParseUtil.parse2Double(priceMeStr);
-            double marketPrice = MathUtil.safeGet(ListenerService.priceMap, symbol);
             Double usdtPrice = ListenerService.usdtPrices.get(CoinConstant.HUOBI);
             double marketPrice4Cym = 0;
             if (usdtPrice != null) {
@@ -563,20 +582,17 @@ public class CoinColaTask extends BaseTask {
             String highestPriceStr = service.getNodeText(firstItem, getPackageName() + "tv_price").replace(Key.COMMA, Key.NIL)
                 .replace("CNY", Key.NIL)
                 .trim();
-            double highestPrice = ParseUtil.parse2Double(highestPriceStr);
-            double lowestClose = getLowestClose(symbol, highestPrice);
-            double marketPrice = MathUtil.safeGet(ListenerService.priceMap, symbol);
-            if (lowestClose < marketPrice) {
-                service.swipToClickText("jerrywonder", result -> {
+            double highestListPrice = ParseUtil.parse2Double(highestPriceStr);
+            if (highestGuadanPrice > highestListPrice) {
+                service.swipToClickText(USER_NAME, result -> {
                     if (result) {
-                        service.postDelayed(() -> getPremiumRate(service, symbol, highestPrice, endCallback));
+                        service.postDelayed(() -> getPremiumRate(service, symbol, highestListPrice, endCallback));
                     } else {
                         endCallback.onEnd(false);
                     }
                 });
                 return;
             }
-            ToastUtil.showShortText("marketPrice:" + marketPrice);
         }
         double lowestClose = getLowestClose(symbol, getHighestPrice(service));
         ToastUtil.showShortText("最低价：" + lowestClose);
@@ -593,6 +609,17 @@ public class CoinColaTask extends BaseTask {
             if (usdtPrice != null) {
                 return amount / (c1 * 0.998 * usdtPrice);
             }
+        }
+        return Integer.MAX_VALUE;
+    }
+
+    private double getLowestguadanClose(final String symbol, final double marketPrice) {
+        final double amount = 5000;
+        Double fee = CoinConstant.FEEMAP.get(symbol);
+        Double usdtPrice = ListenerService.usdtPrices.get(CoinConstant.HUOBI);
+        if (usdtPrice != null && fee != null) {
+            double c1 = amount / marketPrice / 0.998 / usdtPrice + fee;
+            return MathUtil.halfEven(amount / c1 * 0.993 - 0.01);
         }
         return Integer.MAX_VALUE;
     }
@@ -731,7 +758,7 @@ public class CoinColaTask extends BaseTask {
     /**
      * 处理消息
      */
-    public void handleMsg(final ListenerService service, final OnDataCallback<CoinOrder> onDataCallback) {
+    private void handleMsg(final ListenerService service, final OnDataCallback<CoinOrder> onDataCallback) {
         String orderStatus = service.getNodeText(getPackageName() + "tv_order_status");
         switch (orderStatus) {
             case "待付款":
@@ -764,7 +791,11 @@ public class CoinColaTask extends BaseTask {
                 if (!transInfo.contains("姓名+银行卡号+银行名称")) {
                     sendMsgToBuyer(service, "您好，请提供一下您的支付信息：姓名+银行卡号+银行名称哈", result -> service.postDelayed(() -> {
                         service.back();
-                        onDataCallback.onDataCallback(null);
+                        if (PreferenceHelp.getBoolean("OrderRightNow", true)) {
+                            onDataCallback.onDataCallback(cOrder);
+                        } else {
+                            onDataCallback.onDataCallback(null);
+                        }
                     }));
                     return;
                 }

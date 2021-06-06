@@ -31,6 +31,8 @@ public class HomeFragment extends BaseFragment implements OnCheckedChangeListene
         cbXrp.setOnCheckedChangeListener(this);
         CheckBox cbBch = view.findViewById(R.id.cb_bch);
         cbBch.setOnCheckedChangeListener(this);
+        CheckBox cbOrderRightNow = view.findViewById(R.id.cb_order_right_now);
+        cbOrderRightNow.setOnCheckedChangeListener(this);
         if (PreferenceHelp.getBoolean("LISTEN_" + CoinConstant.XRP)) {
             cbXrp.setChecked(true);
             if (!CoinConstant.LISTEN_COINS.contains(CoinConstant.XRP)) {
@@ -49,6 +51,7 @@ public class HomeFragment extends BaseFragment implements OnCheckedChangeListene
             cbBch.setChecked(false);
             CoinConstant.LISTEN_COINS.remove(CoinConstant.BCH);
         }
+        cbOrderRightNow.setChecked(PreferenceHelp.getBoolean("OrderRightNow", true));
     }
 
     @Override
@@ -74,6 +77,9 @@ public class HomeFragment extends BaseFragment implements OnCheckedChangeListene
                     CoinConstant.LISTEN_COINS.remove(CoinConstant.BCH);
                 }
                 PreferenceHelp.putBoolean("LISTEN_" + CoinConstant.BCH, isChecked);
+                break;
+            case R.id.cb_order_right_now:
+                PreferenceHelp.putBoolean("OrderRightNow", isChecked);
                 break;
             default:
                 break;
