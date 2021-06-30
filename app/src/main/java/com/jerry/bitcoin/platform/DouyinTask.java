@@ -58,6 +58,7 @@ public class DouyinTask {
                         if ((ListenerService.mWidth >> 1) < rect.left) {
                             MyAccessibilityNodeInfo myAccessibilityNodeInfo = new MyAccessibilityNodeInfo();
                             myAccessibilityNodeInfo.setAccessibilityNodeInfo(follow1);
+                            myAccessibilityNodeInfo.setX(ListenerService.mWidth >> 1);
                             myAccessibilityNodeInfo.setY((rect.top + rect.bottom) >> 1);
                             myAccessibilityNodeInfos.add(myAccessibilityNodeInfo);
                         }
@@ -70,59 +71,99 @@ public class DouyinTask {
                         if ((ListenerService.mWidth >> 1) < rect.left) {
                             MyAccessibilityNodeInfo myAccessibilityNodeInfo = new MyAccessibilityNodeInfo();
                             myAccessibilityNodeInfo.setAccessibilityNodeInfo(follow2);
+                            myAccessibilityNodeInfo.setX(ListenerService.mWidth >> 1);
                             myAccessibilityNodeInfo.setY((rect.top + rect.bottom) >> 1);
                             myAccessibilityNodeInfos.add(myAccessibilityNodeInfo);
                         }
                     }
                 }
                 Collections.sort(myAccessibilityNodeInfos);
-                getInfo4FollowList(service, myAccessibilityNodeInfos, 0, result -> {
-                    Rect rectTop = new Rect();
-                    Rect rectBottom = new Rect();
-                    myAccessibilityNodeInfos.get(0).getAccessibilityNodeInfo().getBoundsInScreen(rectTop);
-                    myAccessibilityNodeInfos.get(myAccessibilityNodeInfos.size() - 1).getAccessibilityNodeInfo().getBoundsInScreen(rectBottom);
-                    service.exeSwip(ListenerService.mWidth >> 1,
-                        rectBottom.top,
-                        ListenerService.mWidth >> 1,
-                        rectTop.top - rectTop.height()
-                    );
-                    service.postDelayed(() -> doTask(service));
-                });
+                getInfo4FollowList(service, myAccessibilityNodeInfos, 0, result -> swipAndContinue(service, myAccessibilityNodeInfos));
                 return;
             }
-            if (service.hasText(root, "搜索", "用户", "综合", "视频")) {
+            AccessibilityNodeInfo tabNode = service.findNodeWithText(2, "综合", "视频", "用户");
+            if (tabNode != null) {
+                AccessibilityNodeInfo recyclerNode = null;
                 AccessibilityNodeInfo searchText = service.findFirstByText(root, "搜索");
                 AccessibilityNodeInfo swipLayoutNode = searchText.getParent().getParent().getParent();
                 AccessibilityNodeInfo viewPager = swipLayoutNode.getChild(2).getChild(0).getChild(0).getChild(2);
-                AccessibilityNodeInfo recyclerNode = viewPager.getChild(1).getChild(1).getChild(1).getChild(1);
-                for (int i = 0; i < recyclerNode.getChildCount(); i++) {
-                    AccessibilityNodeInfo item = recyclerNode.getChild(i);
-                    Rect rect = new Rect();
-                    item.getBoundsInScreen(rect);
-                    MyAccessibilityNodeInfo myAccessibilityNodeInfo = new MyAccessibilityNodeInfo();
-                    myAccessibilityNodeInfo.setAccessibilityNodeInfo(item);
-                    myAccessibilityNodeInfo.setY((rect.top + rect.bottom) >> 1);
-                    myAccessibilityNodeInfos.add(myAccessibilityNodeInfo);
+                for (int i = 0; i < viewPager.getChildCount(); i++) {
+                    AccessibilityNodeInfo tempTecyclerNode = viewPager.getChild(i).getChild(1).getChild(1).getChild(1);
+                    if (tempTecyclerNode.isVisibleToUser()) {
+                        recyclerNode = tempTecyclerNode;
+                        break;
+                    }
                 }
-                if (!CollectionUtils.isEmpty(myAccessibilityNodeInfos)) {
-                    getInfo4SearchResult(service, myAccessibilityNodeInfos, 0, result -> {
-                        Rect rectTop = new Rect();
-                        Rect rectBottom = new Rect();
-                        myAccessibilityNodeInfos.get(0).getAccessibilityNodeInfo().getBoundsInScreen(rectTop);
-                        myAccessibilityNodeInfos.get(myAccessibilityNodeInfos.size() - 1).getAccessibilityNodeInfo().getBoundsInScreen(rectBottom);
-                        service.exeSwip(ListenerService.mWidth >> 1,
-                            rectBottom.top,
-                            ListenerService.mWidth >> 1,
-                            rectTop.top - rectTop.height()
-                        );
-                        service.postDelayed(() -> doTask(service));
-                    });
-                    return;
+                if (recyclerNode != null) {
+                    // 选中综合栏目
+                    if (tabNode.getChild(0).isSelected()) {
+                        List<AccessibilityNodeInfo> items = recyclerNode.findAccessibilityNodeInfosByViewId(PACKAGE_NAME + "tv_user_name");
+                        for (int i = 0; i < items.size(); i++) {
+                            AccessibilityNodeInfo item = items.get(i);
+                            Rect rect = new Rect();
+                            item.getBoundsInScreen(rect);
+                            MyAccessibilityNodeInfo myAccessibilityNodeInfo = new MyAccessibilityNodeInfo();
+                            myAccessibilityNodeInfo.setAccessibilityNodeInfo(recyclerNode.getChild(i));
+                            myAccessibilityNodeInfo.setX((rect.left + rect.right) >> 1);
+                            myAccessibilityNodeInfo.setY((rect.top + rect.bottom) >> 1);
+                            myAccessibilityNodeInfos.add(myAccessibilityNodeInfo);
+                        }
+                        if (!CollectionUtils.isEmpty(myAccessibilityNodeInfos)) {
+                            getInfo4SearchResult(service, myAccessibilityNodeInfos, 0, result -> swipAndContinue(service, myAccessibilityNodeInfos));
+                            return;
+                        }
+                        if (recyclerNode.getChildCount() > 0) {
+                            swipAndContinue(service, myAccessibilityNodeInfos);
+                            return;
+                        }
+                    }
+                    // 选中用户栏目
+                    else if (tabNode.getChild(2).isSelected()) {
+                        for (int i = 0; i < recyclerNode.getChildCount(); i++) {
+                            AccessibilityNodeInfo item = recyclerNode.getChild(i);
+                            Rect rect = new Rect();
+                            item.getBoundsInScreen(rect);
+                            MyAccessibilityNodeInfo myAccessibilityNodeInfo = new MyAccessibilityNodeInfo();
+                            myAccessibilityNodeInfo.setAccessibilityNodeInfo(item);
+                            myAccessibilityNodeInfo.setX(ListenerService.mWidth >> 1);
+                            myAccessibilityNodeInfo.setY((rect.top + rect.bottom) >> 1);
+                            myAccessibilityNodeInfos.add(myAccessibilityNodeInfo);
+                        }
+                        if (!CollectionUtils.isEmpty(myAccessibilityNodeInfos)) {
+                            getInfo4SearchResult(service, myAccessibilityNodeInfos, 0, result -> swipAndContinue(service, myAccessibilityNodeInfos));
+                            return;
+                        }
+                    }
                 }
             }
+            ToastUtil.showShortText("该页面不可采集");
+            service.stopScript();
+            return;
         }
-        ToastUtil.showShortText("该页面不可采集");
-        service.stopScript();
+        service.postDelayed(() -> doTask(service));
+    }
+
+    private void swipAndContinue(final ListenerService service, final List<MyAccessibilityNodeInfo> myAccessibilityNodeInfos) {
+        if (myAccessibilityNodeInfos.size() > 1) {
+            Rect rectTop = new Rect();
+            Rect rectBottom = new Rect();
+            myAccessibilityNodeInfos.get(0).getAccessibilityNodeInfo().getBoundsInScreen(rectTop);
+            myAccessibilityNodeInfos.get(myAccessibilityNodeInfos.size() - 1).getAccessibilityNodeInfo().getBoundsInScreen(rectBottom);
+            if (service.exeSwip(ListenerService.mWidth >> 1,
+                rectBottom.top,
+                ListenerService.mWidth >> 1,
+                rectTop.top - rectTop.height()
+            )) {
+                service.postDelayed(() -> doTask(service));
+                return;
+            }
+        }
+        service.exeSwip(ListenerService.mWidth >> 1,
+            (int) (ListenerService.mHeight * 0.75f),
+            ListenerService.mWidth >> 1,
+            0
+        );
+        service.postDelayed(() -> doTask(service));
     }
 
     private void getInfo4FollowList(final ListenerService service, List<MyAccessibilityNodeInfo> myAccessibilityNodeInfos, int index,
@@ -135,7 +176,7 @@ public class DouyinTask {
             return;
         }
         MyAccessibilityNodeInfo myAccessibilityNodeInfo = myAccessibilityNodeInfos.get(index);
-        if (service.exeClick(ListenerService.mWidth >> 1, myAccessibilityNodeInfo.getY())) {
+        if (service.exeClick(myAccessibilityNodeInfo.getX(), myAccessibilityNodeInfo.getY())) {
             service.postDelayed(() -> getHomePageInfo(service, myAccessibilityNodeInfos, result -> {
                 if (!UserManager.getInstance().isLogined() || !PreferenceHelp.getBoolean("follow_try")) {
                     tryCount++;
@@ -170,17 +211,22 @@ public class DouyinTask {
                         dyUser.setFollow(persons.getChild(1).getChild(0).getText().toString());
                         dyUser.setFans(persons.getChild(2).getChild(0).getText().toString());
                     }
-                    AccessibilityNodeInfo decsNode = infoNode.getChild(6);
-                    if (decsNode != null && decsNode.getClassName().toString().contains("TextView")) {
-                        dyUser.setDesc(infoNode.getChild(6).getText().toString());
+                    StringBuilder sb = new StringBuilder();
+                    for (int i = 3; i < infoNode.getChildCount(); i++) {
+                        AccessibilityNodeInfo decsNode = infoNode.getChild(i);
+                        if (decsNode != null && decsNode.getClassName().toString().contains("TextView")) {
+                            sb.append(decsNode.getText().toString());
+                        }
+                        sb.append(Key.SPACE);
                     }
+                    dyUser.setDesc(sb.toString());
                     AccessibilityNodeInfo phoneNode = service.findFirstByText(infoNode, "联系电话");
                     if (phoneNode != null && "[label] 联系电话".equals(phoneNode.getText().toString()) && service.exeClick(phoneNode)) {
                         service.postDelayed(() -> {
                             AccessibilityNodeInfo popWindow = service.getRootInActiveWindow();
                             if (popWindow != null) {
                                 List<AccessibilityNodeInfo> items = popWindow.findAccessibilityNodeInfosByText("呼叫");
-                                StringBuilder sb = new StringBuilder();
+                                sb.delete(0, sb.length());
                                 for (AccessibilityNodeInfo item : items) {
                                     sb.append(item.getText().toString().replace("呼叫", Key.NIL).trim()).append(Key.COMMA);
                                 }
@@ -246,6 +292,7 @@ public class DouyinTask {
                 LogUtils.e(e.getLocalizedMessage());
             }
         }
+        service.back();
         service.postDelayed(() -> endCallback.onEnd(false));
     }
 
@@ -275,7 +322,7 @@ public class DouyinTask {
             return;
         }
         MyAccessibilityNodeInfo myAccessibilityNodeInfo = myAccessibilityNodeInfos.get(index);
-        if (service.exeClick(ListenerService.mWidth >> 1, myAccessibilityNodeInfo.getY())) {
+        if (service.exeClick(myAccessibilityNodeInfo.getX(), myAccessibilityNodeInfo.getY())) {
             service.postDelayed(() -> getHomePageInfo(service, myAccessibilityNodeInfos, result -> {
                 if (!UserManager.getInstance().isLogined() || !PreferenceHelp.getBoolean("search_try")) {
                     tryCount++;
@@ -286,9 +333,12 @@ public class DouyinTask {
                         return;
                     }
                 }
-                getInfo4FollowList(service, myAccessibilityNodeInfos, index + 1, endCallback);
+                getInfo4SearchResult(service, myAccessibilityNodeInfos, index + 1, endCallback);
             }));
+            return;
         }
+        service.postDelayed(() -> getInfo4SearchResult(service, myAccessibilityNodeInfos, index + 1, endCallback));
+
     }
 
     private boolean check(final AccessibilityNodeInfo nodeInfo) {

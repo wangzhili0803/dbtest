@@ -11,6 +11,7 @@ import android.view.accessibility.AccessibilityNodeInfo;
 public class MyAccessibilityNodeInfo implements Comparable<MyAccessibilityNodeInfo> {
 
     private AccessibilityNodeInfo mAccessibilityNodeInfo;
+    private int x;
     private int y;
 
     public AccessibilityNodeInfo getAccessibilityNodeInfo() {
@@ -19,6 +20,14 @@ public class MyAccessibilityNodeInfo implements Comparable<MyAccessibilityNodeIn
 
     public void setAccessibilityNodeInfo(final AccessibilityNodeInfo accessibilityNodeInfo) {
         mAccessibilityNodeInfo = accessibilityNodeInfo;
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public void setX(final int x) {
+        this.x = x;
     }
 
     public int getY() {
