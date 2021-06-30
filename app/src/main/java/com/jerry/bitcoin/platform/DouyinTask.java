@@ -97,16 +97,21 @@ public class DouyinTask {
                 if (recyclerNode != null) {
                     // 选中综合栏目
                     if (tabNode.getChild(0).isSelected()) {
+                        Rect tabNodeRect = new Rect();
+                        tabNode.getBoundsInScreen(tabNodeRect);
                         List<AccessibilityNodeInfo> items = recyclerNode.findAccessibilityNodeInfosByViewId(PACKAGE_NAME + "tv_user_name");
                         for (int i = 0; i < items.size(); i++) {
                             AccessibilityNodeInfo item = items.get(i);
                             Rect rect = new Rect();
                             item.getBoundsInScreen(rect);
-                            MyAccessibilityNodeInfo myAccessibilityNodeInfo = new MyAccessibilityNodeInfo();
-                            myAccessibilityNodeInfo.setAccessibilityNodeInfo(recyclerNode.getChild(i));
-                            myAccessibilityNodeInfo.setX((rect.left + rect.right) >> 1);
-                            myAccessibilityNodeInfo.setY((rect.top + rect.bottom) >> 1);
-                            myAccessibilityNodeInfos.add(myAccessibilityNodeInfo);
+                            int y = (rect.top + rect.bottom) >> 1;
+                            if (y > tabNodeRect.bottom) {
+                                MyAccessibilityNodeInfo myAccessibilityNodeInfo = new MyAccessibilityNodeInfo();
+                                myAccessibilityNodeInfo.setAccessibilityNodeInfo(recyclerNode.getChild(i));
+                                myAccessibilityNodeInfo.setX((rect.left + rect.right) >> 1);
+                                myAccessibilityNodeInfo.setY(y);
+                                myAccessibilityNodeInfos.add(myAccessibilityNodeInfo);
+                            }
                         }
                         if (!CollectionUtils.isEmpty(myAccessibilityNodeInfos)) {
                             getInfo4SearchResult(service, myAccessibilityNodeInfos, 0, result -> swipAndContinue(service, myAccessibilityNodeInfos));
