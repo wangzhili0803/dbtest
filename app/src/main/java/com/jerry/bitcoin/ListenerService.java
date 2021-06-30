@@ -24,11 +24,10 @@ import com.jerry.baselib.common.util.PreferenceHelp;
 import com.jerry.baselib.common.util.ToastUtil;
 import com.jerry.baselib.common.util.UserManager;
 import com.jerry.baselib.common.util.WeakHandler;
-import com.jerry.baselib.parsehelper.WebLoader;
+import com.jerry.bitcoin.beans.PreferenceKey;
 import com.jerry.bitcoin.home.MainActivity;
 import com.jerry.bitcoin.platform.DouyinTask;
 
-import androidx.collection.ArrayMap;
 import androidx.core.content.ContextCompat;
 
 /**
@@ -39,21 +38,13 @@ import androidx.core.content.ContextCompat;
 
 public class ListenerService extends BaseListenerService {
 
-    public static final String TYPE_PLATFORM_BUY = "TYPE_PLATFORM_BUY";
-    public static final String TYPE_PLATFORM_SALE = "TYPE_PLATFORM_SALE";
-    public static final String TYPE_COINS = "TYPE_COINS";
-
-    private static final String URL_HUOBI = "https://c2c.huobi.be/zh-cn/trade/buy-usdt/";
-    private static final String URL_GWEB = "https://history.btc126.com/usdt/";
+    public static long TIME_DELAY = 5500 - 500 * PreferenceHelp.getInt(PreferenceKey.RUN_SPEED, 5);
     /**
      * 擦亮
      */
     private static final int MSG_DO_TASK = 101;
 
     private FloatLogoMenu menu;
-    private WebLoader webLoader;
-    public static ArrayMap<String, Double> usdtPrices = new ArrayMap<>();
-    public static ArrayMap<String, Double> priceMap = new ArrayMap<>();
 
     private final FloatItem startItem = new FloatItem("开始", 0x99000000, 0x99000000,
         BitmapFactory.decodeResource(BaseApp.getInstance().getResources(), R.drawable.play), "0");
@@ -77,7 +68,6 @@ public class ListenerService extends BaseListenerService {
                     return false;
             }
         });
-        webLoader = new WebLoader(this);
     }
 
     @SuppressLint("SwitchIntDef")
@@ -194,7 +184,7 @@ public class ListenerService extends BaseListenerService {
     }
 
     public void postDelayed(Runnable runnable) {
-        postDelayed(runnable, TIME_MIDDLE);
+        postDelayed(runnable, TIME_DELAY);
     }
 
     public void postDelayed(Runnable runnable, long delay) {

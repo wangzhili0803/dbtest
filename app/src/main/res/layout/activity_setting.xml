@@ -38,6 +38,63 @@
 
             <View style="@style/horizontal_line_style"/>
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/white"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="@dimen/_45dp"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="@dimen/page_margin"
+                    android:text="自动打招呼抖音用户"
+                    android:textColor="@color/primary_text_color"
+                    android:textSize="@dimen/_16sp" />
+
+                <CheckBox
+                    android:id="@+id/cb_hello"
+                    android:layout_width="@dimen/seventy_dp"
+                    android:layout_height="@dimen/_45dp"
+                    android:button="@drawable/cb_push_selector"
+                    android:gravity="center_vertical" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/ll_hello"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    style="@style/menu_label"
+                    android:text="内容" />
+
+                <com.jerry.baselib.common.weidgt.MyEditText
+                    android:id="@+id/et_hello"
+                    style="@style/menu_input"
+                    android:hint="你好"
+                    android:maxLines="3" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    style="@style/menu_label"
+                    android:text="运行速度" />
+
+                <com.jerry.baselib.common.weidgt.MultipleEditText
+                    android:id="@+id/met_speed"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
+
             <TextView
                 android:id="@+id/tv_clear"
                 android:layout_width="match_parent"

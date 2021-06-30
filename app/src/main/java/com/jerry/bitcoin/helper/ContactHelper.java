@@ -13,6 +13,7 @@ import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.CommonDataKinds.StructuredName;
 import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.RawContacts;
+import android.text.TextUtils;
 
 import com.jerry.baselib.Key;
 import com.jerry.baselib.common.bean.DyUser;
@@ -34,6 +35,10 @@ public class ContactHelper {
         ArrayList<ContentProviderOperation> ops = new ArrayList<>();
         int rawContactInsertIndex = 0;
         for (DyUser contact : list) {
+            String phones = contact.getPhones();
+            if (TextUtils.isEmpty(phones)) {
+                continue;
+            }
             rawContactInsertIndex = ops.size(); // 有了它才能给真正的实现批量添加
             ops.add(ContentProviderOperation.newInsert(RawContacts.CONTENT_URI)
                 .withValue(RawContacts.ACCOUNT_TYPE, null)
@@ -50,7 +55,6 @@ public class ContactHelper {
                 .withValue(StructuredName.DISPLAY_NAME, contact.getName())
                 .withYieldAllowed(true).build());
             // 添加号码
-            String phones = contact.getPhones();
             String[] phoneList = StringUtil.safeSplit(phones, Key.COMMA);
             for (String phone : phoneList) {
                 ops.add(ContentProviderOperation

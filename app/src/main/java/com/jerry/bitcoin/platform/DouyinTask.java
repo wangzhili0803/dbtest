@@ -18,6 +18,7 @@ import com.jerry.baselib.common.util.PreferenceHelp;
 import com.jerry.baselib.common.util.ToastUtil;
 import com.jerry.baselib.common.util.UserManager;
 import com.jerry.bitcoin.ListenerService;
+import com.jerry.bitcoin.beans.PreferenceKey;
 
 /**
  * @author Jerry
@@ -135,10 +136,10 @@ public class DouyinTask {
         }
         MyAccessibilityNodeInfo myAccessibilityNodeInfo = myAccessibilityNodeInfos.get(index);
         if (service.exeClick(ListenerService.mWidth >> 1, myAccessibilityNodeInfo.getY())) {
-            service.postDelayed(() -> getHomePageInfo(service, myAccessibilityNodeInfos, index, result -> {
+            service.postDelayed(() -> getHomePageInfo(service, myAccessibilityNodeInfos, result -> {
                 if (!UserManager.getInstance().isLogined() || !PreferenceHelp.getBoolean("follow_try")) {
                     tryCount++;
-                    if (tryCount >= 10) {
+                    if (tryCount >= TRY_TOTAL) {
                         PreferenceHelp.putBoolean("follow_try", true);
                         ToastUtil.showShortText("未登录或试用只搜集10条数据");
                         service.stopScript();
@@ -150,7 +151,7 @@ public class DouyinTask {
         }
     }
 
-    private void getHomePageInfo(final ListenerService service, final List<MyAccessibilityNodeInfo> myAccessibilityNodeInfos, final int index,
+    private void getHomePageInfo(final ListenerService service, final List<MyAccessibilityNodeInfo> myAccessibilityNodeInfos,
         final EndCallback endCallback) {
         if (!AppUtils.playing) {
             return;
@@ -197,10 +198,44 @@ public class DouyinTask {
                                 return;
                             }
                             service.back();
-                            service.postDelayed(() -> getHomePageInfo(service, myAccessibilityNodeInfos, index, endCallback));
+                            service.postDelayed(() -> getHomePageInfo(service, myAccessibilityNodeInfos, endCallback));
                         });
                         return;
                     }
+                    if (PreferenceHelp.getBoolean(PreferenceKey.CB_HELLO)) {
+                        AccessibilityNodeInfo personalMsgNode = service.findFirstByText(infoNode, "私信");
+                        if (personalMsgNode != null && service.exeClick(personalMsgNode)) {
+                            service.postDelayed(() -> sendMsg(service, PreferenceHelp.getString(PreferenceKey.SAY_HELLO, "你好"), result -> {
+                                service.postDelayed(() -> {
+                                    service.back();
+                                    service.postDelayed(() -> {
+                                        service.back();
+                                        service.postDelayed(() -> endCallback.onEnd(true));
+                                    }, 300);
+                                });
+                            }));
+                            return;
+                        }
+                        AccessibilityNodeInfo followNode = service.findFirstByText(infoNode, "关注");
+                        if (followNode != null && service.exeClick(followNode)) {
+                            service.postDelayed(() -> {
+                                AccessibilityNodeInfo follow2Node = service.findFirstByText(infoNode, "私信");
+                                if (follow2Node != null && service.exeClick(follow2Node)) {
+                                    service.postDelayed(() -> sendMsg(service, PreferenceHelp.getString(PreferenceKey.SAY_HELLO, "你好"), result -> {
+                                        service.postDelayed(() -> {
+                                            service.back();
+                                            service.postDelayed(() -> {
+                                                service.back();
+                                                service.postDelayed(() -> endCallback.onEnd(true));
+                                            }, 300);
+                                        });
+                                    }));
+                                }
+                            });
+                            return;
+                        }
+                    }
+
                 }
                 dyUser.setUpdateTime(System.currentTimeMillis());
                 ProManager.getInstance().insertObject(dyUser);
@@ -211,7 +246,23 @@ public class DouyinTask {
                 LogUtils.e(e.getLocalizedMessage());
             }
         }
-        service.postDelayed(() -> getHomePageInfo(service, myAccessibilityNodeInfos, index, endCallback));
+        service.postDelayed(() -> endCallback.onEnd(false));
+    }
+
+    private void sendMsg(final ListenerService service, final String text, final EndCallback endCallback) {
+        try {
+            AccessibilityNodeInfo pNode = service.getRootInActiveWindow().getChild(0).getChild(0).getChild(1).getChild(0).getChild(0);
+            AccessibilityNodeInfo editTextNode = pNode.getChild(pNode.getChildCount() - 1).getChild(1).getChild(0).getChild(0).getChild(2);
+            if (service.input(editTextNode, text)) {
+                AccessibilityNodeInfo p2Node = service.getRootInActiveWindow().getChild(0).getChild(0).getChild(1).getChild(0).getChild(0);
+                AccessibilityNodeInfo snedMsgNode = p2Node.getChild(p2Node.getChildCount() - 1).getChild(1).getChild(0).getChild(0).getChild(4);
+                if (snedMsgNode != null && service.exeClick(snedMsgNode)) {
+                    endCallback.onEnd(true);
+                }
+            }
+        } catch (Exception e) {
+            endCallback.onEnd(false);
+        }
     }
 
     private void getInfo4SearchResult(final ListenerService service, final List<MyAccessibilityNodeInfo> myAccessibilityNodeInfos, final int index,
@@ -225,10 +276,10 @@ public class DouyinTask {
         }
         MyAccessibilityNodeInfo myAccessibilityNodeInfo = myAccessibilityNodeInfos.get(index);
         if (service.exeClick(ListenerService.mWidth >> 1, myAccessibilityNodeInfo.getY())) {
-            service.postDelayed(() -> getHomePageInfo(service, myAccessibilityNodeInfos, index, result -> {
+            service.postDelayed(() -> getHomePageInfo(service, myAccessibilityNodeInfos, result -> {
                 if (!UserManager.getInstance().isLogined() || !PreferenceHelp.getBoolean("search_try")) {
                     tryCount++;
-                    if (tryCount >= 10) {
+                    if (tryCount >= TRY_TOTAL) {
                         PreferenceHelp.putBoolean("search_try", true);
                         ToastUtil.showShortText("未登录或试用只搜集10条数据");
                         service.stopScript();
