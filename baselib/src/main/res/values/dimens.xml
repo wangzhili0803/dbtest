@@ -16,6 +16,7 @@
     <dimen name="fifty_dp">50dp</dimen>
     <dimen name="_55dp">55dp</dimen>
     <dimen name="sixty_dp">60dp</dimen>
+    <dimen name="seventy_dp">70dp</dimen>
 
     <dimen name="_10sp">10sp</dimen>
     <dimen name="_12sp">12sp</dimen>

@@ -11,6 +11,7 @@
     <color name="grey">#d0cfce</color>
 
     <color name="red_primary">#ff4f4c</color>
+    <color name="green_primary">#00BE04</color>
     <color name="blue_primary">#2098FB</color>
     <color name="primary_text_color">#333333</color>
     <color name="second_text_color">#666666</color>

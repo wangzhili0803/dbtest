@@ -7,16 +7,16 @@ import android.graphics.Paint.Style;
 import android.graphics.Rect;
 import android.view.View;
 
+import com.jerry.baselib.R;
+
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.jerry.baselib.R;
-
 /**
  * @author Jerry
  * @createDate 2019/4/11
- * @copyright www.aniu.tv
+ * @copyright www.axiang.com
  * @description RecyclerView list分割线
  */
 public class DividerItemDecoration extends RecyclerView.ItemDecoration {

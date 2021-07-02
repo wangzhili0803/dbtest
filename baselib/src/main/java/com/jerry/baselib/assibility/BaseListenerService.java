@@ -232,6 +232,26 @@ public abstract class BaseListenerService extends AccessibilityService {
     }
 
     /**
+     * 判断是否含有文案
+     */
+    public AccessibilityNodeInfo findNodeWithText(int parent, String... texts) {
+        AccessibilityNodeInfo root = getRootInActiveWindow();
+        if (texts != null && texts.length > 1) {
+            List<AccessibilityNodeInfo> listNodes = root.findAccessibilityNodeInfosByText(texts[0]);
+            for (AccessibilityNodeInfo listNode : listNodes) {
+                AccessibilityNodeInfo parentNode = listNode;
+                for (int i = 0; i < parent; i++) {
+                    parentNode = parentNode.getParent();
+                }
+                if (hasText(parentNode, texts)) {
+                    return parentNode;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * 震动发声提示
      */
     public void giveNotice() {
@@ -420,22 +440,36 @@ public abstract class BaseListenerService extends AccessibilityService {
     }
 
     @SuppressLint("DefaultLocale")
-    public void exeSwip(int startX, int startY, int endX, int endY) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            if (mGlobalActionAutomator == null) {
-                mGlobalActionAutomator = new GlobalActionAutomator(this);
+    public boolean exeSwip(int startX, int startY, int endX, int endY) {
+        if (startX >= 0 && startX <= mWidth && startY >= 0 && startY <= mHeight) {
+            if (endX < 0) {
+                endX = 0;
+            } else if (endX > mWidth) {
+                endX = mWidth;
             }
-            try {
-                if (!mGlobalActionAutomator.swipe(startX, startY, endX, endY, 800)) {
-                    ToastUtil.showShortText("辅助停止喽 重启试试");
+            if (endY < 0) {
+                endY = 0;
+            } else if (endY > mHeight) {
+                endY = mHeight;
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                if (mGlobalActionAutomator == null) {
+                    mGlobalActionAutomator = new GlobalActionAutomator(this);
                 }
-            } catch (Throwable e) {
-                LogUtils.e(e.getLocalizedMessage());
+                try {
+                    if (!mGlobalActionAutomator.swipe(startX, startY, endX, endY, 800)) {
+                        ToastUtil.showShortText("辅助停止喽 重启试试");
+                    }
+                } catch (Throwable e) {
+                    LogUtils.e(e.getLocalizedMessage());
+                }
+            } else {
+                String swip = "input swipe %d %d %d %d %d";
+                execShellCmd(String.format(swip, startX, startY, endX, endY, 800));
             }
-        } else {
-            String swip = "input swipe %d %d %d %d %d";
-            execShellCmd(String.format(swip, startX, startY, endX, endY, 800));
+            return true;
         }
+        return false;
     }
 
     @SuppressLint("DefaultLocale")

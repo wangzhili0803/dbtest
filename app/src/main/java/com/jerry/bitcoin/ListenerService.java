@@ -285,7 +285,7 @@ public class ListenerService extends BaseListenerService {
     }
 
     @Override
-    protected void stopScript() {
+    public void stopScript() {
         super.stopScript();
         mCoinColaTask.release();
         mHuobiTask.release();

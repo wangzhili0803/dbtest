@@ -17,7 +17,7 @@ import com.jerry.baselib.common.ptrlib.itemdecoration.sticky.TimeStickyItemDecor
 /**
  * @author Jerry
  * @createDate 2019/4/11
- * @copyright www.aniu.tv
+ * @copyright www.axiang.com
  * @description RecyclerView list分割线
  */
 public class PtrStickyRecyclerView extends PtrRecyclerView {

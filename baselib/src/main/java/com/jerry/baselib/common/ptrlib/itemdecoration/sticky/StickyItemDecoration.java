@@ -13,7 +13,7 @@ import com.jerry.baselib.common.base.BaseRecyclerAdapter;
 /**
  * @author Jerry
  * @createDate 2019/4/11
- * @copyright www.aniu.tv
+ * @copyright www.axiang.com
  * @description
  */
 public class StickyItemDecoration extends RecyclerView.ItemDecoration {

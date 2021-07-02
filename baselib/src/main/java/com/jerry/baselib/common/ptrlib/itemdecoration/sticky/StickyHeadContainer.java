@@ -6,14 +6,14 @@ import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.core.view.ViewCompat;
-
 import com.jerry.baselib.common.util.DisplayUtil;
+
+import androidx.core.view.ViewCompat;
 
 /**
  * @author Jerry
  * @createDate 2019/4/11
- * @copyright www.aniu.tv
+ * @copyright www.axiang.com
  * @description
  */
 public class StickyHeadContainer extends ViewGroup {
