@@ -10,63 +10,29 @@ import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.text.TextUtils;
-import android.util.ArrayMap;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
+
+import androidx.core.content.ContextCompat;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Comment;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
-import org.jsoup.nodes.TextNode;
-import org.jsoup.select.Elements;
 
-import com.huobi.client.MarketClient;
-import com.huobi.client.req.market.ReqCandlestickRequest;
-import com.huobi.client.req.market.SubCandlestickRequest;
-import com.huobi.constant.HuobiOptions;
-import com.huobi.constant.enums.CandlestickIntervalEnum;
-import com.huobi.constant.enums.ConnectionStateEnum;
-import com.huobi.model.market.Candlestick;
-import com.huobi.service.huobi.connection.HuobiWebSocketConnection;
 import com.jerry.baselib.BaseApp;
-import com.jerry.baselib.Key;
 import com.jerry.baselib.assibility.BaseListenerService;
-import com.jerry.baselib.assibility.EndCallback;
 import com.jerry.baselib.common.flow.FloatItem;
 import com.jerry.baselib.common.flow.FloatLogoMenu;
 import com.jerry.baselib.common.flow.FloatMenuView;
 import com.jerry.baselib.common.util.AppUtils;
 import com.jerry.baselib.common.util.DisplayUtil;
-import com.jerry.baselib.common.util.JJSON;
-import com.jerry.baselib.common.util.ListCacheUtil;
-import com.jerry.baselib.common.util.LogUtils;
-import com.jerry.baselib.common.util.ParseUtil;
 import com.jerry.baselib.common.util.ToastUtil;
 import com.jerry.baselib.common.util.WeakHandler;
-import com.jerry.baselib.parsehelper.WebLoader;
-import com.jerry.bitcoin.beans.CoinConstant;
 import com.jerry.bitcoin.home.MainActivity;
-import com.jerry.bitcoin.platform.CoinColaTask;
-import com.jerry.bitcoin.platform.HuobiTask;
-import com.jerry.bitcoin.trade.HuobiTradeHelper;
 
-import androidx.core.content.ContextCompat;
 import cn.leancloud.chatkit.event.LCIMIMTypeMessageEvent;
-import cn.leancloud.im.v2.AVIMConversation;
-import cn.leancloud.im.v2.AVIMException;
-import cn.leancloud.im.v2.AVIMMessageOption;
 import cn.leancloud.im.v2.AVIMReservedMessageType;
 import cn.leancloud.im.v2.AVIMTypedMessage;
-import cn.leancloud.im.v2.callback.AVIMConversationCallback;
-import cn.leancloud.im.v2.messages.AVIMTextMessage;
-import cn.leancloud.json.JSON;
-import cn.leancloud.session.AVConnectionManager;
 
 /**
  * Created by cxk on 2017/2/4. email:471497226@qq.com
@@ -76,38 +42,14 @@ import cn.leancloud.session.AVConnectionManager;
 
 public class ListenerService extends BaseListenerService {
 
-    public static final String TYPE_PLATFORM_BUY = "TYPE_PLATFORM_BUY";
-    public static final String TYPE_PLATFORM_SALE = "TYPE_PLATFORM_SALE";
-    public static final String TYPE_COINS = "TYPE_COINS";
-
-    private static final String URL_HUOBI = "https://c2c.huobi.be/zh-cn/trade/buy-usdt/";
-    private static final String URL_GWEB = "https://history.btc126.com/usdt/";
     /**
      * 擦亮
      */
     private static final int MSG_DO_TASK = 101;
-    private static final int MSG_TRANS = 102;
-    private static final int MSG_ORDER = 103;
-    private static final int MSG_LISTEN_LIST = 201;
-
-    private static final SubCandlestickRequest CANDLESTICK_RESQUEST = new SubCandlestickRequest();
-    private HuobiWebSocketConnection mHuobiWebSocketConnection;
-
-    static {
-        CANDLESTICK_RESQUEST.setSymbol(CoinConstant.SUB_CANDLE);
-        CANDLESTICK_RESQUEST.setInterval(CandlestickIntervalEnum.MIN1);
-    }
 
     private FloatLogoMenu menu;
-    private WebLoader webLoader;
-    public static ArrayMap<String, Double> usdtPrices = new ArrayMap<>();
-    public static ArrayMap<String, Double> priceMap = new ArrayMap<>();
 
     private final FloatItem startItem = new FloatItem("开始", 0x99000000, 0x99000000,
-        BitmapFactory.decodeResource(BaseApp.getInstance().getResources(), R.drawable.play), "0");
-    private final FloatItem transItem = new FloatItem("搬运", 0x99000000, 0x99000000,
-        BitmapFactory.decodeResource(BaseApp.getInstance().getResources(), R.drawable.play), "0");
-    private final FloatItem moneyItem = new FloatItem("下单", 0x99000000, 0x99000000,
         BitmapFactory.decodeResource(BaseApp.getInstance().getResources(), R.drawable.play), "0");
     private final FloatItem stopItem = new FloatItem("暂停", 0x99000000, 0x99000000,
         BitmapFactory.decodeResource(BaseApp.getInstance().getResources(), R.drawable.pause), "0");
@@ -116,8 +58,6 @@ public class ListenerService extends BaseListenerService {
      * 记录orderId
      */
     private List<String> orderIds = new ArrayList<>();
-    private CoinColaTask mCoinColaTask = CoinColaTask.getInstance();
-    private HuobiTask mHuobiTask = HuobiTask.getInstance();
 
     @Override
     public void onCreate() {
@@ -125,59 +65,11 @@ public class ListenerService extends BaseListenerService {
         mWeakHandler = new WeakHandler(msg -> {
             switch (msg.what) {
                 case MSG_DO_TASK:
-                    getUsdtData(null);
-                    getHuobiMarket();
-                    mWeakHandler.sendEmptyMessageDelayed(MSG_LISTEN_LIST, TIME_MIDDLE);
-                    mWeakHandler.postDelayed(() -> {
-                        if (priceMap.isEmpty()) {
-                            stopScript();
-                            ToastUtil.showShortText("检查代理是否开启");
-                            giveNotice();
-                        }
-                    }, 15000);
-                    return true;
-                case MSG_TRANS:
-                    mCoinColaTask.checkCoinNeedTransfer(this, CoinConstant.XRP, result -> {
-                        if (result) {
-                            mCoinColaTask
-                                .transferXrp(ListenerService.this, result1 -> mCoinColaTask.checkCoinNeedTransfer(this, CoinConstant.BCH, result2 -> {
-                                    if (result2) {
-                                        mCoinColaTask.transferBch(ListenerService.this, result3 -> {
-                                            if (!mWeakHandler.hasMessages(MSG_LISTEN_LIST)) {
-                                                mWeakHandler.sendEmptyMessageDelayed(MSG_LISTEN_LIST, TIME_LONG);
-                                            }
-                                        });
-                                    } else {
-                                        if (!mWeakHandler.hasMessages(MSG_LISTEN_LIST)) {
-                                            mWeakHandler.sendEmptyMessageDelayed(MSG_LISTEN_LIST, TIME_LONG);
-                                        }
-                                    }
-                                }));
-                        } else {
-                            mCoinColaTask.checkCoinNeedTransfer(this, CoinConstant.BCH, result2 -> {
-                                if (result2) {
-                                    mCoinColaTask.transferBch(ListenerService.this, result1 -> {
-                                        if (!mWeakHandler.hasMessages(MSG_LISTEN_LIST)) {
-                                            mWeakHandler.sendEmptyMessageDelayed(MSG_LISTEN_LIST, TIME_LONG);
-                                        }
-                                    });
-                                } else {
-                                    if (!mWeakHandler.hasMessages(MSG_LISTEN_LIST)) {
-                                        mWeakHandler.sendEmptyMessageDelayed(MSG_LISTEN_LIST, TIME_LONG);
-                                    }
-                                }
-                            });
-                        }
-                    });
-                    return true;
-                case MSG_LISTEN_LIST:
-                    listenLists();
                     return true;
                 default:
                     return false;
             }
         });
-        webLoader = new WebLoader(this);
         if (!EventBus.getDefault().isRegistered(ListenerService.this)) {
             EventBus.getDefault().register(ListenerService.this);
         }
@@ -208,8 +100,6 @@ public class ListenerService extends BaseListenerService {
         ToastUtil.showShortText("服务已开启\n屏幕宽：" + ListenerService.mWidth + "\n屏幕高：" + ListenerService.mHeight);
         itemList.clear();
         itemList.add(startItem);
-        itemList.add(transItem);
-        itemList.add(moneyItem);
         if (menu == null) {
             menu = new FloatLogoMenu.Builder()
                 .withContext(
@@ -229,8 +119,6 @@ public class ListenerService extends BaseListenerService {
                             stopScript();
                             itemList.clear();
                             itemList.add(startItem);
-                            itemList.add(transItem);
-                            itemList.add(moneyItem);
                             menu.updateFloatItemList(itemList);
                             menu.hide();
                             return;
@@ -250,15 +138,7 @@ public class ListenerService extends BaseListenerService {
                                 menu.updateFloatItemList(itemList);
                                 menu.hide();
                                 break;
-                            case 1:
-                                start(MSG_TRANS);
-                                itemList.clear();
-                                itemList.add(stopItem);
-                                menu.updateFloatItemList(itemList);
-                                menu.hide();
-                                break;
                             case 2:
-                                order();
                                 itemList.clear();
                                 itemList.add(stopItem);
                                 menu.updateFloatItemList(itemList);
@@ -284,17 +164,6 @@ public class ListenerService extends BaseListenerService {
         return hasText("首页", "币币", "场外", "钱包", "我的");
     }
 
-    @Override
-    public void stopScript() {
-        super.stopScript();
-        mCoinColaTask.release();
-        mHuobiTask.release();
-        if (mHuobiWebSocketConnection != null) {
-            mHuobiWebSocketConnection.close();
-            mHuobiWebSocketConnection = null;
-        }
-    }
-
     /**
      * 清理msg
      */
@@ -302,7 +171,6 @@ public class ListenerService extends BaseListenerService {
     protected void removeAllMessages() {
         super.removeAllMessages();
         mWeakHandler.removeMessages(MSG_DO_TASK);
-        mWeakHandler.removeMessages(MSG_TRANS);
     }
 
     public void sendEmptyMessageDelayed(int what, long time) {
@@ -317,172 +185,11 @@ public class ListenerService extends BaseListenerService {
         mWeakHandler.postDelayed(runnable, time);
     }
 
-    public void getUsdtData(EndCallback endCallback) {
-        if (!AppUtils.playing && endCallback == null) {
-            return;
-        }
-        webLoader.load(URL_GWEB, data -> {
-            LogUtils.d(data);
-            Document doc = Jsoup.parse(data);
-            Elements allElements = doc.getAllElements();
-            Element sellBody = allElements.select(".layui-card-body").get(0);
-            String tmp = "";
-            for (int i = 0; i < sellBody.childNodeSize(); i++) {
-                Node element = sellBody.childNode(i);
-                if (element instanceof Element) {
-                    tmp = ((Element) element).text().replace("：", "");
-                } else if (element instanceof TextNode) {
-                    if (!TextUtils.isEmpty(tmp)) {
-                        usdtPrices.put(tmp.toLowerCase(), ParseUtil.parseDouble(((TextNode) element).text(), 6.2) - 0.02d);
-                    }
-                } else if (element instanceof Comment) {
-                    LogUtils.d(element.baseUri());
-                }
-            }
-            if (endCallback != null) {
-                endCallback.onEnd(true);
-            }
-            mWeakHandler.postDelayed(() -> getUsdtData(null), 60000);
-        });
-    }
-
-    private void getHuobiMarket() {
-        if (mHuobiWebSocketConnection == null) {
-            MarketClient marketClient = MarketClient.create(new HuobiOptions());
-            mHuobiWebSocketConnection = marketClient.subCandlestick(CANDLESTICK_RESQUEST, response -> {
-                Candlestick candlestick = response.getCandlestick();
-                if (response.getCh().contains(CoinConstant.BCH_USDT)) {
-                    priceMap.put(CoinConstant.BCH_USDT, candlestick.getClose().doubleValue());
-                } else if (response.getCh().contains(CoinConstant.XRP_USDT)) {
-                    priceMap.put(CoinConstant.XRP_USDT, candlestick.getClose().doubleValue());
-                }
-            });
-        } else if (mHuobiWebSocketConnection.getState() != ConnectionStateEnum.CONNECTED) {
-            mHuobiWebSocketConnection.reConnect();
-        }
-    }
-
-    private double getLowestClose(final String symbol, final double amount, final double highestPrice) {
-        Double fee = CoinConstant.FEEMAP.get(symbol);
-        if (fee != null) {
-            double c1 = amount / highestPrice * 0.993 - fee;
-            Double usdtPrice = usdtPrices.get(CoinConstant.HUOBI);
-            if (usdtPrice != null) {
-                return amount / (c1 * 0.998 * usdtPrice);
-            }
-        }
-        return Integer.MAX_VALUE;
-    }
-
-    private void listenLists() {
-        if (!AppUtils.playing) {
-            return;
-        }
-        mCoinColaTask.checkHasOrder(this, result -> {
-            if (!AppUtils.playing) {
-                return;
-            }
-            if (result) {
-                mCoinColaTask.listenOrder(this, result1 -> order());
-                return;
-            }
-            mCoinColaTask.exchangeCoin(this, result1 -> {
-                if (!AppUtils.playing) {
-                    return;
-                }
-                pullRefresh(t -> mCoinColaTask.listenLists(this, result2 -> {
-                    if (!mWeakHandler.hasMessages(MSG_LISTEN_LIST)) {
-                        mWeakHandler.sendEmptyMessageDelayed(MSG_LISTEN_LIST, TIME_LONG);
-                    }
-                }));
-            });
-        });
-    }
-
-    private void order() {
-        mCoinColaTask.sellByCurrentPage(this, coinOrder -> {
-            if (coinOrder != null) {
-                getUsdtData(data1 -> {
-                    // 接受的最低价
-                    String symbol = coinOrder.getCoinType();
-                    MarketClient marketClient = MarketClient.create(new HuobiOptions());
-                    long now = System.currentTimeMillis() / 1000;
-                    ReqCandlestickRequest reqCandlestickRequest = new ReqCandlestickRequest();
-                    reqCandlestickRequest.setSymbol(symbol);
-                    reqCandlestickRequest.setInterval(CandlestickIntervalEnum.MIN1);
-                    reqCandlestickRequest.setFrom(now - 60);
-                    reqCandlestickRequest.setTo(now);
-                    marketClient.reqCandlestick(reqCandlestickRequest, response -> {
-                        LogUtils.d(coinOrder.toString());
-                        if (orderIds.contains(coinOrder.getOrderId())) {
-                            LogUtils.e("已下过单");
-                            ToastUtil.showShortText("已下过单");
-                            return;
-                        }
-                        // 当前市场价
-                        double lowestPrice = getLowestClose(symbol, coinOrder.getAmount(), coinOrder.getPrice());
-                        double currentPrice = response.getCandlestickList().get(0).getClose().doubleValue();
-                        double finalPrice = Math.max(lowestPrice, currentPrice);
-                        LogUtils.d("lowestPrice:" + lowestPrice + ",currentPrice:" + currentPrice);
-                        Double fee = CoinConstant.FEEMAP.get(symbol);
-                        if (fee != null) {
-                            HuobiTradeHelper.getInstance().sell(symbol, finalPrice, coinOrder.getQuantity() - coinOrder.getFee() - fee,
-                                data -> {
-                                    if (data == null || data == -1) {
-                                        LogUtils.e("下单失败");
-                                        ToastUtil.showShortText("下单失败");
-                                        return;
-                                    }
-                                    orderIds.add(coinOrder.getOrderId());
-                                    List<Long> orderList = JJSON.parseArray(ListCacheUtil.getValueFromJsonFile(Key.ORDER), Long.class);
-                                    orderList.add(data);
-                                    ListCacheUtil.saveValueToJsonFile(Key.ORDER, JSON.toJSONString(orderList));
-                                });
-                        }
-                    });
-                });
-            }
-        });
-    }
-
     /**
      * 处理推送过来的消息 同理，避免无效消息，此处加了 conversation id 判断
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEvent(Bundle message) {
-        mCoinColaTask.onReceiveSmsMessage(this, message.getString(Key.CODE), message.getString(Key.CONTENT));
-    }
-
-    /**
-     * 发送消息给控制端
-     */
-    protected void sendMessage(String content, EndCallback callback) {
-        if (TextUtils.isEmpty(content)) {
-            return;
-        }
-        AVIMTextMessage message = new AVIMTextMessage();
-        message.setText(content);
-        AVIMMessageOption option = new AVIMMessageOption();
-        if (content.startsWith("tr:")) {
-            option.setTransient(true);
-        } else {
-            option.setReceipt(true);
-        }
-        AVIMConversation imConversation = mCoinColaTask.getAvimConversation();
-        if (imConversation != null) {
-            imConversation.sendMessage(message, option, new AVIMConversationCallback() {
-                @Override
-                public void done(AVIMException e) {
-                    if (null != e) {
-                        ToastUtil.showShortText(e.getMessage());
-                        AVConnectionManager.getInstance().startConnection();
-                        return;
-                    }
-                    callback.onEnd(true);
-                    LogUtils.d("imConversation send success");
-                }
-            });
-        }
     }
 
     /**
@@ -490,13 +197,10 @@ public class ListenerService extends BaseListenerService {
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEvent(LCIMIMTypeMessageEvent messageEvent) {
-        AVIMConversation imConversation = mCoinColaTask.getAvimConversation();
-        if (imConversation != null) {
-            if (messageEvent != null && imConversation.getConversationId().equals(messageEvent.conversation.getConversationId())) {
-                AVIMTypedMessage typedMessage = messageEvent.message;
-                if (typedMessage.getMessageType() == AVIMReservedMessageType.TextMessageType.getType()) {
-                    ToastUtil.showShortText("收到来自：" + typedMessage.getFrom() + "的消息，内容为：");
-                }
+        if (messageEvent != null) {
+            AVIMTypedMessage typedMessage = messageEvent.message;
+            if (typedMessage.getMessageType() == AVIMReservedMessageType.TextMessageType.getType()) {
+                ToastUtil.showShortText("收到来自：" + typedMessage.getFrom() + "的消息，内容为：");
             }
         }
     }

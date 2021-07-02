@@ -119,7 +119,6 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation project(path: ':baselib')
     implementation project(':lchat')
-    implementation project(':huobi')
 }
 
 andResGuard {
