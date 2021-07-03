@@ -73,7 +73,14 @@ public class AVObjQuery<T> {
         return this;
     }
 
-    public AVObjQuery<T> whereContainedIn(final String key, final List<String> values) {
+    public AVObjQuery<T> whereContains(final String key, final String values) {
+        if (mAVQuery != null) {
+            mAVQuery.whereContains(key, values);
+        }
+        return this;
+    }
+
+    public AVObjQuery<T> whereContainedIn(final String key, final List<?> values) {
         if (mAVQuery != null) {
             mAVQuery.whereContainedIn(key, values);
         }

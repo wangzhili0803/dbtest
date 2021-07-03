@@ -28,8 +28,8 @@ ext {
             VERSION_CODE  : 10000,
             VERSION_NAME  : "1.0",
             BUGLY_APP_ID  : '"3d0b640817"',
-            AVOS_APP_ID   : '"74kS56hHebxhvPaW2vqqK24V-MdYXbMMI"',
-            AVOS_APP_KEY  : '"ldxw4KNVCQ1IQydJgN5pV3xk"',
+            AVOS_APP_ID   : '"CTEpnXQrIP5W4oes40JW5Nvd-MdYXbMMI"',
+            AVOS_APP_KEY  : '"tP2b4KA3Pit4mETLzErFmxYD"',
             FILE_PROVIDER : '"com.jerry.dddk.fileProvider"',
             TO_APP_ID     : '"org.telegram.messenger"',
     ]

@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
+import android.os.Bundle;
 import android.provider.Settings;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
@@ -15,6 +16,8 @@ import android.view.accessibility.AccessibilityEvent;
 import androidx.core.content.ContextCompat;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import com.jerry.baselib.BaseApp;
 import com.jerry.baselib.assibility.BaseListenerService;
@@ -204,5 +207,12 @@ public class ListenerService extends BaseListenerService {
 
     public void postDelayed(Runnable runnable, long delay) {
         mWeakHandler.postDelayed(runnable, delay);
+    }
+
+    /**
+     * 处理推送过来的消息 同理，避免无效消息，此处加了 conversation id 判断
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEvent(Bundle message) {
     }
 }

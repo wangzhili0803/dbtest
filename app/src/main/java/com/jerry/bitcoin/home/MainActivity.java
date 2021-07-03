@@ -17,6 +17,11 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.LinearLayout;
 
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -35,11 +40,6 @@ import com.jerry.baselib.common.weidgt.NoticeDialog;
 import com.jerry.bitcoin.R;
 import com.jerry.bitcoin.interfaces.LoginActionListener;
 import com.tencent.bugly.beta.Beta;
-
-import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 
 public class MainActivity extends BaseActivity implements LoginActionListener {
 
@@ -257,7 +257,6 @@ public class MainActivity extends BaseActivity implements LoginActionListener {
         } else if (requestCode == REQUEST_PERMISSION_CONTACT) {
             if ((grantResults.length == 1
                 && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                mHomeFragment.export2Contacts();
             }
         } else {
             onRequestPermissionsResult(requestCode, permissions, grantResults);

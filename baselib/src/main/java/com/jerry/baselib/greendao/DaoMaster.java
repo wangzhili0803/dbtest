@@ -21,34 +21,14 @@ public class DaoMaster extends AbstractDaoMaster {
 
     /** Creates underlying database table using DAOs. */
     public static void createAllTables(Database db, boolean ifNotExists) {
-        XyUserDao.createTable(db, ifNotExists);
         OrderDao.createTable(db, ifNotExists);
-        PraiserDao.createTable(db, ifNotExists);
-        LinkDao.createTable(db, ifNotExists);
         ProductDao.createTable(db, ifNotExists);
-        XyProductDao.createTable(db, ifNotExists);
-        CoinOrderDao.createTable(db, ifNotExists);
-        LookUrlDao.createTable(db, ifNotExists);
-<<<<<<< HEAD
-=======
-        DyUserDao.createTable(db, ifNotExists);
->>>>>>> 513efa844edddd10fb8cab5c2af98de3a445c062
     }
 
     /** Drops underlying database table using DAOs. */
     public static void dropAllTables(Database db, boolean ifExists) {
-        XyUserDao.dropTable(db, ifExists);
         OrderDao.dropTable(db, ifExists);
-        PraiserDao.dropTable(db, ifExists);
-        LinkDao.dropTable(db, ifExists);
         ProductDao.dropTable(db, ifExists);
-        XyProductDao.dropTable(db, ifExists);
-        CoinOrderDao.dropTable(db, ifExists);
-        LookUrlDao.dropTable(db, ifExists);
-<<<<<<< HEAD
-=======
-        DyUserDao.dropTable(db, ifExists);
->>>>>>> 513efa844edddd10fb8cab5c2af98de3a445c062
     }
 
     /**
@@ -67,18 +47,8 @@ public class DaoMaster extends AbstractDaoMaster {
 
     public DaoMaster(Database db) {
         super(db, SCHEMA_VERSION);
-        registerDaoClass(XyUserDao.class);
         registerDaoClass(OrderDao.class);
-        registerDaoClass(PraiserDao.class);
-        registerDaoClass(LinkDao.class);
         registerDaoClass(ProductDao.class);
-        registerDaoClass(XyProductDao.class);
-        registerDaoClass(CoinOrderDao.class);
-        registerDaoClass(LookUrlDao.class);
-<<<<<<< HEAD
-=======
-        registerDaoClass(DyUserDao.class);
->>>>>>> 513efa844edddd10fb8cab5c2af98de3a445c062
     }
 
     public DaoSession newSession() {

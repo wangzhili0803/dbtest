@@ -6,12 +6,12 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:name="com.jerry.bitcoin.MyApplication"
+        android:name=".MyApplication"
         android:networkSecurityConfig="@xml/network_security_config"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name="com.jerry.bitcoin.home.MainActivity">
+        <activity android:name=".home.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -21,22 +21,20 @@
         <activity
             android:name=".proxy.ProxyActivity"
             android:theme="@style/AppTheme" />
+
         <activity
-            android:name="com.jerry.bitcoin.setting.SettingActivity"
+            android:name=".setting.SettingActivity"
             android:theme="@style/AppTheme" />
 
-        <receiver android:name="com.jerry.bitcoin.home.AlarmClockReceive" />
+        <activity
+            android:name=".home.RoomActivity"
+            android:theme="@style/AppTheme" />
 
-        <receiver android:name="com.jerry.bitcoin.receiver.MyBroadcastReceiver">
-            <intent-filter android:priority="2147483647">
-                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
-            </intent-filter>
-        </receiver>
         <service
             android:enabled="true"
             android:exported="false"
             android:label="@string/app_name"
-            android:name="com.jerry.bitcoin.ListenerService"
+            android:name=".ListenerService"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService" />
@@ -57,8 +55,6 @@
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <uses-permission android:name="android.permission.READ_SMS" /> <!-- 读取短信权限 -->
-    <uses-permission android:name="android.permission.RECEIVE_SMS" /> <!-- 接收短信权限 -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.SYSTEM_OVERLAY_WINDOW" />
