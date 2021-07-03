@@ -3,22 +3,26 @@ package com.jerry.bitcoin.home;
 import java.util.Collections;
 import java.util.List;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.view.View;
 import android.widget.TextView;
+
+import androidx.annotation.Nullable;
 
 import com.jerry.baselib.Key;
 import com.jerry.baselib.common.base.BaseRecyclerAdapter;
 import com.jerry.baselib.common.base.BaseRecyclerFragment;
 import com.jerry.baselib.common.base.RecyclerViewHolder;
 import com.jerry.baselib.common.bean.AVObjQuery;
-import com.jerry.bitcoin.beans.RoomBean;
+import com.jerry.baselib.common.bean.AxUser;
 import com.jerry.baselib.common.util.CollectionUtils;
 import com.jerry.baselib.common.util.LogUtils;
 import com.jerry.baselib.common.util.ToastUtil;
 import com.jerry.baselib.common.util.UserManager;
 import com.jerry.baselib.common.weidgt.EditDialog;
 import com.jerry.bitcoin.R;
+import com.jerry.bitcoin.beans.RoomBean;
 
 /**
  * @author Jerry
@@ -26,6 +30,8 @@ import com.jerry.bitcoin.R;
  * @description 主页
  */
 public class HomeFragment extends BaseRecyclerFragment<RoomBean> {
+
+    private static final int TO_ROOM = 101;
 
     @Override
     protected BaseRecyclerAdapter<RoomBean> initAdapter() {
@@ -39,6 +45,7 @@ public class HomeFragment extends BaseRecyclerFragment<RoomBean> {
             public void convert(final RecyclerViewHolder holder, final int position, final int viewType, final RoomBean bean) {
                 TextView textView = holder.getView(R.id.textView);
                 textView.setText(bean.getRoomId());
+                textView.setSelected(bean.getRoomId().equals(UserManager.getInstance().getUser().getLiveRoom()));
             }
         };
     }
@@ -94,11 +101,15 @@ public class HomeFragment extends BaseRecyclerFragment<RoomBean> {
                         roomBean.setRoomId(roomId);
                         roomBean.setUserIds(Collections.singletonList(UserManager.getInstance().getPhone()));
                         roomBean.save(data1 -> {
-                            mData.add(0, roomBean);
-                            mAdapter.notifyItemRangeInserted(0, 1);
-                            editDialog.dismiss();
-                            LogUtils.d("添加成功");
-                            toast("添加成功");
+                            AxUser user = UserManager.getInstance().getUser();
+                            user.setLiveRoom(roomId);
+                            user.update(data2 -> {
+                                mData.add(0, roomBean);
+                                mAdapter.notifyItemRangeInserted(0, 1);
+                                editDialog.dismiss();
+                                LogUtils.d("添加成功");
+                                toast("添加成功");
+                            });
                         });
                         return;
                     }
@@ -129,6 +140,15 @@ public class HomeFragment extends BaseRecyclerFragment<RoomBean> {
     public void onItemClick(final View itemView, final int position) {
         Intent intent = new Intent(mActivity, RoomActivity.class);
         intent.putExtra(Key.DATA, mData.get(position).getRoomId());
-        startActivity(intent);
+        startActivityForResult(intent, TO_ROOM);
+    }
+
+    @Override
+    public void onActivityResult(final int requestCode, final int resultCode, @Nullable final Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode != Activity.RESULT_OK) {
+            return;
+        }
+        mAdapter.notifyDataSetChanged();
     }
 }

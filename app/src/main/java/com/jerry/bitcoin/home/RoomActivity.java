@@ -1,5 +1,6 @@
 package com.jerry.bitcoin.home;
 
+import android.app.Activity;
 import android.view.View;
 import android.widget.TextView;
 
@@ -8,9 +9,9 @@ import com.jerry.baselib.common.base.BaseRecyclerActivity;
 import com.jerry.baselib.common.base.BaseRecyclerAdapter;
 import com.jerry.baselib.common.base.RecyclerViewHolder;
 import com.jerry.baselib.common.bean.AVObjQuery;
-import com.jerry.baselib.common.util.LogUtils;
+import com.jerry.baselib.common.bean.AxUser;
 import com.jerry.baselib.common.util.ToastUtil;
-import com.jerry.baselib.common.weidgt.EditDialog;
+import com.jerry.baselib.common.util.UserManager;
 import com.jerry.bitcoin.R;
 import com.jerry.bitcoin.beans.ScriptWord;
 
@@ -27,9 +28,9 @@ public class RoomActivity extends BaseRecyclerActivity<ScriptWord> {
     protected void initView() {
         super.initView();
         TextView tvTitle = findViewById(R.id.tv_title);
-        tvTitle.setText(R.string.room);
+        tvTitle.setText(roomId);
         TextView tvRight = findViewById(R.id.tv_right);
-        tvRight.setText(R.string.new_script);
+        tvRight.setText(R.string.alive_room);
         tvRight.setOnClickListener(this);
 
     }
@@ -67,21 +68,27 @@ public class RoomActivity extends BaseRecyclerActivity<ScriptWord> {
     @Override
     public void onClick(final View v) {
         if (v.getId() == R.id.tv_right) {
-            EditDialog editDialog = new EditDialog(this);
-            editDialog.setPositiveListener(view -> {
-                // 新建房间
-                ScriptWord roomBean = new ScriptWord();
-                roomBean.setRoomId(roomId);
-                roomBean.setDesc(editDialog.getEditText());
-                roomBean.save(data1 -> {
-                    mData.add(0, roomBean);
-                    mAdapter.notifyItemRangeInserted(0, 1);
-                    editDialog.dismiss();
-                    LogUtils.d("添加成功");
-                    toast("添加成功");
-                });
-            });
-            editDialog.show();
+            if (UserManager.getInstance().isLogined()) {
+                AxUser user = UserManager.getInstance().getUser();
+                user.setLiveRoom(roomId);
+                user.update(data -> toast("激活成功"));
+            }
+            setResult(Activity.RESULT_OK);
+//            EditDialog editDialog = new EditDialog(this);
+//            editDialog.setPositiveListener(view -> {
+//                // 新建房间
+//                ScriptWord roomBean = new ScriptWord();
+//                roomBean.setRoomId(roomId);
+//                roomBean.setDesc(editDialog.getEditText());
+//                roomBean.save(data1 -> {
+//                    mData.add(0, roomBean);
+//                    mAdapter.notifyItemRangeInserted(0, 1);
+//                    editDialog.dismiss();
+//                    LogUtils.d("添加成功");
+//                    toast("添加成功");
+//                });
+//            });
+//            editDialog.show();
         }
         super.onClick(v);
     }

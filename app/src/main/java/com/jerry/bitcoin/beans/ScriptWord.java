@@ -1,5 +1,7 @@
 package com.jerry.bitcoin.beans;
 
+import org.greenrobot.greendao.annotation.Entity;
+
 import com.jerry.baselib.common.bean.AVBaseObject;
 
 /**
@@ -8,6 +10,7 @@ import com.jerry.baselib.common.bean.AVBaseObject;
  * @copyright www.axiang.com
  * @description
  */
+@Entity
 public class ScriptWord extends AVBaseObject {
 
     private String id;

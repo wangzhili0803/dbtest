@@ -7,4 +7,5 @@
     <string name="new_script">新增台词</string>
     <string name="new_room">新增房间</string>
     <string name="room">房间</string>
+    <string name="alive_room">激活房间</string>
 </resources>

@@ -59,10 +59,6 @@ public class UserManager {
         return user.getPhone();
     }
 
-    public double getAmount() {
-        return user.getAmount();
-    }
-
     public int getCount() {
         return user.getCount();
     }

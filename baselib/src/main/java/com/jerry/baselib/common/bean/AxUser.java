@@ -46,9 +46,9 @@ public class AxUser extends AVBaseObject {
      */
     private String expire;
     /**
-     * 金额
+     * 激活的room
      */
-    private double amount;
+    private String liveRoom;
     /**
      * 交易时间
      */
@@ -126,12 +126,12 @@ public class AxUser extends AVBaseObject {
         this.expire = expire;
     }
 
-    public double getAmount() {
-        return amount;
+    public String getLiveRoom() {
+        return liveRoom;
     }
 
-    public void setAmount(final double amount) {
-        this.amount = amount;
+    public void setLiveRoom(final String liveRoom) {
+        this.liveRoom = liveRoom;
     }
 
     public long getTradeTime() {
