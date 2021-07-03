@@ -118,7 +118,7 @@ public abstract class BaseListenerService extends AccessibilityService {
         mWeakHandler.sendEmptyMessage(start);
     }
 
-    protected void stopScript() {
+    public void stopScript() {
         if (AppUtils.playing) {
             AppUtils.playing = false;
             errorCount = 0;

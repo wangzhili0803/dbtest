@@ -6,7 +6,12 @@ import java.util.List;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.text.Editable;
+import android.text.TextUtils;
 import android.view.View;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.TextView;
 
 import com.jerry.baselib.BaseApp;
@@ -18,17 +23,25 @@ import com.jerry.baselib.common.base.BaseActivity;
 import com.jerry.baselib.common.bean.Product;
 import com.jerry.baselib.common.dbhelper.ProManager;
 import com.jerry.baselib.common.util.FileUtil;
+import com.jerry.baselib.common.util.MathUtil;
 import com.jerry.baselib.common.util.PreferenceHelp;
 import com.jerry.baselib.common.util.StringUtil;
+import com.jerry.baselib.common.weidgt.MultipleEditText;
+import com.jerry.baselib.common.weidgt.MyEditText;
+import com.jerry.baselib.common.weidgt.MyTextWatcher;
 import com.jerry.baselib.greendao.ProductDao.Properties;
+import com.jerry.bitcoin.ListenerService;
 import com.jerry.bitcoin.R;
+import com.jerry.bitcoin.beans.PreferenceKey;
 
 /**
  * @author Jerry
  * @createDate 2019/4/10
  * @description 设置页面
  */
-public class SettingActivity extends BaseActivity {
+public class SettingActivity extends BaseActivity implements OnCheckedChangeListener {
+
+    private View llHello;
 
     @Override
     protected int getContentViewResourceId() {
@@ -40,6 +53,32 @@ public class SettingActivity extends BaseActivity {
         TextView tvVerion = findViewById(R.id.about_version);
         tvVerion.setText(BaseApp.Config.VERSION_NAME);
         findViewById(R.id.tv_clear).setOnClickListener(this);
+        CheckBox cbHello = findViewById(R.id.cb_hello);
+        cbHello.setOnCheckedChangeListener(this);
+        llHello = findViewById(R.id.ll_hello);
+        MyEditText etHello = findViewById(R.id.et_hello);
+        MultipleEditText metSpeed = findViewById(R.id.met_speed);
+
+        if (PreferenceHelp.getBoolean(PreferenceKey.CB_HELLO)) {
+            cbHello.setChecked(true);
+            llHello.setVisibility(View.VISIBLE);
+        } else {
+            cbHello.setChecked(false);
+            llHello.setVisibility(View.GONE);
+        }
+        etHello.setOnTextChangedListener(data -> {
+            if (!TextUtils.isEmpty(data)) {
+                PreferenceHelp.putString(PreferenceKey.SAY_HELLO, data.toString());
+            }
+        });
+        metSpeed.initData(PreferenceHelp.getInt(PreferenceKey.RUN_SPEED, 5), 9, new MyTextWatcher() {
+            @Override
+            public void afterTextChanged(final Editable s) {
+                PreferenceHelp.putInt(PreferenceKey.RUN_SPEED, metSpeed.getMultiple());
+                ListenerService.TIME_DELAY = 5500 - 500 * metSpeed.getMultiple();
+                toast("操作间隔：" + MathUtil.halfEven(ListenerService.TIME_DELAY / 1000f, 1) + "s");
+            }
+        });
     }
 
     @Override
@@ -93,6 +132,18 @@ public class SettingActivity extends BaseActivity {
                     toast("清理成功！");
                 }
             }).whenTaskEnd(this::closeLoadingDialog).execute();
+        }
+    }
+
+    @Override
+    public void onCheckedChanged(final CompoundButton buttonView, final boolean isChecked) {
+        switch (buttonView.getId()) {
+            case R.id.cb_hello:
+                PreferenceHelp.putBoolean(PreferenceKey.CB_HELLO, isChecked);
+                llHello.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+                break;
+            default:
+                break;
         }
     }
 }

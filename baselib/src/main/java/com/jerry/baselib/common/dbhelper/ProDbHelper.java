@@ -6,10 +6,8 @@ import android.content.Context;
 import org.greenrobot.greendao.database.Database;
 
 import com.jerry.baselib.greendao.DaoMaster;
-import com.jerry.baselib.greendao.LookUrlDao;
+import com.jerry.baselib.greendao.DyUserDao;
 import com.jerry.baselib.greendao.OrderDao;
-import com.jerry.baselib.greendao.ProductDao;
-import com.jerry.baselib.greendao.XyProductDao;
 import com.jerry.baselib.greendao.XyUserDao;
 
 /**
@@ -27,7 +25,7 @@ public class ProDbHelper extends DaoMaster.DevOpenHelper {
     public void onUpgrade(Database db, int oldVersion, int newVersion) {
         if (newVersion > oldVersion) {
             // 需要进行数据迁移更新的实体类 ，新增的不用加
-            MigrationHelper.migrate(db, ProductDao.class, OrderDao.class, LookUrlDao.class, XyUserDao.class, XyProductDao.class);
+            MigrationHelper.migrate(db, OrderDao.class, XyUserDao.class, DyUserDao.class);
         } else {
             // 默认操作
             DaoMaster.dropAllTables(db, true);

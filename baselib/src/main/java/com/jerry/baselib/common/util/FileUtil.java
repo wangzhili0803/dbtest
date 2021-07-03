@@ -34,7 +34,6 @@ import com.jerry.baselib.common.bean.MediaBean;
 public class FileUtil {
 
     private static final String SD_CARD = Environment.getExternalStorageDirectory() + File.separator;
-    public static final String PATH_APK = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/xianyu615.apk";
 
     public static String getAppExternalPath() {
         return FileUtil.SD_CARD + PreferenceHelp.getString(PreferenceHelp.DIRNAME, BaseApp.getDefultDir()) + File.separator;

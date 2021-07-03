@@ -4,27 +4,45 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <include layout="@layout/layout_header"/>
+    <include layout="@layout/layout_header" />
 
-    <CheckBox
-        android:id="@+id/cb_xrp"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="@dimen/page_margin"
-        android:text="XRP" />
+        android:orientation="horizontal">
 
-    <CheckBox
-        android:id="@+id/cb_bch"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="@dimen/page_margin"
-        android:text="BCH" />
+        <TextView
+            android:id="@+id/tv_excel"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:background="@drawable/white_bg_selector"
+            android:gravity="center"
+            android:text="导出到Excel" />
 
-    <CheckBox
-        android:id="@+id/cb_order_right_now"
+        <TextView
+            android:id="@+id/tv_contact"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:background="@drawable/white_bg_selector"
+            android:gravity="center"
+            android:text="导出到通讯录" />
+
+        <TextView
+            android:id="@+id/tv_clear"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:background="@drawable/white_bg_selector"
+            android:gravity="center"
+            android:text="清除数据" />
+
+    </LinearLayout>
+
+    <com.jerry.baselib.common.ptrlib.widget.PtrRecyclerView
+        android:id="@+id/ptrRecyclerView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="@dimen/page_margin"
-        android:text="当即下单" />
+        android:layout_height="match_parent" />
 
 </LinearLayout>

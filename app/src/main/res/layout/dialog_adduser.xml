@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/shape_grey"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/title_tv"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dialog_title"
+        android:gravity="center"
+        android:text="@string/add"
+        android:textColor="@color/primary_text_color"
+        android:textSize="@dimen/_17sp" />
+
+    <EditText
+        android:id="@+id/et_phone"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_45dp"
+        android:background="@drawable/edit_bg"
+        android:hint="手机号"
+        android:inputType="phone"
+        android:maxLength="11"
+        android:padding="5dp"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/tv_code"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/edit_bg"
+        android:hint="激活码"
+        android:padding="5dp"
+        android:textSize="16sp" />
+
+    <CheckBox
+        android:id="@+id/cb_zufang"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="可租房"
+        android:textColor="@color/primary_text_color"
+        android:visibility="gone" />
+
+    <CheckBox
+        android:id="@+id/cb_fishad"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="可发布鱼塘广告"
+        android:textColor="@color/primary_text_color"
+        android:visibility="gone" />
+
+    <CheckBox
+        android:id="@+id/cb_proxy"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="添加为代理用户"
+        android:textColor="@color/primary_text_color"
+        android:visibility="gone" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_tags"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <include layout="@layout/dialog_bottom_btns" />
+
+</LinearLayout>

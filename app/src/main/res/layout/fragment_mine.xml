@@ -92,6 +92,15 @@
             <View style="@style/horizontal_line_style"/>
 
             <TextView
+                android:id="@+id/tv_myproxy"
+                style="@style/arrow_style"
+                android:drawablePadding="@dimen/eight_dp"
+                android:text="@string/myproxy"
+                app:drawableStartCompat="@drawable/proxy" />
+
+            <View style="@style/horizontal_line_style" />
+
+            <TextView
                 android:id="@+id/tv_setting"
                 style="@style/arrow_style"
                 android:drawablePadding="@dimen/eight_dp"

@@ -1,2 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <color name="grey_text">#f2f2f2</color>
+    <color name="yellow_ffdd33">#ffdd33</color>
+</resources>

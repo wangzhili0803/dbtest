@@ -225,5 +225,3 @@ public static java.lang.String TABLENAME;
 #----------------其它-------------------------------------------------------------
 -keep class com.jerry.baselib.common.bean.** { *; }
 -keep class com.jerry.bitcoin.bean.** { *; }
-
--keep com.huobi.service.huobi.connection.** { *; }

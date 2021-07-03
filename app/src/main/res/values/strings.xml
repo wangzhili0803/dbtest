@@ -1,4 +1,7 @@
 <resources>
-    <string name="app_name">比特阿翔</string>
-    <string name="accessibility_service_description">运行比特阿翔助手</string>
+    <string name="app_name">阿翔Tg</string>
+    <string name="accessibility_service_description">运行阿翔Tg助手</string>
+    <string name="myproxy">代理列表</string>
+    <string name="add">添加</string>
+    <string name="contact_text">联系方式：%1$s</string>
 </resources>

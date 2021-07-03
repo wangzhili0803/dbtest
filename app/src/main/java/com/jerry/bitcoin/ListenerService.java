@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
-import android.os.Bundle;
 import android.provider.Settings;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
@@ -16,8 +15,6 @@ import android.view.accessibility.AccessibilityEvent;
 import androidx.core.content.ContextCompat;
 
 import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 
 import com.jerry.baselib.BaseApp;
 import com.jerry.baselib.assibility.BaseListenerService;
@@ -25,14 +22,15 @@ import com.jerry.baselib.common.flow.FloatItem;
 import com.jerry.baselib.common.flow.FloatLogoMenu;
 import com.jerry.baselib.common.flow.FloatMenuView;
 import com.jerry.baselib.common.util.AppUtils;
+import com.jerry.baselib.common.util.DateUtils;
 import com.jerry.baselib.common.util.DisplayUtil;
+import com.jerry.baselib.common.util.PreferenceHelp;
 import com.jerry.baselib.common.util.ToastUtil;
+import com.jerry.baselib.common.util.UserManager;
 import com.jerry.baselib.common.util.WeakHandler;
+import com.jerry.bitcoin.beans.PreferenceKey;
 import com.jerry.bitcoin.home.MainActivity;
-
-import cn.leancloud.chatkit.event.LCIMIMTypeMessageEvent;
-import cn.leancloud.im.v2.AVIMReservedMessageType;
-import cn.leancloud.im.v2.AVIMTypedMessage;
+import com.jerry.bitcoin.platform.TelegramTask;
 
 /**
  * Created by cxk on 2017/2/4. email:471497226@qq.com
@@ -42,11 +40,13 @@ import cn.leancloud.im.v2.AVIMTypedMessage;
 
 public class ListenerService extends BaseListenerService {
 
+    public static long TIME_DELAY = 5500 - 500 * PreferenceHelp.getInt(PreferenceKey.RUN_SPEED, 5);
     /**
      * 擦亮
      */
     private static final int MSG_DO_TASK = 101;
 
+    private TelegramTask mTelegramTask;
     private FloatLogoMenu menu;
 
     private final FloatItem startItem = new FloatItem("开始", 0x99000000, 0x99000000,
@@ -65,6 +65,7 @@ public class ListenerService extends BaseListenerService {
         mWeakHandler = new WeakHandler(msg -> {
             switch (msg.what) {
                 case MSG_DO_TASK:
+                    mTelegramTask.doTask(this);
                     return true;
                 default:
                     return false;
@@ -73,6 +74,7 @@ public class ListenerService extends BaseListenerService {
         if (!EventBus.getDefault().isRegistered(ListenerService.this)) {
             EventBus.getDefault().register(ListenerService.this);
         }
+        mTelegramTask = new TelegramTask();
     }
 
     @Override
@@ -115,38 +117,43 @@ public class ListenerService extends BaseListenerService {
                 .showWithListener(new FloatMenuView.SimpleMenuClickListener() {
                     @Override
                     public void onItemClick(int position, String title) {
-                        if (AppUtils.playing) {
-                            stopScript();
-                            itemList.clear();
-                            itemList.add(startItem);
-                            menu.updateFloatItemList(itemList);
-                            menu.hide();
-                            return;
-                        }
                         if (AppUtils.isAccessibilitySettingsOff(ListenerService.this)) {
                             Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
                             ListenerService.this.startActivity(intent);
                             ToastUtil.showLongText("请先开启辅助哦");
                             return;
                         }
-                        AppUtils.playing = true;
-                        switch (position) {
-                            case 0:
-                                start(MSG_DO_TASK);
-                                itemList.clear();
-                                itemList.add(stopItem);
-                                menu.updateFloatItemList(itemList);
-                                menu.hide();
-                                break;
-                            case 2:
-                                itemList.clear();
-                                itemList.add(stopItem);
-                                menu.updateFloatItemList(itemList);
-                                menu.hide();
-                                break;
-                            default:
-                                break;
+                        if (AppUtils.playing) {
+                            stopScript();
+                            return;
                         }
+                        UserManager.getInstance().requestUser(data -> {
+                            if (!PreferenceHelp.getBoolean("follow_try") || !PreferenceHelp.getBoolean("search_try")) {
+                                AppUtils.playing = true;
+                                start(MSG_DO_TASK);
+                                return;
+                            }
+                            if (!UserManager.getInstance().isLogined()) {
+                                ToastUtil.showLongText("请先登录哦！");
+                                return;
+                            }
+                            if (!UserManager.getInstance().isActive()) {
+                                ToastUtil.showLongText("您的账户尚未激活 找客服小哥哥帮忙吧");
+                                return;
+                            }
+                            UserManager.getInstance().checkDate(data1 -> {
+                                if (!data1) {
+                                    ToastUtil.showLongText("您的使用时间已用完咯 找客服小哥哥续期吧");
+                                    return;
+                                }
+                                String dayout = UserManager.getInstance().getUser().getExpire();
+                                if (dayout != null && dayout.length() == DateUtils.YYYYMMDDHHMMSS.length()) {
+                                    ToastUtil.showLongText("到期时间：" + dayout.substring(0, 8));
+                                }
+                                AppUtils.playing = true;
+                                start(MSG_DO_TASK);
+                            });
+                        });
 
                     }
                 });
@@ -160,8 +167,26 @@ public class ListenerService extends BaseListenerService {
     }
 
     @Override
-    public boolean isHomePage() {
-        return hasText("首页", "币币", "场外", "钱包", "我的");
+    protected boolean isHomePage() {
+        return false;
+    }
+
+    @Override
+    protected void start(final int start) {
+        super.start(start);
+        itemList.clear();
+        itemList.add(stopItem);
+        menu.updateFloatItemList(itemList);
+        menu.hide();
+    }
+
+    @Override
+    public void stopScript() {
+        super.stopScript();
+        itemList.clear();
+        itemList.add(startItem);
+        menu.updateFloatItemList(itemList);
+        menu.hide();
     }
 
     /**
@@ -173,36 +198,11 @@ public class ListenerService extends BaseListenerService {
         mWeakHandler.removeMessages(MSG_DO_TASK);
     }
 
-    public void sendEmptyMessageDelayed(int what, long time) {
-        mWeakHandler.sendEmptyMessageDelayed(what, time);
-    }
-
     public void postDelayed(Runnable runnable) {
-        postDelayed(runnable, TIME_LONG);
+        postDelayed(runnable, TIME_DELAY);
     }
 
-    public void postDelayed(Runnable runnable, long time) {
-        mWeakHandler.postDelayed(runnable, time);
+    public void postDelayed(Runnable runnable, long delay) {
+        mWeakHandler.postDelayed(runnable, delay);
     }
-
-    /**
-     * 处理推送过来的消息 同理，避免无效消息，此处加了 conversation id 判断
-     */
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEvent(Bundle message) {
-    }
-
-    /**
-     * 处理推送过来的消息 同理，避免无效消息，此处加了 conversation id 判断
-     */
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEvent(LCIMIMTypeMessageEvent messageEvent) {
-        if (messageEvent != null) {
-            AVIMTypedMessage typedMessage = messageEvent.message;
-            if (typedMessage.getMessageType() == AVIMReservedMessageType.TextMessageType.getType()) {
-                ToastUtil.showShortText("收到来自：" + typedMessage.getFrom() + "的消息，内容为：");
-            }
-        }
-    }
-
 }
