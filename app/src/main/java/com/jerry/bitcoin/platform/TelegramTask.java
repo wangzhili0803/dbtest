@@ -23,7 +23,7 @@ import com.jerry.baselib.common.util.PreferenceHelp;
 import com.jerry.baselib.common.util.ToastUtil;
 import com.jerry.baselib.common.util.UserManager;
 import com.jerry.bitcoin.ListenerService;
-import com.jerry.bitcoin.beans.PreferenceKey;
+import com.jerry.bitcoin.bean.PreferenceKey;
 
 /**
  * @author Jerry

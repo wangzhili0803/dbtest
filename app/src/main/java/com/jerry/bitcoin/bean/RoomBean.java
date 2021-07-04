@@ -1,4 +1,4 @@
-package com.jerry.bitcoin.beans;
+package com.jerry.bitcoin.bean;
 
 import java.util.List;
 

@@ -20,7 +20,6 @@ import com.jerry.baselib.common.bean.Product;
 import com.jerry.baselib.common.dbhelper.ProManager;
 import com.jerry.baselib.common.util.FileUtil;
 import com.jerry.baselib.common.util.MathUtil;
-import com.jerry.baselib.common.util.OnDataCallback;
 import com.jerry.baselib.common.util.ParseUtil;
 import com.jerry.baselib.common.util.PreferenceHelp;
 import com.jerry.baselib.common.util.StringUtil;
@@ -30,7 +29,7 @@ import com.jerry.baselib.common.weidgt.MyTextWatcher;
 import com.jerry.baselib.greendao.ProductDao.Properties;
 import com.jerry.bitcoin.ListenerService;
 import com.jerry.bitcoin.R;
-import com.jerry.bitcoin.beans.PreferenceKey;
+import com.jerry.bitcoin.bean.PreferenceKey;
 
 /**
  * @author Jerry

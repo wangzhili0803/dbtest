@@ -31,7 +31,7 @@ import com.jerry.baselib.common.util.PreferenceHelp;
 import com.jerry.baselib.common.util.ToastUtil;
 import com.jerry.baselib.common.util.UserManager;
 import com.jerry.baselib.common.util.WeakHandler;
-import com.jerry.bitcoin.beans.PreferenceKey;
+import com.jerry.bitcoin.bean.PreferenceKey;
 import com.jerry.bitcoin.home.MainActivity;
 import com.jerry.bitcoin.platform.TelegramTask;
 

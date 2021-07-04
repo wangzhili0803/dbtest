@@ -23,7 +23,7 @@ import com.jerry.baselib.common.util.ToastUtil;
 import com.jerry.baselib.common.util.UserManager;
 import com.jerry.baselib.common.weidgt.EditDialog;
 import com.jerry.bitcoin.R;
-import com.jerry.bitcoin.beans.RoomBean;
+import com.jerry.bitcoin.bean.RoomBean;
 
 /**
  * @author Jerry
@@ -72,7 +72,8 @@ public class HomeFragment extends BaseRecyclerFragment<RoomBean> {
             new AVObjQuery<>(RoomBean.class).whereContains("userIds", UserManager.getInstance().getPhone()).orderByAscending("-createdAt")
                 .findObjects(data -> {
                     if (data == null || data.getCode() == 1) {
-                        ToastUtil.showShortText("房间查询失败");
+                        LogUtils.e(data.getMsg());
+                        ToastUtil.showShortText(data.getMsg());
                         return;
                     }
                     mData.clear();
@@ -94,7 +95,8 @@ public class HomeFragment extends BaseRecyclerFragment<RoomBean> {
                 String roomId = editDialog.getEditText();
                 new AVObjQuery<>(RoomBean.class).whereEqualTo("roomId", roomId).findObjects(data -> {
                     if (data == null || data.getCode() == 1) {
-                        ToastUtil.showShortText("房间查询失败");
+                        LogUtils.e(data.getMsg());
+                        ToastUtil.showShortText(data.getMsg());
                         return;
                     }
                     List<RoomBean> list = data.getData();
