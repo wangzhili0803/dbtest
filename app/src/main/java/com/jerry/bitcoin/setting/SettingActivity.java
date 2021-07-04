@@ -7,11 +7,7 @@ import java.util.List;
 import android.content.Intent;
 import android.net.Uri;
 import android.text.Editable;
-import android.text.TextUtils;
 import android.view.View;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.TextView;
 
 import com.jerry.baselib.BaseApp;
@@ -24,6 +20,8 @@ import com.jerry.baselib.common.bean.Product;
 import com.jerry.baselib.common.dbhelper.ProManager;
 import com.jerry.baselib.common.util.FileUtil;
 import com.jerry.baselib.common.util.MathUtil;
+import com.jerry.baselib.common.util.OnDataCallback;
+import com.jerry.baselib.common.util.ParseUtil;
 import com.jerry.baselib.common.util.PreferenceHelp;
 import com.jerry.baselib.common.util.StringUtil;
 import com.jerry.baselib.common.weidgt.MultipleEditText;
@@ -39,9 +37,10 @@ import com.jerry.bitcoin.beans.PreferenceKey;
  * @createDate 2019/4/10
  * @description 设置页面
  */
-public class SettingActivity extends BaseActivity implements OnCheckedChangeListener {
+public class SettingActivity extends BaseActivity {
 
-    private View llHello;
+    private MyEditText etDelayMin;
+    private MyEditText etDelayMax;
 
     @Override
     protected int getContentViewResourceId() {
@@ -53,30 +52,38 @@ public class SettingActivity extends BaseActivity implements OnCheckedChangeList
         TextView tvVerion = findViewById(R.id.about_version);
         tvVerion.setText(BaseApp.Config.VERSION_NAME);
         findViewById(R.id.tv_clear).setOnClickListener(this);
-        CheckBox cbHello = findViewById(R.id.cb_hello);
-        cbHello.setOnCheckedChangeListener(this);
-        llHello = findViewById(R.id.ll_hello);
-        MyEditText etHello = findViewById(R.id.et_hello);
         MultipleEditText metSpeed = findViewById(R.id.met_speed);
-
-        if (PreferenceHelp.getBoolean(PreferenceKey.CB_HELLO)) {
-            cbHello.setChecked(true);
-            llHello.setVisibility(View.VISIBLE);
-        } else {
-            cbHello.setChecked(false);
-            llHello.setVisibility(View.GONE);
-        }
-        etHello.setOnTextChangedListener(data -> {
-            if (!TextUtils.isEmpty(data)) {
-                PreferenceHelp.putString(PreferenceKey.SAY_HELLO, data.toString());
-            }
-        });
         metSpeed.initData(PreferenceHelp.getInt(PreferenceKey.RUN_SPEED, 5), 9, new MyTextWatcher() {
             @Override
             public void afterTextChanged(final Editable s) {
                 PreferenceHelp.putInt(PreferenceKey.RUN_SPEED, metSpeed.getMultiple());
                 ListenerService.TIME_DELAY = 5500 - 500 * metSpeed.getMultiple();
                 toast("操作间隔：" + MathUtil.halfEven(ListenerService.TIME_DELAY / 1000f, 1) + "s");
+            }
+        });
+        etDelayMin = findViewById(R.id.et_delay_min);
+        etDelayMax = findViewById(R.id.et_delay_max);
+        etDelayMin.setText(String.valueOf(PreferenceHelp.getInt(PreferenceKey.DELAY_MIN, 10)));
+        etDelayMax.setText(String.valueOf(PreferenceHelp.getInt(PreferenceKey.DELAY_MAX, 20)));
+        etDelayMin.setOnTextChangedListener(data -> {
+            int min = ParseUtil.parseInt(etDelayMin.getText().toString());
+            int max = ParseUtil.parseInt(etDelayMax.getText().toString());
+            if (min < max) {
+                PreferenceHelp.getInt(PreferenceKey.DELAY_MIN, min);
+                PreferenceHelp.getInt(PreferenceKey.DELAY_MAX, max);
+            } else {
+                toast("最小值要小于最大值");
+            }
+        });
+
+        etDelayMax.setOnTextChangedListener(data -> {
+            int min = ParseUtil.parseInt(etDelayMin.getText().toString());
+            int max = ParseUtil.parseInt(etDelayMax.getText().toString());
+            if (min < max) {
+                PreferenceHelp.getInt(PreferenceKey.DELAY_MIN, min);
+                PreferenceHelp.getInt(PreferenceKey.DELAY_MAX, max);
+            } else {
+                toast("最小值要小于最大值");
             }
         });
     }
@@ -132,18 +139,6 @@ public class SettingActivity extends BaseActivity implements OnCheckedChangeList
                     toast("清理成功！");
                 }
             }).whenTaskEnd(this::closeLoadingDialog).execute();
-        }
-    }
-
-    @Override
-    public void onCheckedChanged(final CompoundButton buttonView, final boolean isChecked) {
-        switch (buttonView.getId()) {
-            case R.id.cb_hello:
-                PreferenceHelp.putBoolean(PreferenceKey.CB_HELLO, isChecked);
-                llHello.setVisibility(isChecked ? View.VISIBLE : View.GONE);
-                break;
-            default:
-                break;
         }
     }
 }

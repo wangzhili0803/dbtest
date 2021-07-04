@@ -8,7 +8,7 @@ package com.jerry.bitcoin.beans;
 public class PreferenceKey {
 
 
-    public static final String CB_HELLO = "cb_hello";
-    public static final String SAY_HELLO = "say_hello";
     public static final String RUN_SPEED = "speed";
+    public static final String DELAY_MIN = "DELAY_MIN";
+    public static final String DELAY_MAX = "DELAY_MAX";
 }

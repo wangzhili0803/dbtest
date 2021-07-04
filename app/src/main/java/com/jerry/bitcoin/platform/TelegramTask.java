@@ -13,15 +13,17 @@ import com.jerry.baselib.common.asyctask.AppTask;
 import com.jerry.baselib.common.asyctask.BackgroundTask;
 import com.jerry.baselib.common.asyctask.WhenTaskDone;
 import com.jerry.baselib.common.bean.AVObjQuery;
+import com.jerry.baselib.common.bean.ScriptWord;
 import com.jerry.baselib.common.dbhelper.ProManager;
 import com.jerry.baselib.common.util.AppUtils;
 import com.jerry.baselib.common.util.CollectionUtils;
 import com.jerry.baselib.common.util.LogUtils;
 import com.jerry.baselib.common.util.MathUtil;
+import com.jerry.baselib.common.util.PreferenceHelp;
 import com.jerry.baselib.common.util.ToastUtil;
 import com.jerry.baselib.common.util.UserManager;
 import com.jerry.bitcoin.ListenerService;
-import com.jerry.baselib.common.bean.ScriptWord;
+import com.jerry.bitcoin.beans.PreferenceKey;
 
 /**
  * @author Jerry
@@ -156,7 +158,9 @@ public class TelegramTask {
                     Rect rect = new Rect();
                     root.findFocus(AccessibilityNodeInfoCompat.FOCUS_INPUT).getBoundsInScreen(rect);
                     if (service.exeClick((rect.right + ListenerService.mWidth) >> 1, (rect.top + rect.bottom) >> 1)) {
-                        int delay = MathUtil.random(10000, 20000);
+                        int min = PreferenceHelp.getInt(PreferenceKey.DELAY_MIN, 10);
+                        int max = PreferenceHelp.getInt(PreferenceKey.DELAY_MAX, 20);
+                        long delay = MathUtil.random(min, max) * 1000;
                         ToastUtil.showShortText((delay / 1000) + "秒后在发送一条消息");
                         service.postDelayed(() -> {
                             sendMsg(service);
