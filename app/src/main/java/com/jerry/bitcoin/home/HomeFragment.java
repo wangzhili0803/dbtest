@@ -5,6 +5,7 @@ import java.util.List;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
 
@@ -68,16 +69,17 @@ public class HomeFragment extends BaseRecyclerFragment<RoomBean> {
     @Override
     protected void getData() {
         if (UserManager.getInstance().isLogined()) {
-            new AVObjQuery<>(RoomBean.class).whereContains("userIds", UserManager.getInstance().getPhone()).findObjects(data -> {
-                if (data == null || data.getCode() == 1) {
-                    ToastUtil.showShortText("房间查询失败");
-                    return;
-                }
-                mData.clear();
-                mData.addAll(data.getData());
-                mAdapter.notifyDataSetChanged();
-                onAfterRefresh();
-            });
+            new AVObjQuery<>(RoomBean.class).whereContains("userIds", UserManager.getInstance().getPhone()).orderByAscending("-createdAt")
+                .findObjects(data -> {
+                    if (data == null || data.getCode() == 1) {
+                        ToastUtil.showShortText("房间查询失败");
+                        return;
+                    }
+                    mData.clear();
+                    mData.addAll(data.getData());
+                    mAdapter.notifyDataSetChanged();
+                    onAfterRefresh();
+                });
         } else {
             onAfterRefresh();
         }
@@ -87,6 +89,7 @@ public class HomeFragment extends BaseRecyclerFragment<RoomBean> {
     public void onClick(final View v) {
         if (v.getId() == R.id.tv_right) {
             EditDialog editDialog = new EditDialog(mActivity);
+            editDialog.setDialogTitle(getString(R.string.new_room));
             editDialog.setPositiveListener(view -> {
                 String roomId = editDialog.getEditText();
                 new AVObjQuery<>(RoomBean.class).whereEqualTo("roomId", roomId).findObjects(data -> {
@@ -102,14 +105,22 @@ public class HomeFragment extends BaseRecyclerFragment<RoomBean> {
                         roomBean.setUserIds(Collections.singletonList(UserManager.getInstance().getPhone()));
                         roomBean.save(data1 -> {
                             AxUser user = UserManager.getInstance().getUser();
-                            user.setLiveRoom(roomId);
-                            user.update(data2 -> {
+                            if (TextUtils.isEmpty(user.getLiveRoom())) {
+                                user.setLiveRoom(roomId);
+                                user.update(data2 -> {
+                                    mData.add(0, roomBean);
+                                    mAdapter.notifyItemRangeInserted(0, 1);
+                                    editDialog.dismiss();
+                                    LogUtils.d("添加成功");
+                                    toast("添加成功");
+                                });
+                            } else {
                                 mData.add(0, roomBean);
                                 mAdapter.notifyItemRangeInserted(0, 1);
                                 editDialog.dismiss();
                                 LogUtils.d("添加成功");
                                 toast("添加成功");
-                            });
+                            }
                         });
                         return;
                     }
@@ -127,8 +138,23 @@ public class HomeFragment extends BaseRecyclerFragment<RoomBean> {
                         mData.add(0, roomBean);
                         mAdapter.notifyItemRangeInserted(0, 1);
                         editDialog.dismiss();
-                        LogUtils.d("更新成功");
-                        toast("添加成功");
+                        AxUser user = UserManager.getInstance().getUser();
+                        if (TextUtils.isEmpty(user.getLiveRoom())) {
+                            user.setLiveRoom(roomId);
+                            user.update(data2 -> {
+                                mData.add(0, roomBean);
+                                mAdapter.notifyItemRangeInserted(0, 1);
+                                editDialog.dismiss();
+                                LogUtils.d("添加成功");
+                                toast("添加成功");
+                            });
+                        } else {
+                            mData.add(0, roomBean);
+                            mAdapter.notifyItemRangeInserted(0, 1);
+                            editDialog.dismiss();
+                            LogUtils.d("添加成功");
+                            toast("添加成功");
+                        }
                     });
                 });
             });

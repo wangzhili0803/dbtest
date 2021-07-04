@@ -3,6 +3,7 @@ package com.jerry.baselib.assibility;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import android.accessibilityservice.AccessibilityService;
@@ -373,6 +374,21 @@ public abstract class BaseListenerService extends AccessibilityService {
             }
         }
         return null;
+    }
+
+    public List<AccessibilityNodeInfo> findVisibleNodesByClassName(AccessibilityNodeInfo parent, String className) {
+        List<AccessibilityNodeInfo> nodes = new ArrayList<>();
+        if (parent != null) {
+            for (int i = 0; i < parent.getChildCount(); i++) {
+                AccessibilityNodeInfo childNode = parent.getChild(i);
+                if (childNode.getClassName().toString().contains(className) && childNode.isVisibleToUser()) {
+                    nodes.add(childNode);
+                } else {
+                    nodes.addAll(findVisibleNodesByClassName(childNode, className));
+                }
+            }
+        }
+        return nodes;
     }
 
     public String getNodeText(String id) {

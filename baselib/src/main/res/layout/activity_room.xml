@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical">
+
+    <include layout="@layout/layout_header"/>
+
+    <View style="@style/horizontal_line_style" />
+
+    <ViewStub
+        android:id="@+id/vs_head"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <View style="@style/horizontal_line_style" />
+
+    <com.jerry.baselib.common.ptrlib.widget.PtrRecyclerView
+        android:id="@+id/ptrRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_weight="1"
+        android:layout_height="0dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <com.jerry.baselib.common.weidgt.MyEditText
+            android:id="@+id/et_srict"
+            style="@style/menu_input"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:hint="新增剧本词"
+            android:paddingHorizontal="@dimen/page_margin"
+            android:paddingVertical="@dimen/eight_dp"
+            android:textColor="@color/primary_text_color"
+            android:textSize="@dimen/_16sp"
+            tools:text="新增剧本词" />
+
+        <TextView
+            android:id="@+id/tv_send"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/white_bg_selector"
+            android:paddingHorizontal="@dimen/page_margin"
+            android:paddingVertical="@dimen/eight_dp"
+            android:text="发送" />
+
+    </LinearLayout>
+
+</LinearLayout>

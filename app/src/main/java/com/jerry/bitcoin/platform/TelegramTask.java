@@ -9,14 +9,19 @@ import androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
 
 import com.jerry.baselib.Key;
 import com.jerry.baselib.assibility.EndCallback;
+import com.jerry.baselib.common.asyctask.AppTask;
+import com.jerry.baselib.common.asyctask.BackgroundTask;
+import com.jerry.baselib.common.asyctask.WhenTaskDone;
 import com.jerry.baselib.common.bean.AVObjQuery;
+import com.jerry.baselib.common.dbhelper.ProManager;
 import com.jerry.baselib.common.util.AppUtils;
 import com.jerry.baselib.common.util.CollectionUtils;
+import com.jerry.baselib.common.util.LogUtils;
+import com.jerry.baselib.common.util.MathUtil;
 import com.jerry.baselib.common.util.ToastUtil;
 import com.jerry.baselib.common.util.UserManager;
 import com.jerry.bitcoin.ListenerService;
-import com.jerry.bitcoin.beans.RoomBean;
-import com.jerry.bitcoin.beans.ScriptWord;
+import com.jerry.baselib.common.bean.ScriptWord;
 
 /**
  * @author Jerry
@@ -37,7 +42,7 @@ public class TelegramTask {
         AccessibilityNodeInfo flowBtnNode = texts.get(texts.size() - 1);
         return "Open navigation menu".contentEquals(flowBtnNode.getContentDescription());
     }
-//service.getRootInActiveWindow().findFocus(1);
+
     private boolean isSearchPage(final ListenerService service) {
         AccessibilityNodeInfo root = service.getRootInActiveWindow();
         AccessibilityNodeInfo search = root.findFocus(AccessibilityNodeInfoCompat.FOCUS_INPUT);
@@ -46,20 +51,11 @@ public class TelegramTask {
     }
 
     public void doTask(final ListenerService service) {
-        new AVObjQuery<>(RoomBean.class).whereContains("userIds", UserManager.getInstance().getPhone()).findObjects(data -> {
-            if (data == null || data.getCode() == 1) {
-                ToastUtil.showShortText("房间查询失败");
-                return;
-            }
-            List<RoomBean> roomBeans = data.getData();
-            if (CollectionUtils.isEmpty(roomBeans)) {
-                ToastUtil.showShortText("暂无创建房间");
-                return;
-            }
-            String roomId = roomBeans.get(0).getRoomId();
+        String roomId = UserManager.getInstance().getUser().getLiveRoom();
+        enterRoom(service, roomId, result -> {
             new AVObjQuery<>(ScriptWord.class).whereContains("roomId", roomId).findObjects(data1 -> {
                 if (data1 == null || data1.getCode() == 1) {
-                    ToastUtil.showShortText("房间查询失败");
+                    ToastUtil.showShortText("剧本词查询失败");
                     return;
                 }
                 List<ScriptWord> scriptWords = data1.getData();
@@ -67,12 +63,17 @@ public class TelegramTask {
                     ToastUtil.showShortText("暂无剧本词");
                     return;
                 }
-                enterRoom(service, roomId, result -> {
-
-                });
+                AppTask.withoutContext().assign((BackgroundTask<Boolean>) () -> {
+                    if (!CollectionUtils.isEmpty(scriptWords) && ProManager.getInstance().deleteAll(ScriptWord.class)) {
+                        return ProManager.getInstance().insertMultObject(scriptWords);
+                    }
+                    return false;
+                }).whenDone((WhenTaskDone<Boolean>) result1 -> {
+                    LogUtils.d("updateDB:" + result1);
+                    sendMsg(service);
+                }).execute();
             });
         });
-
     }
 
     private void enterRoom(final ListenerService service, final String roomId, final EndCallback endCallback) {
@@ -111,31 +112,26 @@ public class TelegramTask {
                 }
                 break;
             case 3:
-                AccessibilityNodeInfo search1 = root.findFocus(AccessibilityNodeInfoCompat.FOCUS_INPUT);
-                search1.getParent().getParent().getParent().getParent().getParent().getParent().getChild(1) .getChild(0).getChild(0);
-                taskIndex++;
+                List<AccessibilityNodeInfo> recycleViews = service.findVisibleNodesByClassName(root, "RecyclerView");
+                if (!CollectionUtils.isEmpty(recycleViews)) {
+                    AccessibilityNodeInfo firstItem = null;
+                    AccessibilityNodeInfo recycleView = recycleViews.get(0);
+                    for (int i = 0; i < recycleView.getChildCount(); i++) {
+                        firstItem = recycleView.getChild(i);
+                        if (firstItem.getClassName().toString().contains("ViewGroup")) {
+                            break;
+                        }
+                    }
+                    if (firstItem != null && service.exeClick(firstItem)) {
+                        taskIndex++;
+                    }
+                }
                 break;
             case 4:
-                AccessibilityNodeInfo search2 = root.findFocus(AccessibilityNodeInfoCompat.FOCUS_INPUT);
-                List<AccessibilityNodeInfo> globalSearch = root.findAccessibilityNodeInfosByText("全局搜索");
-                if (CollectionUtils.isEmpty(globalSearch) || !globalSearch.get(0).isVisibleToUser()) {
-                    globalSearch = root.findAccessibilityNodeInfosByText("global search");
+                if (!service.exeClickText("join")) {
+                    service.exeClickText("加入");
                 }
-                Rect rect1 = new Rect();
-                search2.getParent().getBoundsInScreen(rect1);
-                if (CollectionUtils.isEmpty(globalSearch) || !globalSearch.get(0).isVisibleToUser()) {
-                    if (service.exeClick(ListenerService.mWidth >> 1, ((rect1.top + rect1.bottom) >> 1) + rect1.height())) {
-                        taskIndex++;
-                    }
-                } else {
-                    Rect rect2 = new Rect();
-                    globalSearch.get(0).getBoundsInScreen(rect2);
-                    if (service.exeClick(ListenerService.mWidth >> 1, ((rect2.top + rect2.bottom) >> 1) + rect1.height())) {
-                        taskIndex++;
-                    }
-                }
-                break;
-            case 5:
+                taskIndex++;
                 break;
             default:
                 errorCount = 0;
@@ -148,4 +144,27 @@ public class TelegramTask {
         }
         service.postDelayed(() -> enterRoom(service, roomId, endCallback));
     }
+
+    private void sendMsg(final ListenerService service) {
+        AccessibilityNodeInfo root = service.getRootInActiveWindow();
+        AccessibilityNodeInfo sendMsgNode = root.findFocus(AccessibilityNodeInfoCompat.FOCUS_INPUT);
+        List<ScriptWord> scriptWords = ProManager.getInstance().queryAll(ScriptWord.class, null, null);
+        if (!CollectionUtils.isEmpty(scriptWords)) {
+            int index = MathUtil.random(0, scriptWords.size());
+            if (service.input(sendMsgNode, scriptWords.get(index).getDesc())) {
+                service.postDelayed(() -> {
+                    Rect rect = new Rect();
+                    root.findFocus(AccessibilityNodeInfoCompat.FOCUS_INPUT).getBoundsInScreen(rect);
+                    if (service.exeClick((rect.right + ListenerService.mWidth) >> 1, (rect.top + rect.bottom) >> 1)) {
+                        int delay = MathUtil.random(10000, 20000);
+                        ToastUtil.showShortText((delay / 1000) + "秒后在发送一条消息");
+                        service.postDelayed(() -> {
+                            sendMsg(service);
+                        }, delay);
+                    }
+                });
+            }
+        }
+    }
+
 }

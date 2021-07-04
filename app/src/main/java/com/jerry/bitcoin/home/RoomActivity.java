@@ -10,18 +10,26 @@ import com.jerry.baselib.common.base.BaseRecyclerAdapter;
 import com.jerry.baselib.common.base.RecyclerViewHolder;
 import com.jerry.baselib.common.bean.AVObjQuery;
 import com.jerry.baselib.common.bean.AxUser;
+import com.jerry.baselib.common.util.LogUtils;
 import com.jerry.baselib.common.util.ToastUtil;
 import com.jerry.baselib.common.util.UserManager;
+import com.jerry.baselib.common.weidgt.MyEditText;
 import com.jerry.bitcoin.R;
-import com.jerry.bitcoin.beans.ScriptWord;
+import com.jerry.baselib.common.bean.ScriptWord;
 
 public class RoomActivity extends BaseRecyclerActivity<ScriptWord> {
 
     private String roomId;
+    private MyEditText etSrict;
 
     @Override
     protected void beforeViews() {
         roomId = getIntent().getStringExtra(Key.DATA);
+    }
+
+    @Override
+    protected int getContentViewResourceId() {
+        return R.layout.activity_room;
     }
 
     @Override
@@ -32,7 +40,8 @@ public class RoomActivity extends BaseRecyclerActivity<ScriptWord> {
         TextView tvRight = findViewById(R.id.tv_right);
         tvRight.setText(R.string.alive_room);
         tvRight.setOnClickListener(this);
-
+        etSrict = findViewById(R.id.et_srict);
+        findViewById(R.id.tv_send).setOnClickListener(this);
     }
 
     @Override
@@ -74,21 +83,17 @@ public class RoomActivity extends BaseRecyclerActivity<ScriptWord> {
                 user.update(data -> toast("激活成功"));
             }
             setResult(Activity.RESULT_OK);
-//            EditDialog editDialog = new EditDialog(this);
-//            editDialog.setPositiveListener(view -> {
-//                // 新建房间
-//                ScriptWord roomBean = new ScriptWord();
-//                roomBean.setRoomId(roomId);
-//                roomBean.setDesc(editDialog.getEditText());
-//                roomBean.save(data1 -> {
-//                    mData.add(0, roomBean);
-//                    mAdapter.notifyItemRangeInserted(0, 1);
-//                    editDialog.dismiss();
-//                    LogUtils.d("添加成功");
-//                    toast("添加成功");
-//                });
-//            });
-//            editDialog.show();
+        } else if (v.getId() == R.id.tv_send) {
+            // 新建房间
+            ScriptWord roomBean = new ScriptWord();
+            roomBean.setRoomId(roomId);
+            roomBean.setDesc(etSrict.getText().toString());
+            roomBean.save(data1 -> {
+                mData.add(0, roomBean);
+                mAdapter.notifyItemRangeInserted(0, 1);
+                LogUtils.d("添加成功");
+                toast("添加成功");
+            });
         }
         super.onClick(v);
     }

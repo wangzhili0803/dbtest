@@ -28,7 +28,8 @@
 
         <activity
             android:name=".home.RoomActivity"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/AppTheme"
+            android:windowSoftInputMode="adjustPan" />
 
         <service
             android:enabled="true"
