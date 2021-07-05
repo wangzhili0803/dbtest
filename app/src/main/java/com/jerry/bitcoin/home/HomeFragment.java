@@ -4,12 +4,15 @@ import java.util.Collections;
 import java.util.List;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+
+import org.jetbrains.annotations.NotNull;
 
 import com.jerry.baselib.Key;
 import com.jerry.baselib.common.base.BaseRecyclerAdapter;
@@ -24,6 +27,7 @@ import com.jerry.baselib.common.util.UserManager;
 import com.jerry.baselib.common.weidgt.EditDialog;
 import com.jerry.bitcoin.R;
 import com.jerry.bitcoin.bean.RoomBean;
+import com.jerry.bitcoin.interfaces.LoginActionListener;
 
 /**
  * @author Jerry
@@ -33,6 +37,13 @@ import com.jerry.bitcoin.bean.RoomBean;
 public class HomeFragment extends BaseRecyclerFragment<RoomBean> {
 
     private static final int TO_ROOM = 101;
+    private LoginActionListener mLoginActionListener;
+
+    @Override
+    public void onAttach(@NotNull final Context context) {
+        super.onAttach(context);
+        mLoginActionListener = (LoginActionListener) context;
+    }
 
     @Override
     protected BaseRecyclerAdapter<RoomBean> initAdapter() {
@@ -62,7 +73,7 @@ public class HomeFragment extends BaseRecyclerFragment<RoomBean> {
         TextView tvTitle = view.findViewById(R.id.tv_title);
         tvTitle.setText(R.string.app_name);
         TextView tvRight = view.findViewById(R.id.tv_right);
-        tvRight.setText(R.string.new_room);
+        tvRight.setText(R.string.new_link);
         tvRight.setOnClickListener(this);
     }
 
@@ -82,6 +93,8 @@ public class HomeFragment extends BaseRecyclerFragment<RoomBean> {
                     onAfterRefresh();
                 });
         } else {
+            mData.clear();
+            mAdapter.notifyDataSetChanged();
             onAfterRefresh();
         }
     }
@@ -89,8 +102,14 @@ public class HomeFragment extends BaseRecyclerFragment<RoomBean> {
     @Override
     public void onClick(final View v) {
         if (v.getId() == R.id.tv_right) {
+            if (!UserManager.getInstance().isLogined()) {
+                if (mLoginActionListener != null) {
+                    mLoginActionListener.showLogin();
+                }
+                return;
+            }
             EditDialog editDialog = new EditDialog(mActivity);
-            editDialog.setDialogTitle(getString(R.string.new_room));
+            editDialog.setDialogTitle(getString(R.string.new_link));
             editDialog.setPositiveListener(view -> {
                 String roomId = editDialog.getEditText();
                 new AVObjQuery<>(RoomBean.class).whereEqualTo("roomId", roomId).findObjects(data -> {
@@ -137,9 +156,6 @@ public class HomeFragment extends BaseRecyclerFragment<RoomBean> {
                     userIds.add(UserManager.getInstance().getPhone());
                     roomBean.setUserIds(userIds);
                     roomBean.update(data1 -> {
-                        mData.add(0, roomBean);
-                        mAdapter.notifyItemRangeInserted(0, 1);
-                        editDialog.dismiss();
                         AxUser user = UserManager.getInstance().getUser();
                         if (TextUtils.isEmpty(user.getLiveRoom())) {
                             user.setLiveRoom(roomId);

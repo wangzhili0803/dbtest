@@ -67,28 +67,35 @@ public class MainActivity extends BaseActivity implements LoginActionListener {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEvent(Bundle bundle) {
-        if (bundle.getInt(Key.ACTION) == ActionCode.USER_BIND) {
-            String wxCode = (String) bundle.get(Key.WXCODE);
-            if (TextUtils.isEmpty(wxCode)) {
-                toast("获取登录信息失败");
-                return;
-            }
-            LoginDialog loginDialog = new LoginDialog(this);
-            loginDialog.setWxCode(wxCode);
-            loginDialog.setOnDataCallback(data -> {
-                closeLoadingDialog();
-                if (data == null) {
+        switch (bundle.getInt(Key.ACTION)) {
+            case ActionCode.USER_BIND:
+                String wxCode = (String) bundle.get(Key.WXCODE);
+                if (TextUtils.isEmpty(wxCode)) {
+                    toast("获取登录信息失败");
                     return;
                 }
-                if (data.getCode() == 1) {
-                    loginDialog.dismiss();
-                    showBinding(data.getData());
-                }
-                if (data.getCode() == 0) {
-                    mMineFragment.updateUi();
-                }
-            });
-            loginDialog.show();
+                LoginDialog loginDialog = new LoginDialog(this);
+                loginDialog.setWxCode(wxCode);
+                loginDialog.setOnDataCallback(data -> {
+                    closeLoadingDialog();
+                    if (data == null) {
+                        return;
+                    }
+                    if (data.getCode() == 1) {
+                        loginDialog.dismiss();
+                        showBinding(data.getData());
+                    }
+                    if (data.getCode() == 0) {
+                        mMineFragment.updateUi();
+                    }
+                });
+                loginDialog.show();
+                break;
+            case ActionCode.USER_UPDATED:
+                mHomeFragment.reload();
+                break;
+            default:
+                break;
         }
     }
 

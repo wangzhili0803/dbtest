@@ -54,28 +54,26 @@ public class TelegramTask {
 
     public void doTask(final ListenerService service) {
         String roomId = UserManager.getInstance().getUser().getLiveRoom();
-        enterRoom(service, roomId, result -> {
-            new AVObjQuery<>(ScriptWord.class).whereContains("roomId", roomId).findObjects(data1 -> {
-                if (data1 == null || data1.getCode() == 1) {
-                    ToastUtil.showShortText("剧本词查询失败");
-                    return;
+        enterRoom(service, roomId, result -> new AVObjQuery<>(ScriptWord.class).whereContains("roomId", roomId).findObjects(data1 -> {
+            if (data1 == null || data1.getCode() == 1) {
+                ToastUtil.showShortText("剧本词查询失败");
+                return;
+            }
+            List<ScriptWord> scriptWords = data1.getData();
+            if (CollectionUtils.isEmpty(scriptWords)) {
+                ToastUtil.showShortText("暂无剧本词");
+                return;
+            }
+            AppTask.withoutContext().assign((BackgroundTask<Boolean>) () -> {
+                if (!CollectionUtils.isEmpty(scriptWords) && ProManager.getInstance().deleteAll(ScriptWord.class)) {
+                    return ProManager.getInstance().insertMultObject(scriptWords);
                 }
-                List<ScriptWord> scriptWords = data1.getData();
-                if (CollectionUtils.isEmpty(scriptWords)) {
-                    ToastUtil.showShortText("暂无剧本词");
-                    return;
-                }
-                AppTask.withoutContext().assign((BackgroundTask<Boolean>) () -> {
-                    if (!CollectionUtils.isEmpty(scriptWords) && ProManager.getInstance().deleteAll(ScriptWord.class)) {
-                        return ProManager.getInstance().insertMultObject(scriptWords);
-                    }
-                    return false;
-                }).whenDone((WhenTaskDone<Boolean>) result1 -> {
-                    LogUtils.d("updateDB:" + result1);
-                    sendMsg(service);
-                }).execute();
-            });
-        });
+                return false;
+            }).whenDone((WhenTaskDone<Boolean>) result1 -> {
+                LogUtils.d("updateDB:" + result1);
+                sendMsg(service);
+            }).execute();
+        }));
     }
 
     private void enterRoom(final ListenerService service, final String roomId, final EndCallback endCallback) {
@@ -148,6 +146,9 @@ public class TelegramTask {
     }
 
     private void sendMsg(final ListenerService service) {
+        if (!AppUtils.playing) {
+            return;
+        }
         AccessibilityNodeInfo root = service.getRootInActiveWindow();
         AccessibilityNodeInfo sendMsgNode = root.findFocus(AccessibilityNodeInfoCompat.FOCUS_INPUT);
         List<ScriptWord> scriptWords = ProManager.getInstance().queryAll(ScriptWord.class, null, null);
@@ -163,7 +164,9 @@ public class TelegramTask {
                         long delay = MathUtil.random(min, max) * 1000;
                         ToastUtil.showShortText((delay / 1000) + "秒后在发送一条消息");
                         service.postDelayed(() -> {
-                            sendMsg(service);
+                            if (AppUtils.playing) {
+                                sendMsg(service);
+                            }
                         }, delay);
                     }
                 });

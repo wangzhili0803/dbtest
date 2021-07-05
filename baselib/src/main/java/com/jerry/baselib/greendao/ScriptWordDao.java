@@ -25,8 +25,9 @@ public class ScriptWordDao extends AbstractDao<ScriptWord, Void> {
      */
     public static class Properties {
         public final static Property Id = new Property(0, String.class, "id", false, "ID");
-        public final static Property RoomId = new Property(1, String.class, "roomId", false, "ROOM_ID");
-        public final static Property Desc = new Property(2, String.class, "desc", false, "DESC");
+        public final static Property UserId = new Property(1, String.class, "userId", false, "USER_ID");
+        public final static Property RoomId = new Property(2, String.class, "roomId", false, "ROOM_ID");
+        public final static Property Desc = new Property(3, String.class, "desc", false, "DESC");
     }
 
 
@@ -43,8 +44,9 @@ public class ScriptWordDao extends AbstractDao<ScriptWord, Void> {
         String constraint = ifNotExists? "IF NOT EXISTS ": "";
         db.execSQL("CREATE TABLE " + constraint + "\"SCRIPT_WORD\" (" + //
                 "\"ID\" TEXT," + // 0: id
-                "\"ROOM_ID\" TEXT," + // 1: roomId
-                "\"DESC\" TEXT);"); // 2: desc
+                "\"USER_ID\" TEXT," + // 1: userId
+                "\"ROOM_ID\" TEXT," + // 2: roomId
+                "\"DESC\" TEXT);"); // 3: desc
     }
 
     /** Drops the underlying database table. */
@@ -62,14 +64,19 @@ public class ScriptWordDao extends AbstractDao<ScriptWord, Void> {
             stmt.bindString(1, id);
         }
  
+        String userId = entity.getUserId();
+        if (userId != null) {
+            stmt.bindString(2, userId);
+        }
+ 
         String roomId = entity.getRoomId();
         if (roomId != null) {
-            stmt.bindString(2, roomId);
+            stmt.bindString(3, roomId);
         }
  
         String desc = entity.getDesc();
         if (desc != null) {
-            stmt.bindString(3, desc);
+            stmt.bindString(4, desc);
         }
     }
 
@@ -82,14 +89,19 @@ public class ScriptWordDao extends AbstractDao<ScriptWord, Void> {
             stmt.bindString(1, id);
         }
  
+        String userId = entity.getUserId();
+        if (userId != null) {
+            stmt.bindString(2, userId);
+        }
+ 
         String roomId = entity.getRoomId();
         if (roomId != null) {
-            stmt.bindString(2, roomId);
+            stmt.bindString(3, roomId);
         }
  
         String desc = entity.getDesc();
         if (desc != null) {
-            stmt.bindString(3, desc);
+            stmt.bindString(4, desc);
         }
     }
 
@@ -102,8 +114,9 @@ public class ScriptWordDao extends AbstractDao<ScriptWord, Void> {
     public ScriptWord readEntity(Cursor cursor, int offset) {
         ScriptWord entity = new ScriptWord( //
             cursor.isNull(offset + 0) ? null : cursor.getString(offset + 0), // id
-            cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1), // roomId
-            cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2) // desc
+            cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1), // userId
+            cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2), // roomId
+            cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3) // desc
         );
         return entity;
     }
@@ -111,8 +124,9 @@ public class ScriptWordDao extends AbstractDao<ScriptWord, Void> {
     @Override
     public void readEntity(Cursor cursor, ScriptWord entity, int offset) {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getString(offset + 0));
-        entity.setRoomId(cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1));
-        entity.setDesc(cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2));
+        entity.setUserId(cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1));
+        entity.setRoomId(cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2));
+        entity.setDesc(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
      }
     
     @Override

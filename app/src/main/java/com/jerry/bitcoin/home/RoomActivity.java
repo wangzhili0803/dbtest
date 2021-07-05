@@ -38,7 +38,7 @@ public class RoomActivity extends BaseRecyclerActivity<ScriptWord> {
         TextView tvTitle = findViewById(R.id.tv_title);
         tvTitle.setText(roomId);
         TextView tvRight = findViewById(R.id.tv_right);
-        tvRight.setText(R.string.alive_room);
+        tvRight.setText(R.string.run_link);
         tvRight.setOnClickListener(this);
         etSrict = findViewById(R.id.et_srict);
         findViewById(R.id.tv_send).setOnClickListener(this);
@@ -62,7 +62,8 @@ public class RoomActivity extends BaseRecyclerActivity<ScriptWord> {
 
     @Override
     protected void getData() {
-        new AVObjQuery<>(ScriptWord.class).whereContains("roomId", roomId).orderByAscending("-createdAt").findObjects(data -> {
+        new AVObjQuery<>(ScriptWord.class).whereContains("roomId", roomId)
+            .whereContains("userId", UserManager.getInstance().getPhone()).orderByAscending("-createdAt").findObjects(data -> {
             if (data == null || data.getCode() == 1) {
                 ToastUtil.showShortText("台词查询失败");
                 return;
@@ -87,8 +88,10 @@ public class RoomActivity extends BaseRecyclerActivity<ScriptWord> {
             // 新建房间
             ScriptWord roomBean = new ScriptWord();
             roomBean.setRoomId(roomId);
+            roomBean.setUserId(UserManager.getInstance().getPhone());
             roomBean.setDesc(etSrict.getText().toString());
             roomBean.save(data1 -> {
+                etSrict.setText(Key.NIL);
                 mData.add(0, roomBean);
                 mAdapter.notifyItemRangeInserted(0, 1);
                 LogUtils.d("添加成功");

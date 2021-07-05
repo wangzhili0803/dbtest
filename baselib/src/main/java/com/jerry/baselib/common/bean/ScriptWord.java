@@ -11,12 +11,15 @@ import org.greenrobot.greendao.annotation.Generated;
  */
 @Entity
 public class ScriptWord extends AVBaseObject {
+
     private String id;
+    private String userId;
     private String roomId;
     private String desc;
-    @Generated(hash = 1076309438)
-    public ScriptWord(String id, String roomId, String desc) {
+    @Generated(hash = 953498666)
+    public ScriptWord(String id, String userId, String roomId, String desc) {
         this.id = id;
+        this.userId = userId;
         this.roomId = roomId;
         this.desc = desc;
     }
@@ -28,6 +31,12 @@ public class ScriptWord extends AVBaseObject {
     }
     public void setId(String id) {
         this.id = id;
+    }
+    public String getUserId() {
+        return this.userId;
+    }
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
     public String getRoomId() {
         return this.roomId;
