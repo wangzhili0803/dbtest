@@ -28,8 +28,8 @@ public class DaoMaster extends AbstractDaoMaster {
         ProductDao.createTable(db, ifNotExists);
         XyProductDao.createTable(db, ifNotExists);
         CoinOrderDao.createTable(db, ifNotExists);
-        LookUrlDao.createTable(db, ifNotExists);
         DyUserDao.createTable(db, ifNotExists);
+        LookUrlDao.createTable(db, ifNotExists);
     }
 
     /** Drops underlying database table using DAOs. */
@@ -41,8 +41,8 @@ public class DaoMaster extends AbstractDaoMaster {
         ProductDao.dropTable(db, ifExists);
         XyProductDao.dropTable(db, ifExists);
         CoinOrderDao.dropTable(db, ifExists);
-        LookUrlDao.dropTable(db, ifExists);
         DyUserDao.dropTable(db, ifExists);
+        LookUrlDao.dropTable(db, ifExists);
     }
 
     /**
@@ -68,8 +68,8 @@ public class DaoMaster extends AbstractDaoMaster {
         registerDaoClass(ProductDao.class);
         registerDaoClass(XyProductDao.class);
         registerDaoClass(CoinOrderDao.class);
-        registerDaoClass(LookUrlDao.class);
         registerDaoClass(DyUserDao.class);
+        registerDaoClass(LookUrlDao.class);
     }
 
     public DaoSession newSession() {

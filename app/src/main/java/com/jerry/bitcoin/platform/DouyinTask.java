@@ -241,14 +241,10 @@ public class DouyinTask {
                                 dyUser.setPhones(sb.toString());
                                 dyUser.setUpdateTime(System.currentTimeMillis());
                                 ProManager.getInstance().insertObject(dyUser);
-                                service.back();
-                                service.postDelayed(() -> {
-                                    service.back();
-                                    service.postDelayed(() -> endCallback.onEnd(true));
-                                }, 300);
+                                doBack(service, result -> endCallback.onEnd(true));
                                 return;
                             }
-                            service.back();
+                            doBack(service, result -> endCallback.onEnd(true));
                             service.postDelayed(() -> getHomePageInfo(service, myAccessibilityNodeInfos, endCallback));
                         });
                         return;
@@ -256,15 +252,8 @@ public class DouyinTask {
                     if (PreferenceHelp.getBoolean(PreferenceKey.CB_HELLO)) {
                         AccessibilityNodeInfo personalMsgNode = service.findFirstByText(infoNode, "私信");
                         if (personalMsgNode != null && service.exeClick(personalMsgNode)) {
-                            service.postDelayed(() -> sendMsg(service, PreferenceHelp.getString(PreferenceKey.SAY_HELLO, "你好"), result -> {
-                                service.postDelayed(() -> {
-                                    service.back();
-                                    service.postDelayed(() -> {
-                                        service.back();
-                                        service.postDelayed(() -> endCallback.onEnd(true));
-                                    }, 300);
-                                });
-                            }));
+                            service.postDelayed(() -> sendMsg(service, PreferenceHelp.getString(PreferenceKey.SAY_HELLO, "你好"),
+                                result -> doBack(service, result1 -> endCallback.onEnd(true))));
                             return;
                         }
                         AccessibilityNodeInfo followNode = service.findFirstByText(infoNode, "关注");
@@ -272,15 +261,8 @@ public class DouyinTask {
                             service.postDelayed(() -> {
                                 AccessibilityNodeInfo follow2Node = service.findFirstByText(infoNode, "私信");
                                 if (follow2Node != null && service.exeClick(follow2Node)) {
-                                    service.postDelayed(() -> sendMsg(service, PreferenceHelp.getString(PreferenceKey.SAY_HELLO, "你好"), result -> {
-                                        service.postDelayed(() -> {
-                                            service.back();
-                                            service.postDelayed(() -> {
-                                                service.back();
-                                                service.postDelayed(() -> endCallback.onEnd(true));
-                                            }, 300);
-                                        });
-                                    }));
+                                    service.postDelayed(() -> sendMsg(service, PreferenceHelp.getString(PreferenceKey.SAY_HELLO, "你好"),
+                                        result -> doBack(service, result1 -> endCallback.onEnd(true))));
                                 }
                             });
                             return;
@@ -290,19 +272,20 @@ public class DouyinTask {
                 }
                 dyUser.setUpdateTime(System.currentTimeMillis());
                 ProManager.getInstance().insertObject(dyUser);
-                service.back();
-                service.postDelayed(() -> endCallback.onEnd(true));
+                doBack(service, result1 -> endCallback.onEnd(true));
                 return;
             } catch (Throwable e) {
                 LogUtils.e(e.getLocalizedMessage());
             }
         }
-        service.back();
-        service.postDelayed(() -> endCallback.onEnd(false));
+        doBack(service, result1 -> endCallback.onEnd(false));
     }
 
     private void sendMsg(final ListenerService service, final String text, final EndCallback endCallback) {
         try {
+            if (!AppUtils.playing) {
+                return;
+            }
             AccessibilityNodeInfo pNode = service.getRootInActiveWindow().getChild(0).getChild(0).getChild(1).getChild(0).getChild(0);
             AccessibilityNodeInfo editTextNode = pNode.getChild(pNode.getChildCount() - 1).getChild(1).getChild(0).getChild(0).getChild(2);
             if (service.input(editTextNode, text)) {
@@ -352,5 +335,25 @@ public class DouyinTask {
             return "关注".contentEquals(text) || "已关注".contentEquals(text) || "回关".contentEquals(text);
         }
         return false;
+    }
+
+    private void doBack(final ListenerService service, EndCallback endCallback) {
+        AccessibilityNodeInfo root = service.getRootInActiveWindow();
+        if (root != null) {
+            AccessibilityNodeInfo scrollLayout = service.findNodeWithText(2, "关注", "粉丝", "推荐关注");
+            if (scrollLayout != null) {
+                endCallback.onEnd(true);
+                return;
+            }
+            AccessibilityNodeInfo tabNode = service.findNodeWithText(2, "综合", "视频", "用户");
+            if (tabNode != null) {
+                endCallback.onEnd(true);
+                return;
+            }
+        }
+        service.postDelayed(() -> {
+            service.back();
+            service.postDelayed(() -> doBack(service, endCallback), 1000);
+        }, 1000);
     }
 }
