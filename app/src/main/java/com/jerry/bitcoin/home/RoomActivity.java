@@ -1,5 +1,6 @@
 package com.jerry.bitcoin.home;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.view.View;
 import android.widget.TextView;
@@ -10,12 +11,12 @@ import com.jerry.baselib.common.base.BaseRecyclerAdapter;
 import com.jerry.baselib.common.base.RecyclerViewHolder;
 import com.jerry.baselib.common.bean.AVObjQuery;
 import com.jerry.baselib.common.bean.AxUser;
+import com.jerry.baselib.common.bean.ScriptWord;
 import com.jerry.baselib.common.util.LogUtils;
 import com.jerry.baselib.common.util.ToastUtil;
 import com.jerry.baselib.common.util.UserManager;
 import com.jerry.baselib.common.weidgt.MyEditText;
 import com.jerry.bitcoin.R;
-import com.jerry.baselib.common.bean.ScriptWord;
 
 public class RoomActivity extends BaseRecyclerActivity<ScriptWord> {
 
@@ -32,6 +33,7 @@ public class RoomActivity extends BaseRecyclerActivity<ScriptWord> {
         return R.layout.activity_room;
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void initView() {
         super.initView();

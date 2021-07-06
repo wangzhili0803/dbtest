@@ -7,6 +7,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
+
 import androidx.annotation.ColorRes;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -21,6 +22,7 @@ import com.jerry.baselib.common.ptrlib.OnRefreshListener;
 import com.jerry.baselib.common.ptrlib.PtrDefaultHandler;
 import com.jerry.baselib.common.ptrlib.PtrFrameLayout;
 import com.jerry.baselib.common.ptrlib.header.PtrSimpleHeader;
+import com.jerry.baselib.common.util.ImeUtils;
 import com.jerry.baselib.common.util.WeakHandler;
 
 /**
@@ -67,7 +69,13 @@ public class PtrRecyclerView extends FrameLayout {
         mPtrFrameLayout.setHeaderView(mPtrSimpleHeader);
         mPtrFrameLayout.addPtrUIHandler(mPtrSimpleHeader);
         mPtrFrameLayout.setPtrHandler(initPtrHandler());
-        mRecyclerView.setOnTouchListener((v, event) -> mPtrFrameLayout.isRefreshing());
+        mRecyclerView.setOnTouchListener((v, event) -> {
+            Context activity = getContext();
+            if (activity instanceof Activity) {
+                ImeUtils.hideImeOutside((Activity) activity, event);
+            }
+            return mPtrFrameLayout.isRefreshing();
+        });
     }
 
     @NonNull

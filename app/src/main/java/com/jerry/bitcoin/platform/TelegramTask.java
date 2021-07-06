@@ -71,6 +71,9 @@ public class TelegramTask {
                 return false;
             }).whenDone((WhenTaskDone<Boolean>) result1 -> {
                 LogUtils.d("updateDB:" + result1);
+                if (!result1) {
+                    ToastUtil.showShortText("插入数据库失败");
+                }
                 sendMsg(service);
             }).execute();
         }));
@@ -118,7 +121,8 @@ public class TelegramTask {
                     AccessibilityNodeInfo recycleView = recycleViews.get(0);
                     for (int i = 0; i < recycleView.getChildCount(); i++) {
                         firstItem = recycleView.getChild(i);
-                        if (firstItem.getClassName().toString().contains("ViewGroup")) {
+                        List<AccessibilityNodeInfo> checkboxs = service.findVisibleNodesByClassName(firstItem, "CheckBox");
+                        if (!CollectionUtils.isEmpty(checkboxs)) {
                             break;
                         }
                     }
@@ -171,6 +175,36 @@ public class TelegramTask {
                     }
                 });
             }
+        } else {
+            new AVObjQuery<>(ScriptWord.class).whereContains("roomId", UserManager.getInstance().getUser().getLiveRoom()).findObjects(data1 -> {
+                if (data1 == null || data1.getCode() == 1) {
+                    ToastUtil.showShortText("剧本词查询失败");
+                    return;
+                }
+                scriptWords.addAll(data1.getData());
+                if (CollectionUtils.isEmpty(scriptWords)) {
+                    ToastUtil.showShortText("暂无剧本词");
+                    return;
+                }
+                int index = MathUtil.random(0, scriptWords.size());
+                if (service.input(sendMsgNode, scriptWords.get(index).getDesc())) {
+                    service.postDelayed(() -> {
+                        Rect rect = new Rect();
+                        root.findFocus(AccessibilityNodeInfoCompat.FOCUS_INPUT).getBoundsInScreen(rect);
+                        if (service.exeClick((rect.right + ListenerService.mWidth) >> 1, (rect.top + rect.bottom) >> 1)) {
+                            int min = PreferenceHelp.getInt(PreferenceKey.DELAY_MIN, 10);
+                            int max = PreferenceHelp.getInt(PreferenceKey.DELAY_MAX, 20);
+                            long delay = MathUtil.random(min, max) * 1000;
+                            ToastUtil.showShortText((delay / 1000) + "秒后在发送一条消息");
+                            service.postDelayed(() -> {
+                                if (AppUtils.playing) {
+                                    sendMsg(service);
+                                }
+                            }, delay);
+                        }
+                    });
+                }
+            });
         }
     }
 
