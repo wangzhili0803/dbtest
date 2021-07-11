@@ -7,7 +7,7 @@ package com.jerry.baselib;
  */
 public class ActionCode {
 
-    public static final int LOGIN = 1;
+    public static final int TO_TXT = 1;
     public static final int REGISTER = 2;
     public static final int REQUEST_LINK = 3;
     public static final int USER_UPDATED = 4;

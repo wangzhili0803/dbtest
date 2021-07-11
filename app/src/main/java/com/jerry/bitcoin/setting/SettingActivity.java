@@ -68,8 +68,8 @@ public class SettingActivity extends BaseActivity {
             int min = ParseUtil.parseInt(etDelayMin.getText().toString());
             int max = ParseUtil.parseInt(etDelayMax.getText().toString());
             if (min < max) {
-                PreferenceHelp.getInt(PreferenceKey.DELAY_MIN, min);
-                PreferenceHelp.getInt(PreferenceKey.DELAY_MAX, max);
+                PreferenceHelp.putInt(PreferenceKey.DELAY_MIN, min);
+                PreferenceHelp.putInt(PreferenceKey.DELAY_MAX, max);
             } else {
                 toast("最小值要小于最大值");
             }
@@ -79,8 +79,8 @@ public class SettingActivity extends BaseActivity {
             int min = ParseUtil.parseInt(etDelayMin.getText().toString());
             int max = ParseUtil.parseInt(etDelayMax.getText().toString());
             if (min < max) {
-                PreferenceHelp.getInt(PreferenceKey.DELAY_MIN, min);
-                PreferenceHelp.getInt(PreferenceKey.DELAY_MAX, max);
+                PreferenceHelp.putInt(PreferenceKey.DELAY_MIN, min);
+                PreferenceHelp.putInt(PreferenceKey.DELAY_MAX, max);
             } else {
                 toast("最小值要小于最大值");
             }

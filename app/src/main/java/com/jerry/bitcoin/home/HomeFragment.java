@@ -21,6 +21,7 @@ import com.jerry.baselib.common.base.RecyclerViewHolder;
 import com.jerry.baselib.common.bean.AVObjQuery;
 import com.jerry.baselib.common.bean.AxUser;
 import com.jerry.baselib.common.util.CollectionUtils;
+import com.jerry.baselib.common.util.DateUtils;
 import com.jerry.baselib.common.util.LogUtils;
 import com.jerry.baselib.common.util.ToastUtil;
 import com.jerry.baselib.common.util.UserManager;
@@ -50,7 +51,7 @@ public class HomeFragment extends BaseRecyclerFragment<RoomBean> {
         return new BaseRecyclerAdapter<RoomBean>(mActivity, mData) {
             @Override
             public int getItemLayoutId(final int viewType) {
-                return R.layout.item_select_text;
+                return R.layout.item_title;
             }
 
             @Override
@@ -108,54 +109,35 @@ public class HomeFragment extends BaseRecyclerFragment<RoomBean> {
                 }
                 return;
             }
-            EditDialog editDialog = new EditDialog(mActivity);
-            editDialog.setDialogTitle(getString(R.string.new_link));
-            editDialog.setPositiveListener(view -> {
-                String roomId = editDialog.getEditText();
-                new AVObjQuery<>(RoomBean.class).whereEqualTo("roomId", roomId).findObjects(data -> {
-                    if (data == null || data.getCode() == 1) {
-                        LogUtils.e(data.getMsg());
-                        ToastUtil.showShortText(data.getMsg());
-                        return;
-                    }
-                    List<RoomBean> list = data.getData();
-                    if (CollectionUtils.isEmpty(list)) {
-                        // 新建房间
-                        RoomBean roomBean = new RoomBean();
-                        roomBean.setRoomId(roomId);
-                        roomBean.setUserIds(Collections.singletonList(UserManager.getInstance().getPhone()));
-                        roomBean.save(data1 -> {
-                            AxUser user = UserManager.getInstance().getUser();
-                            if (TextUtils.isEmpty(user.getLiveRoom())) {
-                                user.setLiveRoom(roomId);
-                                user.update(data2 -> {
-                                    mData.add(0, roomBean);
-                                    mAdapter.notifyItemRangeInserted(0, 1);
-                                    editDialog.dismiss();
-                                    LogUtils.d("添加成功");
-                                    toast("添加成功");
-                                });
-                            } else {
-                                mData.add(0, roomBean);
-                                mAdapter.notifyItemRangeInserted(0, 1);
-                                editDialog.dismiss();
-                                LogUtils.d("添加成功");
-                                toast("添加成功");
-                            }
-                        });
-                        return;
-                    }
-                    // 房间添加用户
-                    RoomBean roomBean = list.get(0);
-                    List<String> userIds = roomBean.getUserIds();
-                    if (userIds.contains(UserManager.getInstance().getPhone())) {
-                        LogUtils.d("已经添加过该房间");
-                        toast("已经添加过该房间");
-                        return;
-                    }
-                    userIds.add(UserManager.getInstance().getPhone());
-                    roomBean.setUserIds(userIds);
-                    roomBean.update(data1 -> {
+            UserManager.getInstance().requestUser(data -> {
+                int count = UserManager.getInstance().getUser().getRoomCount();
+                if (mData.size() >= count) {
+                    toast("您的账户只能建" + count + "个链接，想增加请联系客服小哥哥");
+                    return;
+                }
+                showNewLinkDialog();
+            });
+        }
+    }
+
+    private void showNewLinkDialog() {
+        EditDialog editDialog = new EditDialog(mActivity);
+        editDialog.setDialogTitle(getString(R.string.new_link));
+        editDialog.setPositiveListener(view -> {
+            String roomId = editDialog.getEditText();
+            new AVObjQuery<>(RoomBean.class).whereEqualTo("roomId", roomId).findObjects(data -> {
+                if (data == null || data.getCode() == 1) {
+                    LogUtils.e(data.getMsg());
+                    ToastUtil.showShortText(data.getMsg());
+                    return;
+                }
+                List<RoomBean> list = data.getData();
+                if (CollectionUtils.isEmpty(list)) {
+                    // 新建房间
+                    RoomBean roomBean = new RoomBean();
+                    roomBean.setRoomId(roomId);
+                    roomBean.setUserIds(Collections.singletonList(UserManager.getInstance().getPhone()));
+                    roomBean.save(data1 -> {
                         AxUser user = UserManager.getInstance().getUser();
                         if (TextUtils.isEmpty(user.getLiveRoom())) {
                             user.setLiveRoom(roomId);
@@ -174,17 +156,54 @@ public class HomeFragment extends BaseRecyclerFragment<RoomBean> {
                             toast("添加成功");
                         }
                     });
+                    return;
+                }
+                // 房间添加用户
+                RoomBean roomBean = list.get(0);
+                List<String> userIds = roomBean.getUserIds();
+                if (userIds.contains(UserManager.getInstance().getPhone())) {
+                    LogUtils.d("已经添加过该房间");
+                    toast("已经添加过该房间");
+                    return;
+                }
+                userIds.add(UserManager.getInstance().getPhone());
+                roomBean.setUserIds(userIds);
+                roomBean.update(data1 -> {
+                    AxUser user = UserManager.getInstance().getUser();
+                    if (TextUtils.isEmpty(user.getLiveRoom())) {
+                        user.setLiveRoom(roomId);
+                        user.update(data2 -> {
+                            mData.add(0, roomBean);
+                            mAdapter.notifyItemRangeInserted(0, 1);
+                            editDialog.dismiss();
+                            LogUtils.d("添加成功");
+                            toast("添加成功");
+                        });
+                    } else {
+                        mData.add(0, roomBean);
+                        mAdapter.notifyItemRangeInserted(0, 1);
+                        editDialog.dismiss();
+                        LogUtils.d("添加成功");
+                        toast("添加成功");
+                    }
                 });
             });
-            editDialog.show();
-        }
+        });
+        editDialog.show();
     }
 
     @Override
     public void onItemClick(final View itemView, final int position) {
-        Intent intent = new Intent(mActivity, RoomActivity.class);
-        intent.putExtra(Key.DATA, mData.get(position).getRoomId());
-        startActivityForResult(intent, TO_ROOM);
+        RoomBean roomBean = mData.get(position);
+        DateUtils.getNowTimeLong(data -> {
+            if (data < DateUtils.getLongByDateTime(roomBean.getExpire())) {
+                toast("改链接已过使用期");
+                return;
+            }
+            Intent intent = new Intent(mActivity, RoomActivity.class);
+            intent.putExtra(Key.DATA, mData.get(position).getRoomId());
+            startActivityForResult(intent, TO_ROOM);
+        });
     }
 
     @Override

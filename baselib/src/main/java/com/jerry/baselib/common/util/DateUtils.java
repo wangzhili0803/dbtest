@@ -7,6 +7,11 @@ import java.util.Locale;
 import android.text.TextUtils;
 
 import com.jerry.baselib.Key;
+import com.jerry.baselib.common.retrofit.RetrofitHelper;
+import com.jerry.baselib.parsehelper.HttpApi;
+
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 /**
  * 日期类
@@ -169,5 +174,12 @@ public class DateUtils {
             }
         }
         return Key.NIL;
+    }
+
+    public static void getNowTimeLong(OnDataCallback<Long> onDataCallback) {
+        RetrofitHelper.getInstance().getApi(HttpApi.class).getTimestamp()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(result -> onDataCallback.onDataCallback(result.getJSONObject(Key.DATA).getLong("t")));
     }
 }

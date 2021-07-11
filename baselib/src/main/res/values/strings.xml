@@ -37,8 +37,8 @@
     <string name="app_not_install">应用未安装</string>
     <string name="user_out_relogin">用户信息失效 请重新登录</string>
     <string name="user_logouted">账户已登出</string>
-    <string name="out_of_devices">您账号绑定的设备超出最大限制</string>
-    <string name="R.string.sure_exit">您确认退出吗？</string>
+    <string name="out_of_devices">您账号已在其他%1$d台设备上登录，请退出后重试</string>
+    <string name="sure_exit">您确认退出吗？</string>
     <string name="percentage_sign">%</string>
 
 </resources>

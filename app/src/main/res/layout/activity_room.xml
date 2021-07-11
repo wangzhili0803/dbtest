@@ -27,12 +27,21 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
+        <ImageView
+            android:id="@+id/tv_txt"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center"
+            android:padding="@dimen/eight_dp"
+            android:src="@drawable/txt_import" />
+
         <com.jerry.baselib.common.weidgt.MyEditText
             android:id="@+id/et_srict"
             style="@style/menu_input"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:layout_gravity="center"
             android:gravity="center_vertical"
             android:hint="新增剧本词"
             android:paddingHorizontal="@dimen/page_margin"
@@ -44,8 +53,9 @@
         <TextView
             android:id="@+id/tv_send"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:background="@drawable/white_bg_selector"
+            android:gravity="center"
             android:paddingHorizontal="@dimen/page_margin"
             android:paddingVertical="@dimen/eight_dp"
             android:text="发送" />

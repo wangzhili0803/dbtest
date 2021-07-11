@@ -114,8 +114,8 @@ public class LoginDialog extends BaseDialog {
             if (devices == null) {
                 devices = new HashSet<>();
             }
-            if (devices.size() > 0 && !devices.contains(deviceId)) {
-                ToastUtil.showShortText(R.string.out_of_devices);
+            if (!CollectionUtils.isEmpty(devices) && devices.size() >= user.getCount() && !devices.contains(deviceId)) {
+                ToastUtil.showShortText(mContext.getString(R.string.out_of_devices, user.getCount()));
                 ((BaseActivity) mContext).closeLoadingDialog();
                 return;
             }
@@ -171,8 +171,8 @@ public class LoginDialog extends BaseDialog {
             if (devices == null) {
                 devices = new HashSet<>();
             }
-            if (devices.size() > 0 && !devices.contains(deviceId)) {
-                ToastUtil.showShortText(R.string.out_of_devices);
+            if (!CollectionUtils.isEmpty(devices) && devices.size() >= user.getCount() && !devices.contains(deviceId)) {
+                ToastUtil.showShortText(mContext.getString(R.string.out_of_devices, user.getCount()));
                 ((BaseActivity) mContext).closeLoadingDialog();
                 return;
             }

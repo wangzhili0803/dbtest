@@ -233,7 +233,7 @@ public class AppUtils {
     public static void exitApp(final Activity activity) {
         final CustomDialog dialog = new CustomDialog(activity);
         dialog.show();
-        dialog.setMessage(R.string.R_string_sure_exit);
+        dialog.setMessage(R.string.sure_exit);
         dialog.setPositiveListener(v -> {
             dialog.dismiss();
             ActivityCompat.finishAffinity(activity);

@@ -38,6 +38,10 @@ public class AxUser extends AVBaseObject {
      */
     private int count = 1;
     /**
+     * 最大任务数
+     */
+    private int roomCount = 1;
+    /**
      * 微信号
      */
     private String wxCode;
@@ -108,6 +112,14 @@ public class AxUser extends AVBaseObject {
 
     public void setCount(final int count) {
         this.count = count;
+    }
+
+    public int getRoomCount() {
+        return roomCount;
+    }
+
+    public void setRoomCount(final int roomCount) {
+        this.roomCount = roomCount;
     }
 
     public String getWxCode() {
