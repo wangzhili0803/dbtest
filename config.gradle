@@ -27,6 +27,7 @@ ext {
             SRC_DIR       : "telegram",
             VERSION_CODE  : 10000,
             VERSION_NAME  : "1.0",
+            UMENG_APP_KEY : '"60ea4c5da6f90557b7b219a7"',
             BUGLY_APP_ID  : '"3d0b640817"',
             AVOS_APP_ID   : '"CTEpnXQrIP5W4oes40JW5Nvd-MdYXbMMI"',
             AVOS_APP_KEY  : '"tP2b4KA3Pit4mETLzErFmxYD"',

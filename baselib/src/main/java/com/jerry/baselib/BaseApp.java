@@ -3,9 +3,10 @@ package com.jerry.baselib;
 import android.annotation.SuppressLint;
 import android.app.Application;
 
+import androidx.multidex.MultiDex;
+
 import com.jerry.baselib.common.util.ForegroundCallbacks;
 
-import androidx.multidex.MultiDex;
 import cn.leancloud.AVLogger;
 import cn.leancloud.AVOSCloud;
 import cn.leancloud.core.RequestPaddingInterceptor;
@@ -58,6 +59,7 @@ public abstract class BaseApp extends Application {
         public static String APPLICATION_ID;
         public static int VERSION_CODE;
         public static String VERSION_NAME;
+        public static String UMENG_APP_KEY;
         public static String BUGLY_APP_ID;
         public static String AVOS_APP_ID;
         public static String AVOS_APP_KEY;

@@ -31,6 +31,7 @@ android {
 
         buildConfigField("String", "BUGLY_APP_ID", packer.BUGLY_APP_ID)
         buildConfigField("String", "AVOS_APP_ID", packer.AVOS_APP_ID)
+        buildConfigField("String", "UMENG_APP_KEY", packer.UMENG_APP_KEY)
         buildConfigField("String", "AVOS_APP_KEY", packer.AVOS_APP_KEY)
         buildConfigField("String", "FILE_PROVIDER", packer.FILE_PROVIDER)
         buildConfigField("String", "SIGN", '"s1d8124ec4zm2s2c839saeu72g3d34c0"')

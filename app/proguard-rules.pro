@@ -222,6 +222,24 @@ public static java.lang.String TABLENAME;
     <init>(java.lang.Throwable);
 }
 
+-keep class com.umeng.** {*;}
+
+-keepclassmembers class * {
+   public <init> (org.json.JSONObject);
+}
+
+-keepclassmembers enum * {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}
+
+#-----SDK 9.2.4及以上版本自带oaid采集模块，不再需要开发者再手动引用oaid库，所以可以不添加这些混淆------------------
+-keep class com.zui.**{*;}
+-keep class com.miui.**{*;}
+-keep class com.heytap.**{*;}
+-keep class a.**{*;}
+-keep class com.vivo.**{*;}
+
 #----------------其它-------------------------------------------------------------
 -keep class com.jerry.baselib.common.bean.** { *; }
 -keep class com.jerry.bitcoin.bean.** { *; }

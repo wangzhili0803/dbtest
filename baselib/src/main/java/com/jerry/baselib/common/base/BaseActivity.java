@@ -18,6 +18,7 @@ import com.jerry.baselib.common.util.ToastUtil;
 import com.jerry.baselib.common.util.UserManager;
 import com.jerry.baselib.common.weidgt.RefreshDialog;
 import com.tencent.bugly.beta.Beta;
+import com.umeng.analytics.MobclickAgent;
 
 /**
  * @author Jerry
@@ -137,6 +138,18 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         if (null != progressDialog && progressDialog.isShowing()) {
             progressDialog.dismiss();
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        MobclickAgent.onResume(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        MobclickAgent.onPause(this);
     }
 
     @Override
